@@ -28,3 +28,6 @@
 # (5) When all the publishers and subscribers in the system have registered with us,
 # then we are in a ready state and will respond with a true to is_ready method. Until then
 # it will be false.
+
+class DiscoveryAppln():
+    pass
