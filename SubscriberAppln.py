@@ -39,9 +39,17 @@ class SubscriberAppln():
     # constructor
     ########################################
     def __init__(self, logger):
+        self.mw_obj = None # handle to the underlying Middleware object
+        self.logger = logger  # internal logger for print statements
+
+    ########################################
+    # configure/initialize
+    ########################################
+    def configure (self, args):
+        ''' Initialize subscriber object '''
         pass
 
-    pass
+     
 
 ###################################
 #
@@ -66,6 +74,17 @@ def main():
        logger.error ("Exception caught in main - {}".format (e)) 
     pass
 
+########################################
+# driver program
+########################################
+def driver (self):
+    pass
+
+########################################
+# dump the contents of the object 
+########################################
+def dump (self):
+    pass
 
 
 ###################################

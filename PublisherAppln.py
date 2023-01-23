@@ -146,6 +146,10 @@ class PublisherAppln ():
         # Here, we choose to disseminate on all topics that we publish.  Also, we don't care
         # about their values. But in future assignments, this can change.
         for topic in self.topiclist:
+          # Do we need to make note of the timestamp of each time we dessiminate data here?
+          # Is that milestone 1 or later?
+          # Need publisher to have a unique id? n - 1?
+
           # For now, we have chosen to send info in the form "topic name: topic value"
           # In later assignments, we should be using more complex encodings using
           # protobuf.
