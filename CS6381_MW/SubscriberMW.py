@@ -32,3 +32,65 @@
 # object.
 #
 
+# import the needed packages
+import os     # for OS functions
+import sys    # for syspath and system exception
+import time   # for sleep
+import argparse # for argument parsing
+import configparser # for configuration parsing
+import logging # for logging. Use it in place of print statements.
+import zmq  # ZMQ sockets
+
+# import serialization logic
+from CS6381_MW import discovery_pb2
+
+class SubscriberMW ():
+
+    def __init__(self, logger):
+        self.logger = logger
+        self.sub = None
+        self.req = None
+        self.poller = None
+        self.addr = None
+        self.port = None
+
+    def configure(self, args):
+        ''' Initialize the subscriber middleware object '''
+
+        try:
+            pass
+        except Exception as e:
+            raise e
+
+
+        pass
+
+    ########################################
+    # register with the discovery service
+    ########################################
+    def register (self, name):
+        pass
+
+    def is_ready (self):
+
+        pass
+
+    #################################################################
+    # run the event loop where we expect to receive a reply to a sent request
+    #################################################################
+    def event_loop (self):
+      pass
+
+    #################################################################
+    # handle an incoming reply
+    #################################################################
+    def handle_reply (self):
+        pass
+
+    #################################################################
+    # receive data on our sub socket
+    #################################################################
+    def receive(self, data):
+        pass
+
+    pass
