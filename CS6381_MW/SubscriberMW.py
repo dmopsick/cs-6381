@@ -74,28 +74,37 @@ class SubscriberMW ():
             self.poller = zmq.poller()
             
             # Acquire the REQ and SUB sockets
+            self.logger.debug ("SubscriberMW::configure - obtain REQ and SUB sockets")
+            self.req = context.socket (zmq.REQ)
+            self.pub = context.socket (zmq.SUB)
 
+            # Register the req socket for incoming request
+            self.logger.debug ("SubscriberMW::configure - register the REQ socket for incoming replies")
+            self.poller.register(self.req, zmq.POLLIN)
 
-            # Registerthe req socket for incoming request
-
-
-            # Connect to the dsicovery service
-
+            # Connect to the discovery service 
+            # Use TCP followed by Ip addr:port number
+            self.logger.debug ("SubscriberMW::configure - connect to Discovery service")
+            connect_str = "tcp://" + args.discovery
+            self.req.connect (connect_str)
 
             # "Connect" to the SUB socket
+            sub_connect_string = "tcp://*:" + self.port
+            self.sub.connect(sub_connect_string)
 
-
-            pass
         except Exception as e:
             raise e
-
-
-        pass
 
     ########################################
     # register with the discovery service
     ########################################
     def register (self, name):
+        ''' Register the AppLn with the discovery service '''
+        try:
+            pass
+        except Exception as e:
+            raise e
+
         pass
 
     def is_ready (self):
