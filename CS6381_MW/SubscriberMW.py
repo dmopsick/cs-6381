@@ -136,16 +136,59 @@ class SubscriberMW ():
             raise e
 
     def is_ready (self):
-        pass
+        ''' Register the AppLn with the discovery service '''
+
+        try:
+            self.logger.debug("SubscriberMW::is_ready")
+
+            # Build an isReady message
+            self.logger.debug("SubscriberMW::is_ready - populate the nested IsReady msg")
+            isready_msg = discovery_pb2.IsReadyReq()  # allocate 
+            self.logger.debug("SubscriberMW::is_ready - done populating nested IsReady msg")
+
+            # Build the outer layer Discovery message
+            self.logger.debug ("SubscriberMW::is_ready - build the outer DiscoveryReq message")
+            disc_req = discovery_pb2.DiscoveryReq()
+            disc_req.msg_type = discovery_pb2.ISREADY
+
+            # Stringify the buffer and print it
+            # Actually a sequence not a string
+            buf2send = disc_req.SerializeToString()
+            self.logger.debug ("Stringified serialized buf = {}".format(buf2send))
+
+            # Send this to our discovery service
+            self.logger.debug("SubscriberMW::is_ready - send stringified buffer to Discovery service")
+            self.req.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+      
+            # Now go to our event loop to receive a response to this request
+            self.logger.debug("SubscriberMW::is_ready - now wait for reply")
+            return self.event_loop()
+
+        except Exception as e:
+            raise e
 
     #################################################################
-    # run the event loop where we expect to receive a reply to a sent request
+    # Run the event loop where we expect to receive a reply to a sent request
     #################################################################
     def event_loop (self):
-      pass
+
+        try:
+            self.logger.debug("SubscriberMW::event_loop - Run the event loop")
+
+            while True:
+                # Poll for events with an infinite timeout
+                # The return value is a socket to event mask mapping
+                events = dict(self.poller.poll())
+
+                # The only socket that should be enabled is our REQ socket
+                if self.req in events:
+                    return self.handle_reply()
+        
+        except Exception as e:
+            raise e
 
     #################################################################
-    # handle an incoming reply
+    # Handle an incoming reply
     #################################################################
     def handle_reply (self):
         pass
