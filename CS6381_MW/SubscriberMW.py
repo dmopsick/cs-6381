@@ -47,17 +47,44 @@ from CS6381_MW import discovery_pb2
 class SubscriberMW ():
 
     def __init__(self, logger):
-        self.logger = logger
-        self.sub = None
-        self.req = None
-        self.poller = None
-        self.addr = None
-        self.port = None
+        self.logger = logger  # internal logger for print statements
+        self.sub = None # will be a ZMQ SUB socket for receiving information/topics
+        self.req = None # will be a ZMQ REQ socket to talk to Discovery service
+        self.poller = None # used to wait on incoming replies
+        self.addr = None # our advertised IP address
+        self.port = None # port num where we are going to publish our topics
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''
 
         try:
+            # Initialize any internal variables
+            self.logger.debug("SubscriberMW::configure")
+
+            # Retrieve advertised IP address and subscriber port num
+            self.port = args.port
+            self.addr = args.addr
+
+            # Get the ZMQ context
+            self.logger.debug("SubscriberMW::configure - obtain ZMQ context")
+            context = zmq.Context()
+
+            # Get the ZMQ Poller object
+            self.logger.debug("SubscriberMW::configure - obtain poller")
+            self.poller = zmq.poller()
+            
+            # Acquire the REQ and SUB sockets
+
+
+            # Registerthe req socket for incoming request
+
+
+            # Connect to the dsicovery service
+
+
+            # "Connect" to the SUB socket
+
+
             pass
         except Exception as e:
             raise e
