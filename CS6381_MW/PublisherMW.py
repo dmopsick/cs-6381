@@ -127,7 +127,8 @@ class PublisherMW ():
       # first build a register req message
       self.logger.debug ("PublisherMW::register - populate the nested register req")
       register_req = discovery_pb2.RegisterReq ()  # allocate 
-      register_req.role = "publisher"  # this will change to an enum later on
+      # register_req.role = "publisher"  # this will change to an enum later on
+      register_req.role = discovery_pb2.PUBLISHER
       comma_sep_topics = ','.join (topiclist) # converts list into comma sep string
       register_req.topiclist = comma_sep_topics   # fill up the topic list
       unique_id = name + ":" + self.addr + ":" + self.port

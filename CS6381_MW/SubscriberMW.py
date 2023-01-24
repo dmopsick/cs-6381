@@ -74,9 +74,9 @@ class SubscriberMW ():
             self.poller = zmq.poller()
             
             # Acquire the REQ and SUB sockets
-            self.logger.debug ("SubscriberMW::configure - obtain REQ and SUB sockets")
-            self.req = context.socket (zmq.REQ)
-            self.pub = context.socket (zmq.SUB)
+            self.logger.debug("SubscriberMW::configure - obtain REQ and SUB sockets")
+            self.req = context.socket(zmq.REQ)
+            self.pub = context.socket(zmq.SUB)
 
             # Register the req socket for incoming request
             self.logger.debug ("SubscriberMW::configure - register the REQ socket for incoming replies")
@@ -84,9 +84,9 @@ class SubscriberMW ():
 
             # Connect to the discovery service 
             # Use TCP followed by Ip addr:port number
-            self.logger.debug ("SubscriberMW::configure - connect to Discovery service")
+            self.logger.debug("SubscriberMW::configure - connect to Discovery service")
             connect_str = "tcp://" + args.discovery
-            self.req.connect (connect_str)
+            self.req.connect(connect_str)
 
             # "Connect" to the SUB socket
             sub_connect_string = "tcp://*:" + self.port
@@ -101,14 +101,41 @@ class SubscriberMW ():
     def register (self, name):
         ''' Register the AppLn with the discovery service '''
         try:
-            pass
+            self.logger.debug("SubscriberMW::register")
+
+            # Build a register REQ message
+            self.logger.debug("SubscriberMW::register - populate the nested register req")
+            register_req = discovery_pb2.RegisterReq ()  # allocate 
+            # register_req.role = "subscriber"  # this will change to an enum later on
+            register_req.role = discovery_pb2.SUBSCRIBER
+            # There is no topic list for a subscriber... do we need anything here instead?
+            unique_id = name + ":" + self.addr + ":" + self.port
+            register_req.id = unique_id  # fill up the ID
+            self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")
+
+            # Build the outer layer Discovery message
+            self.logger.debug("SubscriberMW::register - build the outer DiscoveryReq message")
+            disc_req = discovery_pb2.DiscoveryReq ()
+            disc_req.msg_type = discovery_pb2.REGISTER
+            disc_req.register_req.CopyFrom (register_req)
+            self.logger.debug ("SubscriberMW::register - done building the outer message")
+            
+            # Stringify the buffer and print it 
+            buf2send = disc_req.SerializeToString ()
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+            # Send this to our discovery service
+            self.logger.debug("SubscriberMW::register - send stringified buffer to Discovery service")
+            self.req.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+
+            # Now go to our event loop to receive a response to this request
+            self.logger.debug("SubscriberMW::register - now wait for reply")
+            return self.event_loop ()
+
         except Exception as e:
             raise e
 
-        pass
-
     def is_ready (self):
-
         pass
 
     #################################################################

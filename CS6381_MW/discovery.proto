@@ -11,6 +11,11 @@
 // Let us use the Version 3 syntax
 syntax = "proto3";
 
+enum Roles {
+        PUBLISHER = 0;
+        SUBSCRIBER = 1;
+}
+
 // TO-DO:
 // better to use enums to indicate what role we play
 // Likewise, instead of just comma separated list of topics, maybe a better way to send the topic list
@@ -18,7 +23,8 @@ syntax = "proto3";
 // the pub/sub entity here.
 message RegisterReq
 {
-        string role = 1;   // replace it with enum telling if we are pub or sub
+        Roles role = 1;
+        // string role = 1;   // replace it with enum telling if we are pub or sub
         string topiclist = 2; // comma separated list of topics we publish or consume. Replace it with a better way to send this information
         string id = 3; // some unique way to identify us (could be hash of name, IP, port, etc) or a nested type
 }
