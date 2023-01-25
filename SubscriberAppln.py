@@ -36,11 +36,28 @@ import logging # for logging. Use it in place of print statements.
 
 from CS6381_MW.SubscriberMW import SubscriberMW 
 
+from enum import Enum  # for an enumeration we are using to describe what state we are in
+
 class SubscriberAppln():
+
+      # these are the states through which our publisher appln object goes thru.
+    # We maintain the state so we know where we are in the lifecycle and then
+    # take decisions accordingly
+    class State (Enum):
+        INITIALIZE = 0,
+        CONFIGURE = 1,
+        REGISTER = 2,
+        ISREADY = 3,
+        RECEIVE = 4,
+        COMPLETED = 5
+
     ########################################
     # constructor
     ########################################
     def __init__(self, logger):
+        self.state = self.State.INITIALIZE # state that are we in
+        self.name = None # our name (some unique name)
+        self.lookup = None # one of the diff ways we do lookup
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
 
@@ -53,6 +70,9 @@ class SubscriberAppln():
         try:
             # Initialize internal variables
             self.logger.debug("SubscriberAppln::configure")
+
+            # set our current state to CONFIGURE state
+            self.state = self.State.CONFIGURE
 
             # Initialize our variables
             self.name = args.name # our name
@@ -91,17 +111,57 @@ class SubscriberAppln():
             # Dump out comments for debugging purposes
             self.dump()
 
+            # Ask the middleware to keep a handle on us to make upcalls
+            # Pass a point of this object to the middleware
+            self.logger.debug("SubscriberAppln::driver - upcall handle")
+            self.mw_obj.set_upcall_handle (self)
 
-            pass
+            # Enter the register state
+            # Must register the subscriber with the Discovery service
+            self.state = self.State.REGISTER
+
+            # Now simply let the underlying middleware object enter the event loop
+            # to handle events. However, a trick we play here is that we provide a timeout
+            # of zero so that control is immediately sent back to us where we can then
+            # register with the discovery service and then pass control back to the event loop
+            #
+            # As a rule, whenever we expect a reply from remote entity, we set timeout to
+            # None or some large value, but if we want to send a request ourselves right away,
+            # we set timeout is zero.
+            #
+            self.mw_obj.event_loop (timeout=0)  # start the event loop
+
+            self.logger.info("SubscriberAppln::driver completed")
+
         except Exception as e:
             raise e
-
-        pass
 
     ########################################
     # dump the contents of the object 
     ########################################
     def dump (self):
+        ''' Pretty print '''
+        try:
+            self.logger.info ("**********************************")
+            self.logger.info ("SubscriberAppln::dump")
+            self.logger.info ("------------------------------")
+            self.logger.info ("     Name: {}".format (self.name))
+            self.logger.info ("     Lookup: {}".format (self.lookup))
+            self.logger.info ("     Iterations: {}".format (self.iters))
+            self.logger.info ("     Frequency: {}".format (self.frequency))
+            self.logger.info ("**********************************")
+
+        except Exception as e:
+            raise e
+        
+    ########################################
+    # generic invoke method called as part of upcall
+    #
+    # This method will get invoked as part of the upcall made
+    # by the middleware's event loop after it sees a timeout has
+    # occurred.
+    ########################################
+    def invoke_operation(self):
         pass
 
 

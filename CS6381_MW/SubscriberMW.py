@@ -53,13 +53,15 @@ class SubscriberMW ():
         self.poller = None # used to wait on incoming replies
         self.addr = None # our advertised IP address
         self.port = None # port num where we are going to publish our topics
+        self.upcall_obj = None # handle to appln obj to handle appln-specific data
+        self.handle_events = True # in general we keep going thru the event loop
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''
 
         try:
             # Initialize any internal variables
-            self.logger.debug("SubscriberMW::configure")
+            self.logger.info("SubscriberMW::configure")
 
             # Retrieve advertised IP address and subscriber port num
             self.port = args.port
@@ -74,6 +76,8 @@ class SubscriberMW ():
             self.poller = zmq.poller()
             
             # Acquire the REQ and SUB sockets
+            # REQ needed because we are client of the Discovery service
+            # SUB needed because we subscribe to publisher's topic data
             self.logger.debug("SubscriberMW::configure - obtain REQ and SUB sockets")
             self.req = context.socket(zmq.REQ)
             self.pub = context.socket(zmq.SUB)
@@ -89,8 +93,10 @@ class SubscriberMW ():
             self.req.connect(connect_str)
 
             # "Connect" to the SUB socket
-            sub_connect_string = "tcp://*:" + self.port
+            sub_connect_string = "tcp://*:" + str(self.port)
             self.sub.connect(sub_connect_string)
+
+            self.logger.info("SubscriberMW::configure completed")
 
         except Exception as e:
             raise e
@@ -98,26 +104,31 @@ class SubscriberMW ():
     ########################################
     # register with the discovery service
     ########################################
-    def register (self, name):
+    def register(self, name):
         ''' Register the AppLn with the discovery service '''
         try:
             self.logger.debug("SubscriberMW::register")
 
-            # Build a register REQ message
+            # Build the Registrant Info message first.
             self.logger.debug("SubscriberMW::register - populate the nested register req")
+            reg_info = discovery_pb2.RegistrantInfo () # allocate
+            reg_info.id = name  # our id
+            reg_info.addr = self.addr  # our advertised IP addr where we are publishing
+            reg_info.port = self.port # port on which we are publishing
+            self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")
+
+            # Build a RegisterReq message 
+            self.logger.debug ("SubscriberMW::register - populate the nested register req")
             register_req = discovery_pb2.RegisterReq ()  # allocate 
-            # register_req.role = "subscriber"  # this will change to an enum later on
-            register_req.role = discovery_pb2.SUBSCRIBER
-            # There is no topic list for a subscriber... do we need anything here instead?
-            unique_id = name + ":" + self.addr + ":" + self.port
-            register_req.id = unique_id  # fill up the ID
+            register_req.role = discovery_pb2.ROLE_SUBSCRIBER  # we are a publishe
+            register_req.info.CopyFrom (reg_info)  # copy contents of inner structure
             self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")
 
             # Build the outer layer Discovery message
             self.logger.debug("SubscriberMW::register - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq ()
             disc_req.msg_type = discovery_pb2.REGISTER
-            disc_req.register_req.CopyFrom (register_req)
+            disc_req.register_req.CopyFrom (reg_info)
             self.logger.debug ("SubscriberMW::register - done building the outer message")
             
             # Stringify the buffer and print it 
@@ -130,7 +141,6 @@ class SubscriberMW ():
 
             # Now go to our event loop to receive a response to this request
             self.logger.debug("SubscriberMW::register - now wait for reply")
-            return self.event_loop ()
 
         except Exception as e:
             raise e
@@ -149,7 +159,11 @@ class SubscriberMW ():
             # Build the outer layer Discovery message
             self.logger.debug ("SubscriberMW::is_ready - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq()
-            disc_req.msg_type = discovery_pb2.ISREADY
+            disc_req.msg_type = discovery_pb2.TYPE_ISREADY
+
+            disc_req.isready_req.CopyFrom (isready_req)
+            self.logger.debug ("SubscriberMW::is_ready - done building the outer message")
+      
 
             # Stringify the buffer and print it
             # Actually a sequence not a string
@@ -162,7 +176,6 @@ class SubscriberMW ():
       
             # Now go to our event loop to receive a response to this request
             self.logger.debug("SubscriberMW::is_ready - now wait for reply")
-            return self.event_loop()
 
         except Exception as e:
             raise e
@@ -175,14 +188,21 @@ class SubscriberMW ():
         try:
             self.logger.debug("SubscriberMW::event_loop - Run the event loop")
 
-            while True:
+            while self.handle_events:
                 # Poll for events with an infinite timeout
                 # The return value is a socket to event mask mapping
-                events = dict(self.poller.poll())
+                events = dict(self.poller.poll(timeout=timeout))
 
-                # The only socket that should be enabled is our REQ socket
-                if self.req in events:
-                    return self.handle_reply()
+                # Check if the timeout occurred
+                if not events:
+                    timeout = self.upcall_obj.invoke_operation()
+
+                # Only should be receiving messages in the req socket
+                elif self.req in events: 
+                    timeout = self.handle_reply()
+
+                else:
+                    raise Exception("Unknown event after poll")
         
         except Exception as e:
             raise e
@@ -203,12 +223,15 @@ class SubscriberMW ():
             disc_resp.ParseFromString(bytesRcvd)
 
             if (disc_resp.msg_type == discovery_pb2.REGISTER):
-                return disc_resp.register_resp.result
+                timeout = disc_resp.register_resp.result
             elif (disc_resp.msg_type == discovery_pb2.ISREADY):
-                return disc_resp.is_ready.reply
+                timeout = disc_resp.is_ready.reply
             else: 
-                raise Exception("Unrecognized response message provided")
+                raise ValueError("Unrecognized response message provided")
             
+            return timeout 
+
+
         except Exception as e:
             raise e
 
@@ -217,3 +240,22 @@ class SubscriberMW ():
     #################################################################
     def receive(self, data):
         pass
+    
+    ########################################
+    # set upcall handle
+    #
+    # here we save a pointer (handle) to the application object
+    ########################################
+    def set_upcall_handle (self, upcall_obj):
+        ''' set upcall handle '''
+        self.upcall_obj = upcall_obj
+
+    ########################################
+    # disable event loop
+    #
+    # here we just make the variable go false so that when the event loop
+    # is running, the while condition will fail and the event loop will terminate.
+    ########################################
+    def disable_event_loop (self):
+        ''' disable event loop '''
+        self.handle_events = False
