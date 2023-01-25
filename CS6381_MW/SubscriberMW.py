@@ -191,12 +191,29 @@ class SubscriberMW ():
     # Handle an incoming reply
     #################################################################
     def handle_reply (self):
-        pass
+
+        try:
+            self.logger.debug("SubscriberMW::handle_reply")
+
+            # Receive all the bytes
+            bytesRcvd = self.req.recv()
+
+            # Use the protobuf to deserialize the bytes
+            disc_resp = discovery_pb2.DiscoveryResp()
+            disc_resp.ParseFromString(bytesRcvd)
+
+            if (disc_resp.msg_type == discovery_pb2.REGISTER):
+                return disc_resp.register_resp.result
+            elif (disc_resp.msg_type == discovery_pb2.ISREADY):
+                return disc_resp.is_ready.reply
+            else: 
+                raise Exception("Unrecognized response message provided")
+            
+        except Exception as e:
+            raise e
 
     #################################################################
     # receive data on our sub socket
     #################################################################
     def receive(self, data):
         pass
-
-    pass

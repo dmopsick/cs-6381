@@ -17,3 +17,14 @@
 # There will be a forever event loop waiting for requests. Each request will be parsed
 # and the application logic asked to handle the request. To that end, an upcall will need
 # to be made to the application logic.
+
+class DiscoveryMW():
+    
+    ########################################
+    # constructor
+    ########################################
+    def __init__(self):
+        pass
+
+    
+    pass
