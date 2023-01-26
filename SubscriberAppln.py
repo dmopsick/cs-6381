@@ -34,7 +34,12 @@ import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
 
+from topic_selector import TopicSelector
+
 from CS6381_MW.SubscriberMW import SubscriberMW 
+
+# We also need the message formats to handle incoming responses.
+from CS6381_MW import discovery_pb2
 
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
@@ -87,6 +92,11 @@ class SubscriberAppln():
             self.lookup = config["Discovery"]["Strategy"]
             # self.dissemination = config["Dissemination"]["Strategy"]
             # Is there a receiving equivalent for the subscriber?
+
+            # Now get the list of topics that this subscriber will be interested in
+            self.logger.debug ("SubscriberAppln::configure - selecting our topic list")
+            ts = TopicSelector()
+            self.topiclist = ts.interest(self.num_topics)  # let topic selector give us the desired num of topics
 
             # Setup the underlying middleware object to delegate everything
             self.logger.debug ("SubscriberAppln::configure - initialize the middleware object")
@@ -223,7 +233,26 @@ class SubscriberAppln():
     # of the application. Hence this upcall is made to us.
     ########################################
     def register_response(self, reg_resp):
-        pass
+        ''' Handle register response '''
+    
+        try:
+            self.logger.info("SubscriberAppln::register_response")
+
+            if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
+                self.logger.debug("SubscriberAppln::register_response - registration is a success")
+
+                # Set our next state to isready so we will send the isready message
+                self.state = self.State.ISREADY
+
+                # Return a timeout of zero to the event loop 
+                # In its next iteration it will make an upcall to us
+                return 0
+            else:
+                self.logger.debug("SubscriberAppln::register_response - registration failed for the following reason: {}".format(reg_resp.reason))
+
+        except Exception as e:
+            raise e
+
 
     ########################################
     # handle isready response method called as part of upcall
@@ -231,8 +260,28 @@ class SubscriberAppln():
     # Also a part of upcall handled by application logic
     ########################################
     def isready_response(self, isready_resp):
-        pass
+        ''' Handle isready response '''
 
+        try:
+            self.logger.info("SubscriberAppln::isready_response")
+
+            # Check if the discovery service is ready
+            if not isready_resp.status:
+                # Discovery service is not ready yet
+                self.logger.debug("SubscriberAppln::isready_response")
+                time.sleep(10)  # sleep between calls so that we don't make excessive calls
+            else:
+                # We are now connected to the Discovery service
+                # Set the status to CONSUME
+                self.state = self.State.CONSUME
+
+                # Return a timeout of 10 to return to invoke_operation
+                # An Action will be taken based on the current state
+                return 0
+
+        except Exception as e:
+            raise e
+            
 ###################################
 #
 # Parse command line arguments

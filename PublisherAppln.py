@@ -317,7 +317,7 @@ class PublisherAppln ():
       # upcall methods.
       if not isready_resp.status:
         # discovery service is not ready yet
-        self.logger.debug ("PublisherAppln::driver - Not ready yet; check again")
+        self.logger.debug ("PublisherAppln::isready_response - Not ready yet; check again")
         time.sleep (10)  # sleep between calls so that we don't make excessive calls
 
       else:
