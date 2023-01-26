@@ -48,7 +48,7 @@ class SubscriberAppln():
         CONFIGURE = 1,
         REGISTER = 2,
         ISREADY = 3,
-        RECEIVE = 4,
+        CONSUME = 4,
         COMPLETED = 5
 
     ########################################
@@ -60,6 +60,8 @@ class SubscriberAppln():
         self.lookup = None # one of the diff ways we do lookup
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
+        self.num_topics = None # total num of topics the subscriber is interested in
+        self.topiclist = None # the different topics that the subscriber is interested in
 
     ########################################
     # configure/initialize
@@ -129,7 +131,7 @@ class SubscriberAppln():
             # None or some large value, but if we want to send a request ourselves right away,
             # we set timeout is zero.
             #
-            self.mw_obj.event_loop (timeout=0)  # start the event loop
+            self.mw_obj.event_loop(timeout=0)  # start the event loop
 
             self.logger.info("SubscriberAppln::driver completed")
 
@@ -147,8 +149,8 @@ class SubscriberAppln():
             self.logger.info ("------------------------------")
             self.logger.info ("     Name: {}".format (self.name))
             self.logger.info ("     Lookup: {}".format (self.lookup))
-            self.logger.info ("     Iterations: {}".format (self.iters))
-            self.logger.info ("     Frequency: {}".format (self.frequency))
+            self.logger.info ("     Num Topics: {}".format (self.num_topics))
+            self.logger.info ("     TopicList: {}".format (self.topiclist))
             self.logger.info ("**********************************")
 
         except Exception as e:
@@ -162,10 +164,74 @@ class SubscriberAppln():
     # occurred.
     ########################################
     def invoke_operation(self):
+        ''' Invoke operating depending on state '''
+        try:
+            self.logger.info("SubscriberAppln::invoke_operation")
+
+            # check what state are we in. If we are in REGISTER state,
+            # we send register request to discovery service. If we are in
+            # ISREADY state, then we keep checking with the discovery
+            # service.
+            if (self.state == self.State.REGISTER):
+                # send a register msg to discovery service 
+                # Include the list of topics the subscriber is interested in
+                self.logger.debug ("SubscriberAppln::invoke_operation - register with the discovery service")
+                self.mw_obj.register (self.name, self.topiclist)
+
+                # Remember that we were invoked by the event loop as part of the upcall.
+                # So we are going to return back to it for its next iteration. Because
+                # we have just now sent a register request, the very next thing we expect is
+                # to receive a response from remote entity. So we need to set the timeout
+                # for the next iteration of the event loop to a large num and so return a None.
+                return None
+            elif (self.state == self.State.ISREADY):
+                self.logger.debug ("SubscriberAppln::invoke_operation - check if are ready to go")
+                self.mw_obj.is_ready ()  # send the is_ready? request
+
+                # Remember that we were invoked by the event loop as part of the upcall.
+                # So we are going to return back to it for its next iteration. Because
+                # we have just now sent a isready request, the very next thing we expect is
+                # to receive a response from remote entity. So we need to set the timeout
+                # for the next iteration of the event loop to a large num and so return a None.
+                return None
+            elif (self.state == self.State.CONSUME):
+                # setsocketopt here?
+                # Handle the actual application logic of subscribing and consuming topics here
+
+                # How do we determine when we are done timing out? 
+                # Is there a total num of things we want to receive?
+                pass
+                return None
+            elif (self.state == self.State.COMPLETED):
+                # we are done. Time to break the event loop. So we created this special method on the
+                # middleware object to kill its event loop
+                self.mw_obj.disable_event_loop ()
+                return None
+            else:
+                raise ValueError("Undefined state of the appln object")
+
+            self.logger.info ("SubscriberAppln::invoke_operation completed")
+        except Exception as e:
+            raise e
+    
+    ########################################
+    # handle register response method called as part of upcall
+    #
+    # As mentioned in class, the middleware object can do the reading
+    # from socket and deserialization. But it does not know the semantics
+    # of the message and what should be done. So it becomes the job
+    # of the application. Hence this upcall is made to us.
+    ########################################
+    def register_response(self, reg_resp):
         pass
 
-
-     
+    ########################################
+    # handle isready response method called as part of upcall
+    #
+    # Also a part of upcall handled by application logic
+    ########################################
+    def isready_response(self, isready_resp):
+        pass
 
 ###################################
 #
@@ -188,6 +254,8 @@ def parseCmdLineArgs ():
     parser.add_argument("-p", "--port", default="5577", help="Port number on which our underlying publisher ZMQ service runs, default=5577")
         
     parser.add_argument("-d", "--discovery", default="localhost:5555", help="IP Addr:Port combo for the discovery service, default localhost:5555")
+
+    parser.add_argument ("-T", "--num_topics", type=int, choices=range(1,10), default=1, help="Number of topics to publish, currently restricted to max of 9")
 
     parser.add_argument("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
 
