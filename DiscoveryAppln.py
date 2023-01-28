@@ -36,16 +36,31 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
+import zmq  # ZMQ sockets
 
 # Now import our CS6381 Middleware
 from CS6381_MW.DiscoveryMW import DiscoveryMW
 # We also need the message formats to handle incoming responses.
 from CS6381_MW import discovery_pb2
 
+# import any other packages you need.
+from enum import Enum  # for an enumeration we are using to describe what state we are in
+
 ##################################
 #       DiscoveryAppln class
 ##################################
 class DiscoveryAppln():
+    
+      # these are the states through which our publisher appln object goes thru.
+    # We maintain the state so we know where we are in the lifecycle and then
+    # take decisions accordingly
+    class State (Enum):
+        INITIALIZE = 0,
+        CONFIGURE = 1,
+        REGISTER = 2,
+        ISREADY = 3,
+        DISSEMINATE = 4,
+        COMPLETED = 5
 
     def __init__ (self, logger):
         self.totalPublishers = None
@@ -54,14 +69,49 @@ class DiscoveryAppln():
         self.currentSubcribers = 0
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
+        self.res = None
 
     def configure(self, args):
-        pass
-        
+        ''' Initialize the object '''
 
-    pass
+        try:
+            # Here we initialize any internal variables
+            self.logger.info ("DiscoveryAppln::configure")
 
+            # Set our current state to Configure state
+            self.state = self.State.CONFIGURE
 
+            # Initialize our variables
+            self.totalPublishers = args.totalPublishers
+            self.totalSubscribers = args.totalSubscribers
+            
+            # Now get the configuration object
+            self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
+            config = configparser.ConfigParser ()
+            config.read (args.config)
+
+            # Set up underlying middleware object
+            self.logger.debug("DiscoveryAppln::configure - initialize the middleware object")
+            self.mw_obj = DiscoveryMW(self.logger)
+            self.mw_obj.configure(args) # pass remainder of the args to the m/w object
+            
+            self.logger.info("DiscoveryAppln::configure - configuration complete")
+      
+        except Exception as e:
+            raise e
+
+    def invoke_operation(self):
+        ''' Invoke operating depending on the state '''
+
+        try:
+            self.logger.info ("DiscoveryAppln::invoke_operation")
+
+            # Need to handle the actual registration
+
+            # increment the total of sub or pub based on what we are adding
+
+        except Exception as e:
+            raise 3 
 
 ###################################
 #
@@ -88,7 +138,7 @@ def main():
 
         # obtain a system wide logger and initialize it to debug level to begin with
         logging.info ("Main - acquire a child logger and then log messages in the child")
-        logger = logging.getLogger ("DiscoveryAppln")
+        logger = logging.getLogger("DiscoveryAppln")
 
     except Exception as e:
         logger.error ("Exception caught in main - {}".format (e))

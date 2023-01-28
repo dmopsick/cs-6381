@@ -36,8 +36,6 @@
 import os     # for OS functions
 import sys    # for syspath and system exception
 import time   # for sleep
-import argparse # for argument parsing
-import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
 
@@ -104,7 +102,7 @@ class SubscriberMW ():
     ########################################
     # register with the discovery service
     ########################################
-    def register(self, name):
+    def register(self, name, topicList):
         ''' Register the AppLn with the discovery service '''
         try:
             self.logger.debug("SubscriberMW::register")
@@ -122,6 +120,8 @@ class SubscriberMW ():
             register_req = discovery_pb2.RegisterReq ()  # allocate 
             register_req.role = discovery_pb2.ROLE_SUBSCRIBER  # we are a publishe
             register_req.info.CopyFrom (reg_info)  # copy contents of inner structure
+            register_req.topiclist[:] = topicList   # this is how repeated entries are added (or use append() or extend ()
+      
             self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")
 
             # Build the outer layer Discovery message
