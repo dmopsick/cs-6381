@@ -116,6 +116,7 @@ class PublisherAppln ():
       self.logger.debug ("PublisherAppln::configure - parsing config.ini")
       config = configparser.ConfigParser ()
       config.read (args.config)
+      # What do these values mean and where do they come from?
       self.lookup = config["Discovery"]["Strategy"]
       self.dissemination = config["Dissemination"]["Strategy"]
     

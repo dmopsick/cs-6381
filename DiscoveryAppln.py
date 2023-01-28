@@ -59,17 +59,16 @@ class DiscoveryAppln():
         CONFIGURE = 1,
         REGISTER = 2,
         ISREADY = 3,
-        DISSEMINATE = 4,
-        COMPLETED = 5
+        COMPLETED = 4
 
     def __init__ (self, logger):
         self.totalPublishers = None
         self.totalSubscribers = None
-        self.currentPublishers = 0
-        self.currentSubcribers = 0
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
         self.res = None
+        self.publisherList = []
+        self.subscriberList = []
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -106,12 +105,22 @@ class DiscoveryAppln():
         try:
             self.logger.info ("DiscoveryAppln::invoke_operation")
 
+            if (self.state == self.State.REGISTER):
+                # Need to start the event loop to take in registrations of pubs and subs
+                # Until we reach the defined amount of pubs and subs
+                # Do we do that here?
+
+                pass
+            elif (self.state == self.State.ISREADY):
+                # Send the is_ready response to users?
+                pass
+
             # Need to handle the actual registration
 
             # increment the total of sub or pub based on what we are adding
 
         except Exception as e:
-            raise 3 
+            raise e 
 
 ###################################
 #

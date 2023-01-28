@@ -89,6 +89,7 @@ class SubscriberAppln():
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read(args.config)
+            # What do these values mean or do
             self.lookup = config["Discovery"]["Strategy"]
             # self.dissemination = config["Dissemination"]["Strategy"]
             # Is there a receiving equivalent for the subscriber?
