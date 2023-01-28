@@ -117,6 +117,7 @@ class PublisherAppln ():
       config = configparser.ConfigParser ()
       config.read (args.config)
       # What do these values mean and where do they come from?
+      # They come from our config.ini
       self.lookup = config["Discovery"]["Strategy"]
       self.dissemination = config["Dissemination"]["Strategy"]
     

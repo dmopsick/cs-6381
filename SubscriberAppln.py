@@ -89,9 +89,9 @@ class SubscriberAppln():
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read(args.config)
-            # What do these values mean or do
+            # What do these values mean or do | They are the lookup strategies from config.ini
             self.lookup = config["Discovery"]["Strategy"]
-            # self.dissemination = config["Dissemination"]["Strategy"]
+            self.dissemination = config["Dissemination"]["Strategy"]
             # Is there a receiving equivalent for the subscriber?
 
             # Now get the list of topics that this subscriber will be interested in
@@ -102,7 +102,7 @@ class SubscriberAppln():
             # Setup the underlying middleware object to delegate everything
             self.logger.debug ("SubscriberAppln::configure - initialize the middleware object")
             self.mw_obj = SubscriberMW(self.logger)
-            self.mw_obj.configure (args) # pass remainder of the args to the m/w object
+            self.mw_obj.configure(args) # pass remainder of the args to the m/w object
       
             self.logger.debug("SubscriberAppln::configure - configuration complete")
 

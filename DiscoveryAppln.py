@@ -99,6 +99,33 @@ class DiscoveryAppln():
         except Exception as e:
             raise e
 
+    def driver(self):
+        ''' Discovery driver program '''
+        try:
+            self.logger.info("DiscoveryAppln::driver")
+
+            # dump our contents (debugging purposes)
+            self.dump()
+
+            # First ask our middleware to keep a handle to us to make upcalls.
+            # This is related to upcalls. By passing a pointer to ourselves, the
+            # middleware will keep track of it and any time something must
+            # be handled by the application level, invoke an upcall.
+            self.logger.debug ("DiscoveryAppln::driver - upcall handle")
+            self.mw_obj.set_upcall_handle(self)
+
+            # Set to the register state
+            # We want to accept registrations from pubs and subs
+            self.state = self.State.REGISTER
+
+            # Start the event loop in the MW to handle events
+            self.mw_obj.event_loop (timeout=0)  # start the event loop
+        
+            self.logger.info ("PublisherAppln::driver completed")
+        except Exception as e:
+            raise e
+
+
     def invoke_operation(self):
         ''' Invoke operating depending on the state '''
 
@@ -110,7 +137,20 @@ class DiscoveryAppln():
                 # Until we reach the defined amount of pubs and subs
                 # Do we do that here?
 
-                pass
+                # Need to have some info here from the MW level that has the 
+                # Type of entity we are registering (sub or pub)
+                # Address, port, and topic list
+
+                # Need to store the entity in the appropriate list
+
+                # Check if we have the specified amount of publishers and subscribers
+                if (len(self.subscriberList) == self.totalSubscribers and len(self.publisherList) == self.totalPublishers):
+                    # We are ready, so return true
+                    return True
+                else:
+                    # We must continue looping and waiting for more connections
+                    return False
+
             elif (self.state == self.State.ISREADY):
                 # Send the is_ready response to users?
                 pass
