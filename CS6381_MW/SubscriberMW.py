@@ -53,6 +53,8 @@ class SubscriberMW ():
         self.port = None # port num where we are going to publish our topics
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
+        self.lookup = None # one of the diff ways we do lookup
+        self.dissemination = None # direct or via broker
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''

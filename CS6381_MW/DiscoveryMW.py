@@ -99,3 +99,22 @@ class DiscoveryMW():
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
         except Exception as e:
             raise e
+
+    ########################################
+    # set upcall handle
+    #
+    # here we save a pointer (handle) to the application object
+    ########################################
+    def set_upcall_handle (self, upcall_obj):
+        ''' set upcall handle '''
+        self.upcall_obj = upcall_obj
+
+    ########################################
+    # disable event loop
+    #
+    # here we just make the variable go false so that when the event loop
+    # is running, the while condition will fail and the event loop will terminate.
+    ########################################
+    def disable_event_loop (self):
+        ''' disable event loop '''
+        self.handle_events = False

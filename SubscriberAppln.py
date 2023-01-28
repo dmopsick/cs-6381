@@ -127,7 +127,7 @@ class SubscriberAppln():
             # Ask the middleware to keep a handle on us to make upcalls
             # Pass a point of this object to the middleware
             self.logger.debug("SubscriberAppln::driver - upcall handle")
-            self.mw_obj.set_upcall_handle (self)
+            self.mw_obj.set_upcall_handle(self)
 
             # Enter the register state
             # Must register the subscriber with the Discovery service
@@ -142,6 +142,7 @@ class SubscriberAppln():
             # None or some large value, but if we want to send a request ourselves right away,
             # we set timeout is zero.
             #
+            # Pass control to the event loop
             self.mw_obj.event_loop(timeout=0)  # start the event loop
 
             self.logger.info("SubscriberAppln::driver completed")
