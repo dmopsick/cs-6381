@@ -46,6 +46,10 @@ from CS6381_MW import discovery_pb2
 # import any other packages you need.
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
+# Simple data models I created to hold info about publishers and subscribers
+from CS6381_MW.Common import Publisher
+from CS6381_MW.Common import Subscriber # We do not really need to store info but cannot hurt
+
 ##################################
 #       DiscoveryAppln class
 ##################################
@@ -181,11 +185,46 @@ class DiscoveryAppln():
             if (role == discovery_pb2.ROLE_PUBLISHER):
                 self.logger.info("DiscoveryAppln::register_request Registering a publisher")
 
+                # Verify that there is still room for publishers in the system
+                if (len(self.publisherList) < self.specifiedNumPublishers):
+        
+                    # Create a new publisher record
+                    publisher = Publisher()
+
+                    # Load the publisher with values from RegistrantInfo
+                    publisher.name = reg_req.info.id
+                    publisher.ip_address = reg_req.info.addr
+                    publisher.port = reg_req.info.port
+                    publisher.topic_list = reg_req.topiclist
+
+                    # Add the created object to the list of publishers registered
+                    self.publisherList.append(publisher)
+
+                    # Set status to success if we have gotten this far
+                    status = discovery_pb2.STATUS_SUCCESS
+                    
+                else:
+                    self.logger.info("DiscoveryAppln::register_request Publisher attempting to register, but no more publisher roles are allocated")
+
+                    # Set status to failure
+                    status = discovery_pb2.STATUS_FAILURE
+
+                    # Pass in a reason to let the registrant know why it failed
+                    reason = "Max publishers already reached for this system"
+
+                # Send a register reply
+                self.mw_obj.send_register_response(status, reason)
+
             elif (role == discovery_pb2.ROLE_SUBSCRIBER):
                 self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
             else:
                 self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
                 raise ValueError("Invalid role provided for registration request to Discovery server")
+
+            # This register request has been handled 
+            # We are not awaiting any incoming call for this logic
+            # Ready to move on, so return 0
+            return 0
 
         except Exception as e:
             raise e

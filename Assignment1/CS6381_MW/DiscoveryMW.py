@@ -104,6 +104,9 @@ class DiscoveryMW():
         except Exception as e:
             raise e
 
+    #################################################
+    # Top level logic for processing requests to the discovery server
+    #################################################
     def handle_request(self):
 
         try:
@@ -133,7 +136,13 @@ class DiscoveryMW():
 
             return timeout
         except Exception as e:
-            raise e        
+            raise e 
+
+    #####################################################
+    #
+    #####################################################
+    def send_register_response(status, reason):
+        pass
 
     ########################################
     # set upcall handle
