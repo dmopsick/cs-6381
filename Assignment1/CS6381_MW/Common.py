@@ -15,3 +15,6 @@
 # the role we are playing and any other common things that we need across
 # all our middleware objects. Make sure then to import this file in those files once
 # some content is added here that is needed by others. 
+
+class Publisher:
+    

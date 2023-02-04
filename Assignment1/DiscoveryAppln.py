@@ -160,7 +160,38 @@ class DiscoveryAppln():
             # increment the total of sub or pub based on what we are adding
 
         except Exception as e:
-            raise e 
+            raise e
+
+    ########################################
+    # Handle the register request function as part of the upcall
+    #
+    # Here is where the meat and potatoes of the registering subs and pubs go
+    #
+    #######################################
+    def register_request(self, reg_req):
+        ''' Handle register request '''
+
+        try:
+            self.logger.info("DiscoveryAppln::register_request")
+
+            # Load the role of the entity attempting to register
+            role = reg_req.role
+
+            # Handle registration differently based on the role of the entity attempting to register
+            if (role == discovery_pb2.ROLE_PUBLISHER):
+                self.logger.info("DiscoveryAppln::register_request Registering a publisher")
+
+            elif (role == discovery_pb2.ROLE_SUBSCRIBER):
+                self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
+            else:
+                self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
+                raise ValueError("Invalid role provided for registration request to Discovery server")
+
+        except Exception as e:
+            raise e
+
+    def isready_request(self, isready_req):
+        pass
 
 ###################################
 #

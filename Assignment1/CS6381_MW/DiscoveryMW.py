@@ -133,10 +133,7 @@ class DiscoveryMW():
 
             return timeout
         except Exception as e:
-            raise e
-
-        pass
-        
+            raise e        
 
     ########################################
     # set upcall handle

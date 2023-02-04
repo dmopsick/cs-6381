@@ -242,7 +242,19 @@ class SubscriberMW ():
     #################################################################
     def receive(self, data):
         pass
-    
+
+    #############################################################
+    # Subscribe to an list of topics
+    #############################################################
+    def subscribe(self, topic_list):
+        ''' Subscribe to a list of topics '''
+
+        for topic in topic_list:
+            self.logger.debug("SubscriberMW::subscribe - Subscribing to topic {}".format(topic))
+            # Pass in the binary representation of the topic name to the subscribe socket
+            # Use UTF-8 encoding
+            self.sub.setsockopt(zmq.SUBSCRIBE, bytes(topic, "utf-8"))
+
     ########################################
     # set upcall handle
     #
@@ -261,3 +273,13 @@ class SubscriberMW ():
     def disable_event_loop (self):
         ''' disable event loop '''
         self.handle_events = False
+
+    ##################################################
+    # Connect to a publisher
+    ##################################################
+    def connectToPublisher(self, ip_address, port):
+        # Build connection string
+        connect_str = "tcp://" + ip_address + ":" + str(port)
+
+        self.logger.debug("SubscriberMW::connectToPublisher - connecting to {}".format(connect_str))
+        self.sub.connect(connect_str)
