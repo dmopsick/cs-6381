@@ -52,9 +52,8 @@ class SubscriberAppln():
         INITIALIZE = 0,
         CONFIGURE = 1,
         REGISTER = 2,
-        ISREADY = 3,
-        CONSUME = 4,
-        COMPLETED = 5
+        QUERY_PUBS = 3,
+        CONSUME = 4
 
     ########################################
     # constructor
@@ -202,6 +201,10 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - check if are ready to go")
                 self.mw_obj.is_ready ()  # send the is_ready? request
 
+                # The subscribers need to wait for the system to be ready in order to look up
+                # Which subscribers have the topic they are interested in
+                # Then they must connect to those publishers
+
                 # Remember that we were invoked by the event loop as part of the upcall.
                 # So we are going to return back to it for its next iteration. Because
                 # we have just now sent a isready request, the very next thing we expect is
@@ -245,8 +248,12 @@ class SubscriberAppln():
             if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("SubscriberAppln::register_response - registration is a success")
 
-                # Set our next state to isready so we will send the isready message
-                self.state = self.State.ISREADY
+                # Do we setsockopt and establish connection to subscribers here?
+                # Here we have the info from the Discovery service
+                # Shouldn't that include the info of the subscribers that have the topics we want?
+
+                # Set our next state to CONSUME
+                self.state = self.State.CONSUME
 
                 # Return a timeout of zero to the event loop 
                 # In its next iteration it will make an upcall to us

@@ -121,7 +121,7 @@ class SubscriberMW ():
             self.logger.debug ("SubscriberMW::register - populate the nested register req")
             register_req = discovery_pb2.RegisterReq ()  # allocate 
             register_req.role = discovery_pb2.ROLE_SUBSCRIBER  # we are a publishe
-            register_req.info.CopyFrom (reg_info)  # copy contents of inner structure
+            register_req.info.CopyFrom(reg_info)  # copy contents of inner structure
             register_req.topiclist[:] = topicList   # this is how repeated entries are added (or use append() or extend ()
       
             self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")

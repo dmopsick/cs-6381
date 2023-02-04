@@ -95,14 +95,48 @@ class DiscoveryMW():
 
                 if not events:
                     timeout = self.upcall_obj.invoke_operation()
-                elif self.req in events:
-                    timeout = self.handle_reply()
+                elif self.rep in events:
+                    timeout = self.handle_request()
                 else:
                     raise Exception("Unknown event after poll")
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
         except Exception as e:
             raise e
+
+    def handle_request(self):
+
+        try:
+            self.logger.info("DiscoveryMW::Handle")
+
+            # Receive the data 
+            bytesRcvd = self.rep.recv()
+
+            # Deserialize the incoming bytes as a DiscoveryReq
+            # That is what the pubs and subs are building 
+            disc_req = discovery_pb2.DiscoveryReq()
+            disc_req.ParseFromString(bytesRcvd)
+
+            # Check the msg type in order to determine how to handle it
+            if (disc_req.msg_type == discovery_pb2.TYPE_REGISTER):
+                # Handle a register request
+                timeout = self.upcall_obj.register_request(disc_req.register_req)
+            elif (disc_req.msg_type == discovery_pb2.TYPE_ISREADY):
+                # Handle a request made by a publisher asking if the system is ready
+                timeout = self.upcall_obj.isready_request(disc_req.register_req)
+            elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
+                # Handle a request made by a subscriber to look up all publishers by topic
+                timeout = self.upcall_obj.lookup_pub_by_topic_request(disc_req.register_req)
+            else: # anything else is unrecognizable by this object
+                # raise an exception here
+                raise ValueError ("Unrecognized response message")
+
+            return timeout
+        except Exception as e:
+            raise e
+
+        pass
+        
 
     ########################################
     # set upcall handle

@@ -24,7 +24,8 @@ enum Status {
     STATUS_UNKNOWN = 0;
     STATUS_SUCCESS = 1;
     STATUS_FAILURE = 2;
-    STATUS_CHECK_AGAIN = 3;   // when the server is not ready to provide info as yet
+    STATUS_CHECK_AGAIN = 3;   // when the server is not ready to provide info as yet |
+    // Use Check again when the client is attempting to query pubs by topic but not all subs are set up
 }
 
 // define an enum of all message types supported on a discovery service.

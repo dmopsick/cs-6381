@@ -294,6 +294,7 @@ class PublisherAppln ():
         
         # return a timeout of zero so that the event loop in its next iteration will immediately make
         # an upcall to us
+        # No incoming socket communication so return 0
         return 0
       
       else:
