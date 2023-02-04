@@ -62,8 +62,8 @@ class DiscoveryAppln():
         COMPLETED = 4
 
     def __init__ (self, logger):
-        self.totalPublishers = None
-        self.totalSubscribers = None
+        self.specifiedNumPublishers = None
+        self.specifiedNumSubscribers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
         self.res = None
@@ -81,8 +81,8 @@ class DiscoveryAppln():
             self.state = self.State.CONFIGURE
 
             # Initialize our variables
-            self.totalPublishers = args.totalPublishers
-            self.totalSubscribers = args.totalSubscribers
+            self.specifiedNumPublishers = args.specifiedNumPublishers
+            self.specifiedNumSubscribers = args.specifiedNumSubscribers
             
             # Now get the configuration object
             self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
@@ -144,7 +144,7 @@ class DiscoveryAppln():
                 # Need to store the entity in the appropriate list
 
                 # Check if we have the specified amount of publishers and subscribers
-                if (len(self.subscriberList) == self.totalSubscribers and len(self.publisherList) == self.totalPublishers):
+                if (len(self.subscriberList) == self.specifiedNumSubscribers and len(self.publisherList) == self.specifiedNumPublishers):
                     # We are ready, so return true
                     return True
                 else:

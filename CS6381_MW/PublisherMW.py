@@ -324,6 +324,10 @@ class PublisherMW ():
     try:
       self.logger.debug ("PublisherMW::disseminate")
 
+      # Need to include the unique identifier of the subscriber sending this data
+      # In addition to the current time at which the data was sent
+      # That way we can compare when the data is sent vs received
+
       # Now use the protobuf logic to encode the info and send it.  But for now
       # we are simply sending the string to make sure dissemination is working.
       send_str = topic + ":" + data

@@ -92,7 +92,7 @@ class SubscriberAppln():
             # What do these values mean or do | They are the lookup strategies from config.ini
             self.lookup = config["Discovery"]["Strategy"]
             self.dissemination = config["Dissemination"]["Strategy"]
-            # Is there a receiving equivalent for the subscriber?
+            # This is for the look up strategy and the experiments which comes later
 
             # Now get the list of topics that this subscriber will be interested in
             self.logger.debug ("SubscriberAppln::configure - selecting our topic list")
@@ -143,6 +143,8 @@ class SubscriberAppln():
             # we set timeout is zero.
             #
             # Pass control to the event loop
+            # When the event loops is done with what it's doing, it will call back
+            # To the application code
             self.mw_obj.event_loop(timeout=0)  # start the event loop
 
             self.logger.info("SubscriberAppln::driver completed")
@@ -255,34 +257,16 @@ class SubscriberAppln():
         except Exception as e:
             raise e
 
-
     ########################################
-    # handle isready response method called as part of upcall
+    # Subscribe to the subscribers that will publish data
+    # based on our chosen topics
     #
-    # Also a part of upcall handled by application logic
     ########################################
-    def isready_response(self, isready_resp):
-        ''' Handle isready response '''
-
-        try:
-            self.logger.info("SubscriberAppln::isready_response")
-
-            # Check if the discovery service is ready
-            if not isready_resp.status:
-                # Discovery service is not ready yet
-                self.logger.debug("SubscriberAppln::isready_response")
-                time.sleep(10)  # sleep between calls so that we don't make excessive calls
-            else:
-                # We are now connected to the Discovery service
-                # Set the status to CONSUME
-                self.state = self.State.CONSUME
-
-                # Return a timeout of 10 to return to invoke_operation
-                # An Action will be taken based on the current state
-                return 0
-
-        except Exception as e:
-            raise e
+    def subscribe(self, id, topic):
+        # What are the parameters we need to do the setsockopt
+        # To establish the connection to each of the subscribers
+        # That the discovery has told us has our topics
+        pass
             
 ###################################
 #

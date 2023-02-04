@@ -35,7 +35,7 @@ class DiscoveryMW():
     ########################################
     def __init__(self, logger):
         self.logger = logger # internal logger for print statements
-        self.res = None # ZMQ RES socket used to receive requests from pubs and subs
+        self.rep = None # ZMQ RES socket used to receive requests from pubs and subs
         self.poller = None # used to wait on incoming replies
         self.addr = None # Advertised IP address
         self.port = None # The port num where we are going to publish our topic
@@ -64,13 +64,17 @@ class DiscoveryMW():
             self.poller = zmq.Poller ()
 
             # Open the RES socket to allow for pubs and subs to register
-            self.res = context.socket(zmq.RES) 
+            self.rep = context.socket(zmq.REP) 
+
+            # Register the RES socket to poll for incoming messages 
+            self.logger.debug ("PublisherMW::configure - register the REQ socket for incoming replies")
+            self.poller.register(self.rep, zmq.POLLIN)
 
             # note that we publish on any interface hence the * followed by port number.
             # We always use TCP as the transport mechanism (at least for these assignments)
             # Since port is an integer, we convert it to string to make it part of the URL
             bind_string = "tcp://*:" + str(self.port)
-            self.res.bind(bind_string)
+            self.rep.bind(bind_string)
 
             self.logger.info ("DiscoveryMW::configure completed")
         except Exception as e:
