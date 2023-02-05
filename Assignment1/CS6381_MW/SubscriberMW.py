@@ -126,7 +126,7 @@ class SubscriberMW ():
             # Build the outer layer Discovery message
             self.logger.debug("SubscriberMW::register - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq ()
-            disc_req.msg_type = discovery_pb2.REGISTER
+            disc_req.msg_type = discovery_pb2.TYPE_REGISTER
             disc_req.register_req.CopyFrom (reg_info)
             self.logger.debug ("SubscriberMW::register - done building the outer message")
             
@@ -221,7 +221,7 @@ class SubscriberMW ():
             disc_resp = discovery_pb2.DiscoveryResp()
             disc_resp.ParseFromString(bytesRcvd)
 
-            if (disc_resp.msg_type == discovery_pb2.REGISTER):
+            if (disc_resp.msg_type == discovery_pb2.TYPE_REGISTER):
                 # Invoke the application logic to handle the response from discovery for register request
                 timeout = self.upcall_obj.register_response(disc_resp.register_resp)
             elif (disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
