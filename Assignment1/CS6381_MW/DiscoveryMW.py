@@ -162,7 +162,7 @@ class DiscoveryMW():
 
             self.logger.debug("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
-            discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response = discovery_pb2.DiscoveryResp()
 
             # Set the msg type
             discovery_response.msg_type = discovery_response.TYPE_REGISTER
@@ -203,7 +203,7 @@ class DiscoveryMW():
             
             self.logger.debug ("DiscoveryMW::send_isready_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
-            discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response = discovery_pb2.DiscoveryResp()
             discovery_response.msg_type = discovery_pb2.TYPE_ISREADY
             discovery_response.isready_resp.CopyFrom(isready_response)
             self.logger.debug("DiscoveryMW::send_isready_response - Done building the outer DiscoveryResp message")
@@ -240,7 +240,7 @@ class DiscoveryMW():
 
             self.logger.debug ("DiscoveryMW::send_lookup_pub_by_topiclist_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
-            discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response = discovery_pb2.DiscoveryResp()
             discovery_response.msg_type = discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC
             discovery_response.lookup_resp.CopyFrom(lookup_resp)
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response - Done building the outer DiscoveryResp message")
