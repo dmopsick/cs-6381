@@ -272,7 +272,7 @@ class DiscoveryAppln():
         ''' Handle a lookup pub by topic request '''
 
         try:
-            self.logger.info("DiscoveryAppln::is_ready_request")
+            self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request")
             
             # Init the topic list 
             publisher_by_topic_list = []
@@ -296,10 +296,12 @@ class DiscoveryAppln():
             else:
                 status = discovery_pb2.STATUS_CHECK_AGAIN
 
-
             # Send the lookup_pub_by_topiclist response in the MW
             self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list)
 
+            self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request Done handling a lookup pub list by topic list request")
+
+            # Return timeout of 0 to return to the event loop
             return 0
         except Exception as e:
             raise

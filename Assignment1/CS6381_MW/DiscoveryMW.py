@@ -178,7 +178,7 @@ class DiscoveryMW():
             self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer to Discovery service")
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
-            self.logger.info("DiscoveryMW::send_register_response Register response finished")
+            self.logger.info("DiscoveryMW::send_register_response Register finished")
         
         except Exception as e:
             raise e
@@ -211,7 +211,7 @@ class DiscoveryMW():
             buf2send = discovery_response.SerializeToString ()
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
-            # Send a response back to the registrant that attempted to register
+            # Send a response back to the registrant that sent isready request
             self.logger.debug ("DiscoveryMW::send_isready_response - send stringified buffer to Discovery service")
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
@@ -224,7 +224,40 @@ class DiscoveryMW():
     # Send a response to a lookup pub by topiclist request
     ############################################
     def send_lookup_pub_by_topiclist_response(self, status, publisher_list):
-        pass
+        ''' Send a response back fore a request made to load list of pubishers by topic list '''
+        
+        try:
+            self.logger.info("DiscoveryMW::send_lookup_pub_by_topiclist_response")
+
+            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response building nested look_resp object")
+            # Build the inner LookupPubByTopicReq  object
+            lookup_resp = discovery_pb2.DiscoveryResp()
+            lookup_resp.status = status
+            lookup_resp.publisher_list = publisher_list
+            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
+
+            self.logger.debug ("DiscoveryMW::send_lookup_pub_by_topiclist_response - build the outer DiscoveryResp message")
+            # Build the outer discovery response object
+            discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response.lookup_resp.CopyFrom(lookup_resp)
+            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response - Done building the outer DiscoveryResp message")
+
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = discovery_response.SerializeToString ()
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+            # Send a response back to the registrant that attempted to look up publishers
+            self.logger.debug ("DiscoveryMW::send_lookup_pub_by_topiclist_response - send stringified buffer to Discovery service")
+            self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+
+            self.logger.info("DiscoveryMW::send_lookup_pub_by_topiclist_response sending lookup response finished")
+        
+            # Return timeout of zero
+            return 0
+        except Exception as e:
+            raise e
+    
 
     ########################################
     # set upcall handle
@@ -244,3 +277,4 @@ class DiscoveryMW():
     def disable_event_loop (self):
         ''' disable event loop '''
         self.handle_events = False
+        
