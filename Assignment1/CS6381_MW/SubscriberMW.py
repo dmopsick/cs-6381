@@ -111,7 +111,7 @@ class SubscriberMW ():
             reg_info = discovery_pb2.RegistrantInfo () # allocate
             reg_info.id = name  # our id
             reg_info.addr = self.addr  # our advertised IP addr where we are publishing
-            reg_info.port = int(self.port) # port on which we are publishing
+            reg_info.port = self.port # port on which we are publishing
             self.logger.debug ("SubscriberMW::register - done populating nested RegisterReq")
 
             # Build a RegisterReq message 
