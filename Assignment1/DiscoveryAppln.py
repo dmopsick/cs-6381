@@ -288,6 +288,8 @@ def parseCmdLineArgs ():
 
     parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
   
+    return parser.parse_args()
+    
 def main():
     try:
         # obtain a system wide logger and initialize it to debug level to begin with
@@ -296,12 +298,12 @@ def main():
 
         # first parse the arguments
         logger.debug ("Main: parse command line arguments")
-        args = parseCmdLineArgs ()
+        args = parseCmdLineArgs()
 
         # reset the log level to as specified
-        logger.debug("Main: resetting log level to {}".format (args.loglevel))
+        logger.debug("Main: resetting log level to {}".format(args.loglevel))
         logger.setLevel(args.loglevel)
-        logger.debug("Main: effective log level is {}".format (logger.getEffectiveLevel ()))
+        logger.debug("Main: effective log level is {}".format(logger.getEffectiveLevel ()))
 
         # Obtain a discovery application
         logger.debug("Main: obtain the discovery appln object")
