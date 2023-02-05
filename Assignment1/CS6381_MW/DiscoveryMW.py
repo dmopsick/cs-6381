@@ -139,7 +139,7 @@ class DiscoveryMW():
             raise e 
 
     #####################################################
-    # 
+    # Send a response to an entity attempting to register with the discovery server
     #####################################################
     def send_register_response(self, status, reason):
         ''' Send a response back to a registrant that has attempted to register '''
@@ -167,18 +167,18 @@ class DiscoveryMW():
             discovery_response.msg_type = discovery_response.TYPE_REGISTER
             # Copy over the built nested register_response
             discovery_response.register_resp.CopyFrom(register_response)
-            self.logger.debug ("DiscoveryMW::send_register_response - Done building the outer DiscoveryResp message")
+            self.logger.debug("DiscoveryMW::send_register_response - Done building the outer DiscoveryResp message")
 
             # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
             # a real string
             buf2send = discovery_response.SerializeToString ()
-            self.logger.debug ("Stringified serialized buf = {}".format (buf2send))
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
             # Send a response back to the registrant that attempted to register
-            self.logger.debug ("DiscoveryMW::register - send stringified buffer to Discovery service")
+            self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer to Discovery service")
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
-            self.logger.info("DiscoveryMW::send_register_response Register finished")
+            self.logger.info("DiscoveryMW::send_register_response Register response finished")
         
         except Exception as e:
             raise e
@@ -187,7 +187,38 @@ class DiscoveryMW():
     # Send a response to an is ready response
     ############################################
     def send_isready_response(self, isready):
-        pass
+        ''' Send a response back to a registrant that has made an isready_request '''
+
+        try:
+            self.logger.info("DiscoveryMW::send_isready_response")
+
+            self.logger.debug("DiscoveryMW::send_isready_response - populate the nested isready resp")
+            # Build the register response object
+            isready_response = discovery_pb2.IsReadyResp()
+            # Load the isready response with the passed in status
+            isready_response.status = isready
+            
+            self.logger.debug("DiscoveryMW::send_isready_response - done populating the nested isready resp")
+            
+            self.logger.debug ("DiscoveryMW::send_isready_response - build the outer DiscoveryResp message")
+            # Build the outer discovery response object
+            discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response.isready_resp.CopyFrom(isready_response)
+            self.logger.debug("DiscoveryMW::send_isready_response - Done building the outer DiscoveryResp message")
+
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = discovery_response.SerializeToString ()
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+            # Send a response back to the registrant that attempted to register
+            self.logger.debug ("DiscoveryMW::send_isready_response - send stringified buffer to Discovery service")
+            self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+
+            self.logger.info("DiscoveryMW::send_isready_response sending isready response finished")
+
+        except Exception as e:
+            raise e
 
     ############################################
     # Send a response to a lookup pub by topiclist request
