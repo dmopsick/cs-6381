@@ -292,9 +292,26 @@ def main():
         logging.info ("Main - acquire a child logger and then log messages in the child")
         logger = logging.getLogger("DiscoveryAppln")
 
-        # obtain a system wide logger and initialize it to debug level to begin with
-        logging.info ("Main - acquire a child logger and then log messages in the child")
-        logger = logging.getLogger("DiscoveryAppln")
+        # first parse the arguments
+        logger.debug ("Main: parse command line arguments")
+        args = parseCmdLineArgs ()
+
+        # reset the log level to as specified
+        logger.debug("Main: resetting log level to {}".format (args.loglevel))
+        logger.setLevel(args.loglevel)
+        logger.debug("Main: effective log level is {}".format (logger.getEffectiveLevel ()))
+
+        # Obtain a discovery application
+        logger.debug("Main: obtain the discovery appln object")
+        discovery_app = DiscoveryAppln(logger)
+
+        # Configure the discovery application
+        logger.debug("Main: configure the discovery appln object")
+        discovery_app.configure(args)
+        
+        # Invoke the driver program
+        logger.debug ("Main: invoke the discovery appln driver")
+        discovery_app.driver ()
 
     except Exception as e:
         logger.error ("Exception caught in main - {}".format (e))
