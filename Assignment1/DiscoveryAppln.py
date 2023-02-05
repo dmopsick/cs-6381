@@ -66,13 +66,13 @@ class DiscoveryAppln():
         COMPLETED = 4
 
     def __init__ (self, logger):
-        self.specifiedNumPublishers = None
-        self.specifiedNumSubscribers = None
+        self.specified_num_publishers = None
+        self.specified_num_subscribers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
         self.res = None
-        self.publisherList = []
-        self.subscriberList = []
+        self.publisher_list = []
+        self.subscriber_list = []
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -85,8 +85,8 @@ class DiscoveryAppln():
             self.state = self.State.CONFIGURE
 
             # Initialize our variables
-            self.specifiedNumPublishers = args.specifiedNumPublishers
-            self.specifiedNumSubscribers = args.specifiedNumSubscribers
+            self.specified_num_publishers = args.specified_num_publishers
+            self.specified_num_subscribers = args.specified_num_subscribers
             
             # Now get the configuration object
             self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
@@ -148,7 +148,7 @@ class DiscoveryAppln():
                 # Need to store the entity in the appropriate list
 
                 # Check if we have the specified amount of publishers and subscribers
-                if (len(self.subscriberList) == self.specifiedNumSubscribers and len(self.publisherList) == self.specifiedNumPublishers):
+                if (len(self.subscriber_list) == self.specified_num_subscribers and len(self.publisher_list) == self.specified_num_publishers):
                     # We are ready, so return true
                     return True
                 else:
@@ -170,7 +170,6 @@ class DiscoveryAppln():
     # Handle the register request function as part of the upcall
     #
     # Here is where the meat and potatoes of the registering subs and pubs go
-    #
     #######################################
     def register_request(self, reg_req):
         ''' Handle register request '''
@@ -186,7 +185,7 @@ class DiscoveryAppln():
                 self.logger.info("DiscoveryAppln::register_request Registering a publisher")
 
                 # Verify that there is still room for publishers in the system
-                if (len(self.publisherList) < self.specifiedNumPublishers):
+                if (len(self.publisher_list) < self.specified_num_publishers):
         
                     # Create a new publisher record
                     publisher = Publisher()
@@ -198,7 +197,7 @@ class DiscoveryAppln():
                     publisher.topic_list = reg_req.topiclist
 
                     # Add the created object to the list of publishers registered
-                    self.publisherList.append(publisher)
+                    self.publisher_list.append(publisher)
 
                     # Set status to success if we have gotten this far
                     status = discovery_pb2.STATUS_SUCCESS
@@ -215,7 +214,7 @@ class DiscoveryAppln():
                     # Pass in a reason to let the registrant know why it failed
                     reason = "Max publishers already reached for this system"
 
-                # Send a register reply
+                # Send a register reply with the MW
                 self.mw_obj.send_register_response(status, reason)
 
             elif (role == discovery_pb2.ROLE_SUBSCRIBER):
@@ -231,9 +230,80 @@ class DiscoveryAppln():
 
         except Exception as e:
             raise e
-
+    
+    ############################################
+    # Handle an incoming isready request
+    #
+    # Let whoever is asking know if the system is ready or not
+    ############################################
     def isready_request(self, isready_req):
-        pass
+        ''' Handle isready request '''
+
+        try:
+            self.logger.info("DiscoveryAppln::is_ready_request")
+            
+            # No input to account for when handling an isready_request
+
+            # Check if there required number of pubs and subs is met
+            if ((len(self.subscriber_list) == self.specified_num_subscribers) and (len(self.publisher_list) ==  self.specified_num_publishers)):
+                # The system is only ready when we have the specified amount of subscribers and publishers
+                isready = True
+            else:
+                # The specified number of subscribers and publishers has not been reached
+                isready = True
+
+            # Send the isready response in the MW
+            self.mw_obj.send_isready_response(isready)
+
+            self.logger.info("DiscoveryAppln::is_ready_request Done handling isready request")
+
+            # isready request has been handled
+            # Not awaiting any incoming logic, ready to move on, return 0
+            return 0
+
+        except Exception as e:
+            raise e
+
+    ###################################################
+    # Handle a look up publisher list by topic list request
+    #
+    ###################################################
+    def lookup_pub_by_topiclist_request(self, lookup_req):
+        ''' Handle a lookup pub by topic request '''
+
+        try:
+            self.logger.info("DiscoveryAppln::is_ready_request")
+            
+            # Init the topic list 
+            publisher_by_topic_list = []
+
+            # Check if all the publishers have been added to the system
+            if (len(self.publisher_list) == self.specified_num_publishers):
+                # Parse out the topic list from the lookup req
+                topic_list = lookup_req.topiclist  
+
+                # Build out the publisher list
+                for pub in self.publisher_list:
+                    # Check if the publisher has any topics that match the topic list
+                    # Use the any function to avoid loading duplicate publsihers
+                    if (any(topic in topic_list for topic in pub.topic_list)):
+                        publisher_by_topic_list.append(pub)
+
+                # If the publisher list has been built, status is success
+                # Should it only be success if there is one or more pubs that match specifications?
+                # I feel like no, we have talked about scenarios when no pub for a topic
+                status = discovery_pb2.STATUS_SUCCESS
+            else:
+                status = discovery_pb2.STATUS_CHECK_AGAIN
+
+
+            # Send the lookup_pub_by_topiclist response in the MW
+            self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list)
+
+            return 0
+        except Exception as e:
+            raise
+
 
 ###################################
 #

@@ -126,10 +126,10 @@ class DiscoveryMW():
                 timeout = self.upcall_obj.register_request(disc_req.register_req)
             elif (disc_req.msg_type == discovery_pb2.TYPE_ISREADY):
                 # Handle a request made by a publisher asking if the system is ready
-                timeout = self.upcall_obj.isready_request(disc_req.register_req)
+                timeout = self.upcall_obj.isready_request(disc_req.isready_req)
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
                 # Handle a request made by a subscriber to look up all publishers by topic
-                timeout = self.upcall_obj.lookup_pub_by_topic_request(disc_req.register_req)
+                timeout = self.upcall_obj.lookup_pub_by_topiclist_request(disc_req.lookup_req)
             else: # anything else is unrecognizable by this object
                 # raise an exception here
                 raise ValueError ("Unrecognized response message")
@@ -182,6 +182,18 @@ class DiscoveryMW():
         
         except Exception as e:
             raise e
+    
+    ############################################
+    # Send a response to an is ready response
+    ############################################
+    def send_isready_response(self, isready):
+        pass
+
+    ############################################
+    # Send a response to a lookup pub by topiclist request
+    ############################################
+    def send_lookup_pub_by_topiclist_response(self, status, publisher_list):
+        pass
 
     ########################################
     # set upcall handle
