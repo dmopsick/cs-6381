@@ -73,7 +73,7 @@ class DiscoveryMW():
             # note that we publish on any interface hence the * followed by port number.
             # We always use TCP as the transport mechanism (at least for these assignments)
             # Since port is an integer, we convert it to string to make it part of the URL
-            bind_string = "tcp://*:" + str(self.port)
+            bind_string = "tcp://*:".format(self.port)
             self.rep.bind(bind_string)
 
             self.logger.info ("DiscoveryMW::configure completed")
