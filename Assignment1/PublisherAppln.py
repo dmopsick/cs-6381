@@ -378,7 +378,7 @@ def parseCmdLineArgs ():
 
   parser.add_argument ("-p", "--port", type=int, default=5577, help="Port number on which our underlying publisher ZMQ service runs, default=5577")
     
-  parser.add_argument ("-d", "--discovery", default="localhost:5555", help="IP Addr:Port combo for the discovery service, default localhost:5555")
+  parser.add_argument ("-d", "--discovery", default="localhost:5556", help="IP Addr:Port combo for the discovery service, default localhost:5556")
 
   parser.add_argument ("-T", "--num_topics", type=int, choices=range(1,10), default=1, help="Number of topics to publish, currently restricted to max of 9")
 
