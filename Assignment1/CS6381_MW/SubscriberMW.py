@@ -73,7 +73,7 @@ class SubscriberMW ():
 
             # Get the ZMQ Poller object
             self.logger.debug("SubscriberMW::configure - obtain poller")
-            self.poller = zmq.poller()
+            self.poller = zmq.Poller()
             
             # Acquire the REQ and SUB sockets
             # REQ needed because we are client of the Discovery service

@@ -69,7 +69,6 @@ class DiscoveryAppln():
         self.specified_num_subscribers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
-        self.res = None
         self.publisher_list = []
         self.subscriber_list = []
 

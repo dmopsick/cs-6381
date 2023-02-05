@@ -61,13 +61,13 @@ class DiscoveryMW():
 
              # get the ZMQ poller object
             self.logger.debug("DiscoveryMW::configure - obtain the poller")
-            self.poller = zmq.Poller ()
+            self.poller = zmq.Poller()
 
             # Open the RES socket to allow for pubs and subs to register
             self.rep = context.socket(zmq.REP) 
 
             # Register the RES socket to poll for incoming messages 
-            self.logger.debug("DiscoveryMW::configure - register the REQ socket for incoming replies")
+            self.logger.debug("DiscoveryMW::configure - register the REP socket for incoming replies")
             self.poller.register(self.rep, zmq.POLLIN)
 
             # note that we publish on any interface hence the * followed by port number.
