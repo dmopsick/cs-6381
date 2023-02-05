@@ -168,7 +168,7 @@ class DiscoveryMW():
             discovery_response = discovery_pb2.DiscoveryResp()
 
             # Set the msg type
-            discovery_response.msg_type = discovery_response.TYPE_REGISTER
+            discovery_response.msg_type = discovery_pb2.TYPE_REGISTER
             # Copy over the built nested register_response
             discovery_response.register_resp.CopyFrom(register_response)
             self.logger.debug("DiscoveryMW::send_register_response - Done building the outer DiscoveryResp message")
