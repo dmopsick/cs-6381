@@ -91,11 +91,11 @@ class DiscoveryMW():
             while self.handle_events:
                 # poll for events. We give it an infinite timeout.
                 # The return value is a socket to event mask mapping
-                events = dict (self.poller.poll (timeout=timeout))
+                events = dict(self.poller.poll(timeout=timeout))
 
-                if not events:
-                    timeout = self.upcall_obj.invoke_operation()
-                elif self.rep in events:
+                # if not events:
+                #     timeout = self.upcall_obj.invoke_operation()
+                if self.rep in events:
                     timeout = self.handle_request()
                 else:
                     raise Exception("Unknown event after poll")
@@ -203,6 +203,7 @@ class DiscoveryMW():
             self.logger.debug ("DiscoveryMW::send_isready_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response.msg_type = discovery_pb2.TYPE_ISREADY
             discovery_response.isready_resp.CopyFrom(isready_response)
             self.logger.debug("DiscoveryMW::send_isready_response - Done building the outer DiscoveryResp message")
 
@@ -239,6 +240,7 @@ class DiscoveryMW():
             self.logger.debug ("DiscoveryMW::send_lookup_pub_by_topiclist_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DisoveryResp()
+            discovery_response.msg_type = discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC
             discovery_response.lookup_resp.CopyFrom(lookup_resp)
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response - Done building the outer DiscoveryResp message")
 
@@ -277,4 +279,3 @@ class DiscoveryMW():
     def disable_event_loop (self):
         ''' disable event loop '''
         self.handle_events = False
-        

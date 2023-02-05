@@ -62,8 +62,7 @@ class DiscoveryAppln():
         INITIALIZE = 0,
         CONFIGURE = 1,
         REGISTER = 2,
-        ISREADY = 3,
-        COMPLETED = 4
+        COMPLETED = 3
 
     def __init__ (self, logger):
         self.specified_num_publishers = None
@@ -126,43 +125,6 @@ class DiscoveryAppln():
             self.mw_obj.event_loop (timeout=0)  # start the event loop
         
             self.logger.info ("PublisherAppln::driver completed")
-        except Exception as e:
-            raise e
-
-
-    def invoke_operation(self):
-        ''' Invoke operating depending on the state '''
-
-        try:
-            self.logger.info ("DiscoveryAppln::invoke_operation")
-
-            if (self.state == self.State.REGISTER):
-                # Need to start the event loop to take in registrations of pubs and subs
-                # Until we reach the defined amount of pubs and subs
-                # Do we do that here?
-
-                # Need to have some info here from the MW level that has the 
-                # Type of entity we are registering (sub or pub)
-                # Address, port, and topic list
-
-                # Need to store the entity in the appropriate list
-
-                # Check if we have the specified amount of publishers and subscribers
-                if (len(self.subscriber_list) == self.specified_num_subscribers and len(self.publisher_list) == self.specified_num_publishers):
-                    # We are ready, so return true
-                    return True
-                else:
-                    # We must continue looping and waiting for more connections
-                    return False
-
-            elif (self.state == self.State.ISREADY):
-                # Send the is_ready response to users?
-                pass
-
-            # Need to handle the actual registration
-
-            # increment the total of sub or pub based on what we are adding
-
         except Exception as e:
             raise e
 

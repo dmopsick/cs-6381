@@ -53,7 +53,8 @@ class SubscriberAppln():
         CONFIGURE = 1,
         REGISTER = 2,
         QUERY_PUBS = 3,
-        CONSUME = 4
+        CONSUME = 4,
+        COMPLETED = 5
 
     ########################################
     # constructor
@@ -197,9 +198,11 @@ class SubscriberAppln():
                 # to receive a response from remote entity. So we need to set the timeout
                 # for the next iteration of the event loop to a large num and so return a None.
                 return None
-            elif (self.state == self.State.ISREADY):
-                self.logger.debug ("SubscriberAppln::invoke_operation - check if are ready to go")
-                self.mw_obj.is_ready ()  # send the is_ready? request
+            elif (self.state == self.State.QUERY_PUBS):
+                self.logger.debug ("SubscriberAppln::invoke_operation - Query for a list of publishers based on our topic list")
+                
+                
+                self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
 
                 # The subscribers need to wait for the system to be ready in order to look up
                 # Which subscribers have the topic they are interested in
@@ -341,8 +344,6 @@ def main():
 
     except Exception as e:
        logger.error("Exception caught in main - {}".format (e)) 
-    pass
-
 
 ###################################
 #

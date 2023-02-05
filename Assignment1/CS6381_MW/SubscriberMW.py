@@ -147,37 +147,37 @@ class SubscriberMW ():
         except Exception as e:
             raise e
 
-    def is_ready (self):
-        ''' Register the AppLn with the discovery service '''
+    def lookup_publishers_by_topiclist (self, topiclist):
+        ''' Look up a list of publishers by topic list'''
 
         try:
-            self.logger.debug("SubscriberMW::is_ready")
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist")
 
-            # Build an isReady message
-            self.logger.debug("SubscriberMW::is_ready - populate the nested IsReady msg")
-            isready_msg = discovery_pb2.IsReadyReq()  # allocate 
-            self.logger.debug("SubscriberMW::is_ready - done populating nested IsReady msg")
+            # Build the inner LookupPubByTopicReq  message
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - populate the nested LookupPubByTopicReq msg")
+            lookup_req = discovery_pb2.LookupPubByTopicReq()  
+            lookup_req.topiclist[:] = topiclist
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - done populating nested LookupPubByTopicReq msg")
 
             # Build the outer layer Discovery message
-            self.logger.debug ("SubscriberMW::is_ready - build the outer DiscoveryReq message")
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq()
-            disc_req.msg_type = discovery_pb2.TYPE_ISREADY
+            disc_req.msg_type = discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC
 
-            disc_req.isready_req.CopyFrom (isready_req)
-            self.logger.debug ("SubscriberMW::is_ready - done building the outer message")
+            disc_req.lookup_req.CopyFrom(lookup_req)
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - done building the outer message")
       
-
             # Stringify the buffer and print it
             # Actually a sequence not a string
             buf2send = disc_req.SerializeToString()
             self.logger.debug ("Stringified serialized buf = {}".format(buf2send))
 
             # Send this to our discovery service
-            self.logger.debug("SubscriberMW::is_ready - send stringified buffer to Discovery service")
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - send stringified buffer to Discovery service")
             self.req.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
       
             # Now go to our event loop to receive a response to this request
-            self.logger.debug("SubscriberMW::is_ready - now wait for reply")
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - now wait for reply")
 
         except Exception as e:
             raise e
@@ -236,12 +236,6 @@ class SubscriberMW ():
 
         except Exception as e:
             raise e
-
-    #################################################################
-    # receive data on our sub socket
-    #################################################################
-    def receive(self, data):
-        pass
 
     #############################################################
     # Subscribe to an list of topics
