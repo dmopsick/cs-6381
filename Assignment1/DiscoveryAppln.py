@@ -84,8 +84,8 @@ class DiscoveryAppln():
             self.state = self.State.CONFIGURE
 
             # Initialize our variables
-            self.specified_num_publishers = args.specified_num_publishers
-            self.specified_num_subscribers = args.specified_num_subscribers
+            self.specified_num_publishers = args.num_publishers
+            self.specified_num_subscribers = args.num_subscribers
             
             # Now get the configuration object
             self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
@@ -289,7 +289,7 @@ def parseCmdLineArgs ():
     parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
   
     return parser.parse_args()
-    
+
 def main():
     try:
         # obtain a system wide logger and initialize it to debug level to begin with
