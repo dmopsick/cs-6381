@@ -156,7 +156,7 @@ class DiscoveryMW():
             register_response.status = status
 
             # If status is not null add in the reason
-            if not reason:
+            if reason != None:
                 register_response.reason = reason
             self.logger.debug("DiscoveryMW::register - done populating nested RegisterResp")
 
