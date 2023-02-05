@@ -202,6 +202,9 @@ class DiscoveryAppln():
 
                     # Set status to success if we have gotten this far
                     status = discovery_pb2.STATUS_SUCCESS
+
+                    # No reason to send
+                    reason = None
                     
                 else:
                     self.logger.info("DiscoveryAppln::register_request Publisher attempting to register, but no more publisher roles are allocated")

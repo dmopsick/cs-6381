@@ -139,10 +139,49 @@ class DiscoveryMW():
             raise e 
 
     #####################################################
-    #
+    # 
     #####################################################
-    def send_register_response(status, reason):
-        pass
+    def send_register_response(self, status, reason):
+        ''' Send a response back to a registrant that has attempted to register '''
+
+        try:
+            self.logger.info("DiscoveryMW::send_register_response")
+
+            self.logger.debug ("DiscoveryMW::send_register_response - populate the nested register resp")
+            # Build the register response object
+            register_response = discovery_pb2.RegisterResp()
+
+            # Add in the status passed in
+            register_response.status = status
+
+            # If status is not null add in the reason
+            if not reason:
+                register_response.reason = reason
+            self.logger.debug ("DiscoveryMW::register - done populating nested RegisterResp")
+
+            self.logger.debug ("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
+            # Build the outer discovery response object
+            discovery_response = discovery_pb2.DisoveryResp()
+
+            # Set the msg type
+            discovery_response.msg_type = discovery_response.TYPE_REGISTER
+            # Copy over the built nested register_response
+            discovery_response.register_resp.CopyFrom(register_response)
+            self.logger.debug ("DiscoveryMW::send_register_response - Done building the outer DiscoveryResp message")
+
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = discovery_response.SerializeToString ()
+            self.logger.debug ("Stringified serialized buf = {}".format (buf2send))
+
+            # Send a response back to the registrant that attempted to register
+            self.logger.debug ("DiscoveryMW::register - send stringified buffer to Discovery service")
+            self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+
+            self.logger.info("DiscoveryMW::send_register_response Register finished")
+        
+        except Exception as e:
+            raise e
 
     ########################################
     # set upcall handle
