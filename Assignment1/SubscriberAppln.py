@@ -87,6 +87,8 @@ class SubscriberAppln():
             # Initialize our variables
             self.name = args.name # our name
             self.iters = args.iters # Number of iterations
+            self.frequency = args.frequency
+            self.num_topics = args.num_topics
 
             # Get the configuration object
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
