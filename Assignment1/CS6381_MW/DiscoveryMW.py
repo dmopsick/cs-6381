@@ -98,6 +98,7 @@ class DiscoveryMW():
                 if self.rep in events:
                     timeout = self.handle_request()
                 else:
+                    pass
                     # raise Exception("Unknown event after poll")
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
