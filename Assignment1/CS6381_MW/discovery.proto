@@ -100,7 +100,7 @@ message LookupPubByTopicResp
      // decide what fields go here. It wil be a list of publishers (with their details)
     // Maybe the RegistrantInfo message can be reused.
     Status status = 1; // Success or check again
-    repeated RegistrantInfo publisher_list = 2; // 
+    repeated RegistrantInfo publisher_list = 2; // A list of the registrant info for the publishers
 }
 
 // Finally, we are going to make a union of all these request and response messages

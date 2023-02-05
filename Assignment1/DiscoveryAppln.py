@@ -312,6 +312,8 @@ class DiscoveryAppln():
                     if (any(topic in topic_list for topic in pub.topic_list)):
                         publisher_by_topic_list.append(pub)
 
+                self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Built out the following list of pubs: {}".format(publisher_by_topic_list))
+
                 # If the publisher list has been built, status is success
                 # Should it only be success if there is one or more pubs that match specifications?
                 # I feel like no, we have talked about scenarios when no pub for a topic
