@@ -127,7 +127,7 @@ class SubscriberMW ():
             self.logger.debug("SubscriberMW::register - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq ()
             disc_req.msg_type = discovery_pb2.TYPE_REGISTER
-            disc_req.register_req.CopyFrom (reg_info)
+            disc_req.register_req.CopyFrom (register_req)
             self.logger.debug ("SubscriberMW::register - done building the outer message")
             
             # Stringify the buffer and print it 
