@@ -229,7 +229,7 @@ class DiscoveryAppln():
                     self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
                    
                 else:
-                    self.logger.info("DiscoveryAppln::register_request Subcriber attempting to register, but no more subscriber roles are allocated")
+                    self.logger.info("DiscoveryAppln::register_request Subscriber attempting to register, but no more subscriber roles are allocated")
 
                     # Set status to failure
                     status = discovery_pb2.STATUS_FAILURE

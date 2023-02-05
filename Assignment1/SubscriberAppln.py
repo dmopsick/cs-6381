@@ -263,7 +263,6 @@ class SubscriberAppln():
                 return 0
             else:
                 self.logger.debug("SubscriberAppln::register_response - registration failed for the following reason: {}".format(reg_resp.reason))
-                raise ValueError ("Subscriber needs to have unique id")
 
         except Exception as e:
             raise e

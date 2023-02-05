@@ -209,7 +209,7 @@ class SubscriberMW ():
     #################################################################
     # Handle an incoming reply
     #################################################################
-    def handle_reply (self):
+    def handle_reply(self):
 
         try:
             self.logger.debug("SubscriberMW::handle_reply")
@@ -233,6 +233,7 @@ class SubscriberMW ():
             return timeout 
 
         except Exception as e:
+            print("FLAG 0")
             raise e
 
     #############################################################
