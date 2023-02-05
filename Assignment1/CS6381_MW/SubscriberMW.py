@@ -183,6 +183,7 @@ class SubscriberMW ():
     # Run the event loop where we expect to receive a reply to a sent request
     #################################################################
     def event_loop(self, timeout=None):
+        ''' The event loop for the subscriber middleware '''
 
         try:
             self.logger.debug("SubscriberMW::event_loop - Run the event loop")
@@ -210,6 +211,7 @@ class SubscriberMW ():
     # Handle an incoming reply
     #################################################################
     def handle_reply(self):
+        ''' Handle an incoming reply '''
 
         try:
             self.logger.debug("SubscriberMW::handle_reply")
