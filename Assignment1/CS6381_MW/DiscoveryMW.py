@@ -56,18 +56,18 @@ class DiscoveryMW():
             self.addr = args.addr
 
             # Next get the ZMQ context
-            self.logger.debug ("DiscoveryMW::configure - obtain ZMQ context")
+            self.logger.debug("DiscoveryMW::configure - obtain ZMQ context")
             context = zmq.Context()  # returns a singleton object
 
              # get the ZMQ poller object
-            self.logger.debug ("PublisherMW::configure - obtain the poller")
+            self.logger.debug("DiscoveryMW::configure - obtain the poller")
             self.poller = zmq.Poller ()
 
             # Open the RES socket to allow for pubs and subs to register
             self.rep = context.socket(zmq.REP) 
 
             # Register the RES socket to poll for incoming messages 
-            self.logger.debug ("PublisherMW::configure - register the REQ socket for incoming replies")
+            self.logger.debug("DiscoveryMW::configure - register the REQ socket for incoming replies")
             self.poller.register(self.rep, zmq.POLLIN)
 
             # note that we publish on any interface hence the * followed by port number.
@@ -86,7 +86,7 @@ class DiscoveryMW():
     def event_loop(self, timeout=None):
         
         try:
-            self.logger.info ("DiscoveryMW::event_loop - run the event loop")
+            self.logger.info("DiscoveryMW::event_loop - run the event loop")
 
             while self.handle_events:
                 # poll for events. We give it an infinite timeout.
@@ -98,7 +98,8 @@ class DiscoveryMW():
                 if self.rep in events:
                     timeout = self.handle_request()
                 else:
-                    raise Exception("Unknown event after poll")
+                    print(events)
+                    # raise Exception("Unknown event after poll")
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
         except Exception as e:
