@@ -245,22 +245,23 @@ class DiscoveryMW():
             # Only build out the list of publishers if there any to send
             if (len(publisher_list) > 0):
                 # Init the publisher_list
-                # publisher_list_registrant_info = []
+                publisher_list_registrant_info = []
 
                 self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response Converting each publisher into a Registrant Info record")
 
                 # Build a list of Registrant info
                 for publisher in publisher_list:
-                    registrantInfo = lookup_resp.publisher_list.add()
+                    # registrantInfo = lookup_resp.publisher_list.add()
+                    registrantInfo = discovery_pb2.RegistrantInfo()
                     registrantInfo.id = publisher.name
                     registrantInfo.addr = publisher.ip_address
                     registrantInfo.port = publisher.port
-                    # publisher_list_registrant_info.append(registrantInfo)
+                    publisher_list_registrant_info.append(registrantInfo)
 
                 self.logger.debug(lookup_resp.publisher_list)
 
                 # Set the list we have built to be the publisher_list for the message
-                # lookup_resp.publisher_list[:] = publisher_list_registrant_info
+                lookup_resp.publisher_list[:] = publisher_list_registrant_info
 
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
 

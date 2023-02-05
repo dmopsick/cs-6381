@@ -275,7 +275,7 @@ class SubscriberAppln():
         ''' Handle the response to a lookup publisher list by topic list request '''
 
         try:
-            self.logger("SubscriberAppln::lookup_publisher_list_response")
+            self.logger.info("SubscriberAppln::lookup_publisher_list_response")
 
             if (lookup_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")

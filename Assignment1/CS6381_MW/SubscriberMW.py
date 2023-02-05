@@ -219,6 +219,8 @@ class SubscriberMW ():
             # Receive all the bytes
             bytesRcvd = self.req.recv()
 
+            self.logger.debug("SubscriberMW::handle_reply Loaded some bytes")
+
             # Use the protobuf to deserialize the bytes
             disc_resp = discovery_pb2.DiscoveryResp()
             disc_resp.ParseFromString(bytesRcvd)
