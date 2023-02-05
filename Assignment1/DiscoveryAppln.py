@@ -101,6 +101,25 @@ class DiscoveryAppln():
       
         except Exception as e:
             raise e
+    
+    ########################################
+    # Dump the contents of the object 
+    #
+    ########################################
+    def dump (self):
+        ''' Pretty print '''
+        # What else do I want to print out here?
+        try:
+            self.logger.info ("**********************************")
+            self.logger.info ("DiscoveryAppln::dump")
+            self.logger.info ("------------------------------")
+            self.logger.info ("     Num Publishers: {}".format (self.specified_num_publishers))
+            self.logger.info ("     Num Subscribers: {}".format (self.specified_num_subscribers))
+            self.logger.info ("**********************************")
+
+        except Exception as e:
+            raise e
+
 
     def driver(self):
         ''' Discovery driver program '''
