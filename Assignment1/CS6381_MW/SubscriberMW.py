@@ -90,7 +90,7 @@ class SubscriberMW ():
             # Use TCP followed by Ip addr:port number
             self.logger.debug("SubscriberMW::configure - connect to Discovery service")
             connect_str = "tcp://" + args.discovery
-            self.logger.debug("FLAG 0: " + connect_str)
+         
             self.req.connect(connect_str)
 
             self.logger.info("SubscriberMW::configure completed")
@@ -182,7 +182,7 @@ class SubscriberMW ():
     #################################################################
     # Run the event loop where we expect to receive a reply to a sent request
     #################################################################
-    def event_loop(self):
+    def event_loop(self, timeout=None):
 
         try:
             self.logger.debug("SubscriberMW::event_loop - Run the event loop")

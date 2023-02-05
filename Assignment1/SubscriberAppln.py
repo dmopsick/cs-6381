@@ -132,7 +132,7 @@ class SubscriberAppln():
 
             # Ask the middleware to keep a handle on us to make upcalls
             # Pass a point of this object to the middleware
-            self.logger.debug("SubscriberAppln::driver - upcall handle")
+            self.logger.debug("SubscriberAppln::driver - Set the upcall handle")
             self.mw_obj.set_upcall_handle(self)
 
             # Enter the register state
