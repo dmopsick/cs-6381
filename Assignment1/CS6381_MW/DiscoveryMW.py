@@ -76,6 +76,7 @@ class DiscoveryMW():
             # We always use TCP as the transport mechanism (at least for these assignments)
             # Since port is an integer, we convert it to string to make it part of the URL
             bind_string = "tcp://*:" + str(self.port)
+            self.logger.debug("DiscoveryMW::configure - attempting to bind to ".format(bind_string))
             self.rep.bind(bind_string)
 
             self.logger.info ("DiscoveryMW::configure completed")
