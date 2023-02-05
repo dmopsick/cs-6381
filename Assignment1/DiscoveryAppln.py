@@ -166,7 +166,8 @@ class DiscoveryAppln():
 
                 # Verify that there is still room for publishers in the system
                 if (len(self.publisher_list) < self.specified_num_publishers):
-        
+                    self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
+                   
                     # Create a new publisher record
                     publisher = Publisher()
 
@@ -185,6 +186,8 @@ class DiscoveryAppln():
                     # No reason to send
                     reason = None
                     
+                    self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
+                   
                 else:
                     self.logger.info("DiscoveryAppln::register_request Publisher attempting to register, but no more publisher roles are allocated")
 
@@ -197,8 +200,48 @@ class DiscoveryAppln():
                 # Send a register reply with the MW
                 self.mw_obj.send_register_response(status, reason)
 
+                self.logger.info("DiscoveryAppln::register_request Done registering a publisher")
+
             elif (role == discovery_pb2.ROLE_SUBSCRIBER):
                 self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
+
+                # Verify that there is still room for subscribers in the system
+                if (len(self.subscriber_list) < self.specified_num_subscribers):
+                    self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
+                    # Create new subscriber object
+                    subscriber = Subscriber()
+
+                    # Load the subscriber values from registrant info
+                    subscriber.name = reg_req.info.id
+                    subscriber.ip_address = reg_req.info.addr
+                    subscriber.port = reg_req.info.port
+                    subscriber.topic_list = reg_req.topiclist
+
+                    # Add the created object to the list of publishers registered
+                    self.subscriber_list.append(subscriber)
+
+                    # Set status to success if we have gotten this far
+                    status = discovery_pb2.STATUS_SUCCESS
+
+                    # No reason to send
+                    reason = None
+                    
+                    self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
+                   
+                else:
+                    self.logger.info("DiscoveryAppln::register_request Subcriber attempting to register, but no more subscriber roles are allocated")
+
+                    # Set status to failure
+                    status = discovery_pb2.STATUS_FAILURE
+
+                    # Pass in a reason to let the registrant know why it failed
+                    reason = "Max subscribers already reached for this system"
+                
+                # Send a register reply with the MW
+                self.mw_obj.send_register_response(status, reason)
+
+                self.logger.info("DiscoveryAppln::register_request Done registering a subscriber")
+                   
             else:
                 self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
                 raise ValueError("Invalid role provided for registration request to Discovery server")
