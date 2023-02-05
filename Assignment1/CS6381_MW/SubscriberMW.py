@@ -80,7 +80,7 @@ class SubscriberMW ():
             # SUB needed because we subscribe to publisher's topic data
             self.logger.debug("SubscriberMW::configure - obtain REQ and SUB sockets")
             self.req = context.socket(zmq.REQ)
-            self.pub = context.socket(zmq.SUB)
+            self.sub = context.socket(zmq.SUB)
 
             # Register the req socket for incoming request
             self.logger.debug ("SubscriberMW::configure - register the REQ socket for incoming replies")
