@@ -185,7 +185,7 @@ class SubscriberMW ():
     #################################################################
     # Run the event loop where we expect to receive a reply to a sent request
     #################################################################
-    def event_loop (self):
+    def event_loop(self):
 
         try:
             self.logger.debug("SubscriberMW::event_loop - Run the event loop")
@@ -225,14 +225,15 @@ class SubscriberMW ():
             disc_resp.ParseFromString(bytesRcvd)
 
             if (disc_resp.msg_type == discovery_pb2.REGISTER):
-                timeout = disc_resp.register_resp.result
-            elif (disc_resp.msg_type == discovery_pb2.ISREADY):
-                timeout = disc_resp.is_ready.reply
+                # Invoke the application logic to handle the response from discovery for register request
+                timeout = self.upcall_obj.register_response(disc_resp.register_resp)
+            elif (disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
+                # Invoke the application logic to handle the reponse from discovery for looking up pub list by topic list
+                timeout = self.upcall_obj.lookup_publisher_list_response(disc_resp.lookup_resp)
             else: 
                 raise ValueError("Unrecognized response message provided")
             
             return timeout 
-
 
         except Exception as e:
             raise e
@@ -270,10 +271,44 @@ class SubscriberMW ():
 
     ##################################################
     # Connect to a publisher
+    #
+    # Need to tell only subscribe to the topics this subscriber is interested in
     ##################################################
-    def connectToPublisher(self, ip_address, port):
-        # Build connection string
-        connect_str = "tcp://" + ip_address + ":" + str(port)
+    def connect_to_publisher(self, ip_address, port, topiclist):
+        ''' Connect to a publisher for the list of topics we are interested in '''
 
-        self.logger.debug("SubscriberMW::connectToPublisher - connecting to {}".format(connect_str))
-        self.sub.connect(connect_str)
+        try :
+            # Build connection string
+            connect_str = "tcp://" + ip_address + ":" + str(port)
+
+            self.logger.debug("SubscriberMW::connect_to_publisher - connecting to {}".format(connect_str))
+            self.sub.connect(connect_str)
+
+            # Specify which topics we are subscribing to on this socket
+            for topic in topiclist:
+                # Instead of the setsockopt, go ahead and do the subscribe logic here
+                self.sub.subscribe(topic)
+                self.logger.debug("SubscriberMW::connect_to_publisher - Connecting to {} for topic {}".format(connect_str, topic))
+
+        except Exception as e:
+            raise e
+
+    ####################################################
+    # Consume data from the publishers we have subscribed to
+    #
+    # Print out the messages we receive
+    ####################################################
+    def consume(self):
+        ''' Consume messages sent from the publishers we subscribe to '''
+        try:
+            self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
+            
+            data = self.sub.recv()
+
+            self.logger.debug("SubscriberMW::consume - Consumption complete")
+            
+            return data
+
+        except Exception as e:
+            raise e
+        

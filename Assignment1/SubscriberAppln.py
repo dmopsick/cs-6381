@@ -45,7 +45,7 @@ from enum import Enum  # for an enumeration we are using to describe what state 
 
 class SubscriberAppln():
 
-      # these are the states through which our publisher appln object goes thru.
+    # these are the states through which our subscriber appln object goes thru.
     # We maintain the state so we know where we are in the lifecycle and then
     # take decisions accordingly
     class State (Enum):
@@ -57,7 +57,8 @@ class SubscriberAppln():
         COMPLETED = 5
 
     ########################################
-    # constructor
+    # Constructor
+    #
     ########################################
     def __init__(self, logger):
         self.state = self.State.INITIALIZE # state that are we in
@@ -67,9 +68,11 @@ class SubscriberAppln():
         self.logger = logger  # internal logger for print statements
         self.num_topics = None # total num of topics the subscriber is interested in
         self.topiclist = None # the different topics that the subscriber is interested in
+        self.frequency = None # rate at which consumption takes place
 
     ########################################
-    # configure/initialize
+    # Set up initial configuration for our subscriber
+    # 
     ########################################
     def configure (self, args):
         ''' Initialize subscriber object '''
@@ -114,6 +117,7 @@ class SubscriberAppln():
 
     ########################################
     # driver program
+    #
     ########################################
     def driver (self):
         ''' Driver program '''
@@ -133,15 +137,6 @@ class SubscriberAppln():
             # Must register the subscriber with the Discovery service
             self.state = self.State.REGISTER
 
-            # Now simply let the underlying middleware object enter the event loop
-            # to handle events. However, a trick we play here is that we provide a timeout
-            # of zero so that control is immediately sent back to us where we can then
-            # register with the discovery service and then pass control back to the event loop
-            #
-            # As a rule, whenever we expect a reply from remote entity, we set timeout to
-            # None or some large value, but if we want to send a request ourselves right away,
-            # we set timeout is zero.
-            #
             # Pass control to the event loop
             # When the event loops is done with what it's doing, it will call back
             # To the application code
@@ -153,7 +148,8 @@ class SubscriberAppln():
             raise e
 
     ########################################
-    # dump the contents of the object 
+    # Dump the contents of the object 
+    #
     ########################################
     def dump (self):
         ''' Pretty print '''
@@ -201,12 +197,8 @@ class SubscriberAppln():
             elif (self.state == self.State.QUERY_PUBS):
                 self.logger.debug ("SubscriberAppln::invoke_operation - Query for a list of publishers based on our topic list")
                 
-                
+                # Use the MW object to send a look up publishers by topic list request
                 self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
-
-                # The subscribers need to wait for the system to be ready in order to look up
-                # Which subscribers have the topic they are interested in
-                # Then they must connect to those publishers
 
                 # Remember that we were invoked by the event loop as part of the upcall.
                 # So we are going to return back to it for its next iteration. Because
@@ -215,35 +207,40 @@ class SubscriberAppln():
                 # for the next iteration of the event loop to a large num and so return a None.
                 return None
             elif (self.state == self.State.CONSUME):
-                # setsocketopt here?
-                # Handle the actual application logic of subscribing and consuming topics here
+                # We are connected... now we CONSUME the data
+                self.logger.debug ("PublisherAppln::invoke_operation - start Consuming data")
 
-                # How do we determine when we are done timing out? 
-                # Is there a total num of things we want to receive?
-                pass
-                return None
+                data = self.mw_obj.consume()
+                self.logger.info("Received data: {}".format(data))
+
+                self.logger.debug ("PublisherAppln::invoke_operation - Dissemination completed")
+
+                # Now sleep for an interval of time to ensure we disseminate at the
+                # frequency that was configured.
+                time.sleep (1/float (self.frequency))  # ensure we get a floating point num
+
+                # Time eout after the sleep is done
+                return 0
             elif (self.state == self.State.COMPLETED):
+                # At this time the consumer will never know when it ends up being done
+                # Perhaps in a later iteration
+
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
-                self.mw_obj.disable_event_loop ()
+                self.mw_obj.disable_event_loop()
                 return None
             else:
                 raise ValueError("Undefined state of the appln object")
 
-            self.logger.info ("SubscriberAppln::invoke_operation completed")
         except Exception as e:
             raise e
     
     ########################################
-    # handle register response method called as part of upcall
+    # Handle register response method called as part of upcall
     #
-    # As mentioned in class, the middleware object can do the reading
-    # from socket and deserialization. But it does not know the semantics
-    # of the message and what should be done. So it becomes the job
-    # of the application. Hence this upcall is made to us.
     ########################################
     def register_response(self, reg_resp):
-        ''' Handle register response '''
+        ''' Handle register response from discovery server '''
     
         try:
             self.logger.info("SubscriberAppln::register_response")
@@ -251,35 +248,64 @@ class SubscriberAppln():
             if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("SubscriberAppln::register_response - registration is a success")
 
-                # Do we setsockopt and establish connection to subscribers here?
-                # Here we have the info from the Discovery service
-                # Shouldn't that include the info of the subscribers that have the topics we want?
+                # Invoke the MW logic to subscribe to our list of topics now that we are registered
+                # I do not think I actually need to do this? 
+                # I thikn I can subscribe when I connect to each publisher
+                # self.mw_obj.subscribe(self.topiclist)
 
-                # Set our next state to CONSUME
-                self.state = self.State.CONSUME
+                # Now that we are connected we must look up a list
+                # of publishers based on our topics we are interested in
+                self.state = self.State.QUERY_PUBS
 
                 # Return a timeout of zero to the event loop 
-                # In its next iteration it will make an upcall to us
                 return 0
             else:
                 self.logger.debug("SubscriberAppln::register_response - registration failed for the following reason: {}".format(reg_resp.reason))
+                raise ValueError ("Subscriber needs to have unique id")
 
         except Exception as e:
             raise e
 
     ########################################
-    # Subscribe to the subscribers that will publish data
-    # based on our chosen topics
+    # Handle lookup publisher list by topic list response 
     #
     ########################################
-    def subscribe(self, id, topic):
-        # What are the parameters we need to do the setsockopt
-        # To establish the connection to each of the subscribers
-        # That the discovery has told us has our topics
-        pass
+    def lookup_publisher_list_response(self, lookup_resp):
+        ''' Handle the response to a lookup publisher list by topic list request '''
+
+        try:
+            self.logger("SubscriberAppln::lookup_publisher_list_response")
+
+            if (lookup_resp.status == discovery_pb2.STATUS_SUCCESS):
+                self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")
+
+                # Connect to each of list of publishers 
+                for publisher in lookup_resp.publisher_list:
+                    self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
+                    
+                    # Connect to this publisher for the topics we are interested in via MW
+                    self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
+
+                self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Done connecting to publishers")
+
+                # Change the state to CONSUME time for us to just accept data
+                self.state = self.State.CONSUME
+
+            elif (lookup_resp.status == discovery_pb2.STATUS_CHECK_AGAIN):
+                 # Discovery service is not ready yet to give out list of pubs yet
+                self.logger.debug ("SubscriberAppln::lookup_publisher_list_response - Not ready yet; check again")
+                time.sleep(10)  # sleep between calls so that we don't make excessive calls
+
+            else:
+                raise ValueError ("Unexpected status provided from Discovery for the lookup publisher list request")
+
+            # Return time out 0 to continue the logic
+            return 0        
+
+        except Exception as e:
+            raise e
             
 ###################################
-#
 # Parse command line arguments
 #
 ###################################
@@ -313,7 +339,6 @@ def parseCmdLineArgs ():
     return parser.parse_args()
 
 ###################################
-#
 # Main program
 #
 ###################################
@@ -346,7 +371,6 @@ def main():
        logger.error("Exception caught in main - {}".format (e)) 
 
 ###################################
-#
 # Main entry point
 #
 ###################################
