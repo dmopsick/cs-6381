@@ -234,6 +234,14 @@ class DiscoveryMW():
         try:
             self.logger.info("DiscoveryMW::send_lookup_pub_by_topiclist_response")
 
+            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response Done converting each publisher into a Registrant Info record")
+
+            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response building nested look_resp object")
+        
+            # Build the inner LookupPubByTopicReq  object
+            lookup_resp = discovery_pb2.LookupPubByTopicResp()
+            lookup_resp.status = status
+
             # Only build out the list of publishers if there any to send
             if (len(publisher_list) > 0):
                 # Init the publisher_list
@@ -249,17 +257,8 @@ class DiscoveryMW():
                     registrantInfo.port = publisher.port
                     publisher_list_registrant_info.append(registrantInfo)
 
-            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response Done converting each publisher into a Registrant Info record")
+                self.logger.debug(publisher_list_registrant_info)
 
-            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response building nested look_resp object")
-        
-            # Build the inner LookupPubByTopicReq  object
-            lookup_resp = discovery_pb2.LookupPubByTopicResp()
-            lookup_resp.status = status
-            
-            self.logger.debug(publisher_list_registrant_info)
-            
-            if (len(publisher_list) > 0): 
                 # Set the list we have built to be the publisher_list for the message
                 lookup_resp.publisher_list[:] = publisher_list_registrant_info
 
