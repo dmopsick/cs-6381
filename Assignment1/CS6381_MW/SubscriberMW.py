@@ -90,6 +90,7 @@ class SubscriberMW ():
             # Use TCP followed by Ip addr:port number
             self.logger.debug("SubscriberMW::configure - connect to Discovery service")
             connect_str = "tcp://" + args.discovery
+            self.logger.debug("FLAG 0: " + connect_str)
             self.req.connect(connect_str)
 
             # "Connect" to the SUB socket

@@ -148,7 +148,7 @@ class DiscoveryMW():
         try:
             self.logger.info("DiscoveryMW::send_register_response")
 
-            self.logger.debug ("DiscoveryMW::send_register_response - populate the nested register resp")
+            self.logger.debug("DiscoveryMW::send_register_response - populate the nested register resp")
             # Build the register response object
             register_response = discovery_pb2.RegisterResp()
 
@@ -158,9 +158,9 @@ class DiscoveryMW():
             # If status is not null add in the reason
             if not reason:
                 register_response.reason = reason
-            self.logger.debug ("DiscoveryMW::register - done populating nested RegisterResp")
+            self.logger.debug("DiscoveryMW::register - done populating nested RegisterResp")
 
-            self.logger.debug ("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
+            self.logger.debug("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DisoveryResp()
 
