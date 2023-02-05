@@ -254,6 +254,9 @@ class DiscoveryMW():
             # Build the inner LookupPubByTopicReq  object
             lookup_resp = discovery_pb2.LookupPubByTopicResp()
             lookup_resp.status = status
+            
+            self.logger.debug(publisher_list_registrant_info)
+            
             # Set the list we have built to be the publisher_list for the message
             lookup_resp.publisher_list[:] = publisher_list_registrant_info
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
