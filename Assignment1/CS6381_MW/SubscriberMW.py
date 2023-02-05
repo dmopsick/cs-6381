@@ -93,10 +93,6 @@ class SubscriberMW ():
             self.logger.debug("FLAG 0: " + connect_str)
             self.req.connect(connect_str)
 
-            # "Connect" to the SUB socket
-            sub_connect_string = "tcp://*:" + str(self.port)
-            self.sub.connect(sub_connect_string)
-
             self.logger.info("SubscriberMW::configure completed")
 
         except Exception as e:
