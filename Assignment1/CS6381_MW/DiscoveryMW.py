@@ -255,7 +255,7 @@ class DiscoveryMW():
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response Done converting each publisher into a Registrant Info record")
 
             # Set the list we have built to be the publisher_list for the message
-            lookup_resp.publisher_list = publisher_list_registrant_info
+            lookup_resp.publisher_list[:] = publisher_list_registrant_info
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
 
             self.logger.debug ("DiscoveryMW::send_lookup_pub_by_topiclist_response - build the outer DiscoveryResp message")
