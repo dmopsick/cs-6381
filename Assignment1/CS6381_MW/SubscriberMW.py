@@ -307,9 +307,12 @@ class SubscriberMW ():
             
             data = self.sub.recv()
 
+            # Decode the data 
+            decodedData = data.decode("utf-8")
+
             self.logger.debug("SubscriberMW::consume - Consumption complete")
             
-            return data
+            return decodedData
 
         except Exception as e:
             raise e

@@ -215,7 +215,7 @@ class SubscriberAppln():
                 data = self.mw_obj.consume()
                 self.logger.info("Received data: {}".format(data))
 
-                self.logger.debug ("PublisherAppln::invoke_operation - Dissemination completed")
+                self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
 
                 # Now sleep for an interval of time to ensure we disseminate at the
                 # frequency that was configured.
