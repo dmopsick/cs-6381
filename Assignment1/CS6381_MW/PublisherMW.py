@@ -32,7 +32,7 @@ import zmq  # ZMQ sockets
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
-#from CS6381_MW import topic_pb2  # you will need this eventually
+from CS6381_MW import topic_pb2
 
 # import any other packages you need.
 
@@ -328,13 +328,32 @@ class PublisherMW ():
       # In addition to the current time at which the data was sent
       # That way we can compare when the data is sent vs received
 
+      self.logger.debug ("PublisherMW::disseminate - Build the Publication message to sent")
+
+      # Get the current timestamp
+      send_time = time.time.now()
+
+      # Build the Publication message 
+      publication = topic_pb2.Publication()
+      publication.topic = topic
+      publication.content = data
+      publication.publisher_id = id
+      publication.timestamp = send_time
+
+      self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
+
+      # Serialize the publication
+      buf2send = publication.SerializeToString ()
+      self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
       # Now use the protobuf logic to encode the info and send it.  But for now
       # we are simply sending the string to make sure dissemination is working.
-      send_str = topic + ":" + data
-      self.logger.debug ("PublisherMW::disseminate - {}".format (send_str))
+      # send_str = topic + ":" + data
+      self.logger.debug ("PublisherMW::disseminate - {}".format (buf2send))
 
+      self.logger.debug("PublisherMW::disseminate - send stringified buffer to Discovery service")
       # send the info as bytes. See how we are providing an encoding of utf-8
-      self.pub.send (bytes(send_str, "utf-8"))
+      self.pub.send(buf2send)
 
       self.logger.debug ("PublisherMW::disseminate complete")
     except Exception as e:

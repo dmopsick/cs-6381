@@ -41,6 +41,7 @@ import zmq  # ZMQ sockets
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
+from CS6381_MW import topic_pb2
 
 class SubscriberMW ():
 
@@ -305,14 +306,17 @@ class SubscriberMW ():
         try:
             self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
             
-            data = self.sub.recv()
+            bytesReceived = self.sub.recv()
 
             # Decode the data 
-            decodedData = data.decode("utf-8")
+            publication = topic_pb2.Publication()
+            publication.ParseFromString(bytesReceived)
+
+            # Add the data to some list to export to a csv?
 
             self.logger.debug("SubscriberMW::consume - Consumption complete")
             
-            return decodedData
+            return publication
 
         except Exception as e:
             raise e

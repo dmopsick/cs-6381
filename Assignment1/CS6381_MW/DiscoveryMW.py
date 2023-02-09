@@ -112,6 +112,7 @@ class DiscoveryMW():
     # Top level logic for processing requests to the discovery server
     #################################################
     def handle_request(self):
+        ''' Handle a received request '''
 
         try:
             self.logger.info("DiscoveryMW::Handle")

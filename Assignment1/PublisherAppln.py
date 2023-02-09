@@ -245,7 +245,7 @@ class PublisherAppln ():
             # In later assignments, we should be using more complex encodings using
             # protobuf.  In fact, I am going to do this once my basic logic is working.
             dissemination_data = ts.gen_publication (topic)
-            self.mw_obj.disseminate (self.name, topic, dissemination_data)
+            self.mw_obj.disseminate(self.name, topic, dissemination_data)
 
           # Now sleep for an interval of time to ensure we disseminate at the
           # frequency that was configured.
