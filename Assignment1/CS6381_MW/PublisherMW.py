@@ -29,6 +29,7 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import datetime
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
@@ -331,7 +332,7 @@ class PublisherMW ():
       self.logger.debug ("PublisherMW::disseminate - Build the Publication message to sent")
 
       # Get the current timestamp
-      send_time = time.time.now()
+      send_time = datetime.datetime.now()
 
       # Build the Publication message 
       publication = topic_pb2.Publication()
