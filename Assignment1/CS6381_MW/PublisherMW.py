@@ -346,9 +346,8 @@ class PublisherMW ():
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
 
       # Serialize the publication
-      buf2send = publication.SerializeToString ()
-      self.logger.debug("Stringified serialized buf = {}".format (buf2send))
-
+      buf2send = publication.SerializeToString()
+    
       # Now use the protobuf logic to encode the info and send it.  But for now
       # we are simply sending the string to make sure dissemination is working.
       # send_str = topic + ":" + data
