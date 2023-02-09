@@ -331,15 +331,17 @@ class PublisherMW ():
 
       self.logger.debug ("PublisherMW::disseminate - Build the Publication message to sent")
 
-      # Get the current timestamp
+      # Get the current time
       send_time = datetime.datetime.now()
+      # Get the current time as a float
+      send_timestamp = send_time.timestamp()
 
       # Build the Publication message 
       publication = topic_pb2.Publication()
       publication.topic = topic
       publication.content = data
       publication.publisher_id = id
-      publication.timestamp = str(send_time)
+      publication.timestamp = send_timestamp
 
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
 
