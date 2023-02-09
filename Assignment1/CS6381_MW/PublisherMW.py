@@ -339,7 +339,7 @@ class PublisherMW ():
       publication.topic = topic
       publication.content = data
       publication.publisher_id = id
-      publication.timestamp = send_time
+      publication.timestamp = str(send_time)
 
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
 
