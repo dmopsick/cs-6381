@@ -311,8 +311,9 @@ class SubscriberMW ():
             self.logger.debug("SubscriberMW::consume - Data received")
 
             # Decode the data 
-            publication = topic_pb2.Publication()
-            publication.ParseFromString(bytesReceived)
+            # publication = topic_pb2.Publication()
+            # publication.ParseFromString(bytesReceived)
+            publication = bytesReceived.decode("utf-8")
 
             # Add the data to some list to export to a csv?
 
