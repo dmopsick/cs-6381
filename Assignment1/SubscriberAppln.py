@@ -253,7 +253,7 @@ class SubscriberAppln():
                 # Invoke the MW logic to subscribe to our list of topics now that we are registered
                 # I do not think I actually need to do this? 
                 # I thikn I can subscribe when I connect to each publisher
-                # self.mw_obj.subscribe(self.topiclist)
+                self.mw_obj.subscribe(self.topiclist)
 
                 # Now that we are connected we must look up a list
                 # of publishers based on our topics we are interested in
