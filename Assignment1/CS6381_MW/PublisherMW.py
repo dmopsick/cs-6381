@@ -345,7 +345,7 @@ class PublisherMW ():
 
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
 
-      self.logger.debug ("PublisherMW::disseminate - publication to send: " + publication)
+      self.logger.debug ("PublisherMW::disseminate - publication to send: " + str(publication))
 
       # Serialize the publication
       buf2send = publication.SerializeToString()
