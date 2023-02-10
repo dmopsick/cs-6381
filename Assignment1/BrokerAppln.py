@@ -56,14 +56,29 @@ class BrokerAppln():
     def __init__(self, logger):
         self.logger = logger
         self.mw_obj = None
-        self.state = self.State.I
+        self.state = self.State.INITIALIZE
+        self.name = None
+
 
     ########################################
     # Configure/initialize
     ########################################
     def configure(self, args):
         ''' Initialize the object '''
-        pass
+
+        try:
+            # Here we initialize any internal variables
+            self.logger.info ("BrokerAppln::configure")
+
+            # set our current state to CONFIGURE state
+            self.state = self.State.CONFIGURE
+
+            # Initialize our variables
+            self.name = args.name
+
+            # Get the config | Do we need to do this?
+        except Exception as e:
+            raise e
 
     ########################################
     # Driver program
