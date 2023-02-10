@@ -224,6 +224,8 @@ class SubscriberAppln():
                 # Find the duration between the timestamps
                 latency = receivedTimestamp - publication.tstamp
 
+                self.logger.info("PublisherAppln Latency: {}".format(latency))
+
                 # Change the publication's timestamp back into a datetime to display
                 publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
 
