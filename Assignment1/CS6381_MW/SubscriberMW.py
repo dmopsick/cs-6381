@@ -321,14 +321,14 @@ class SubscriberMW ():
             # Turn the bytes into a string
             # publicationString = publicationBytes.decode("utf-8")
 
-            self.logger.debug("SubscriberMW::consume - Data received")
+           #  self.logger.debug("SubscriberMW::consume - Data received")
 
             # Decode the data 
             publication = topic_pb2.Publication()
             publication.ParseFromString(publicationBytes)
             # publication = bytesReceived.decode("utf-8")
 
-            self.logger.debug("SubscriberMW::consume - Received " + publication.content)
+            # self.logger.debug("SubscriberMW::consume - Received " + publication.content)
 
             self.logger.debug("SubscriberMW::consume - Consumption complete")
             

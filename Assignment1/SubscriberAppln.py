@@ -222,7 +222,8 @@ class SubscriberAppln():
                 receivedTimestamp = datetime.datetime.now().timestamp()
 
                 # Find the duration between the timestamps
-                latency = publication.tstamp - receivedTimestamp
+                # latency = publication.tstamp - receivedTimestamp
+                latency = receivedTimestamp - publication.tstamp
 
                 # self.logger.info("PublisherAppln Latency: {}".format(latency))
 
@@ -251,6 +252,8 @@ class SubscriberAppln():
             elif (self.state == self.State.COMPLETED):
                 # At this time the consumer will never know when it ends up being done
                 # Perhaps in a later iteration
+                
+                # Write out the list of the publications received into a a csv for graphing
 
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
