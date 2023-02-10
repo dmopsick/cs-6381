@@ -42,9 +42,42 @@ class BrokerAppln():
     # import any other packages you need.
     from enum import Enum  # for an enumeration we are using to describe what state we are in
 
+    class State (Enum):
+        INITIALIZE = 0,
+        CONFIGURE = 1,
+        REGISTER = 2,
+        ISREADY = 3,
+        DISSEMINATE = 4,
+        COMPLETED = 5
+
     ########################################
     # Constructor
     ########################################
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
+        self.mw_obj = None
+        self.state = self.State.I
+
+    ########################################
+    # Configure/initialize
+    ########################################
+    def configure(self, args):
+        ''' Initialize the object '''
         pass
 
+    ########################################
+    # Driver program
+    ########################################
+    def driver(self):
+        ''' Driver program '''
+        pass
+
+    ########################################
+    # generic invoke method called as part of upcall
+    #
+    # This method will get invoked as part of the upcall made
+    # by the middleware's event loop after it sees a timeout has
+    # occurred.
+    ########################################
+    def invoke_operation (self):
+        pass

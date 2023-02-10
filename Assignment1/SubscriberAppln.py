@@ -71,6 +71,7 @@ class SubscriberAppln():
         self.topiclist = None # the different topics that the subscriber is interested in
         self.frequency = None # rate at which consumption takes place
         self.receivedPublicationList = []
+        self.dissemination = None # Hold the dissemination strategy
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -307,6 +308,9 @@ class SubscriberAppln():
 
             if (lookup_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")
+
+                # Check the dissemination strategy chosen
+                self.logger.debug("SubscriberAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
 
                 # Connect to each of list of publishers 
                 for publisher in lookup_resp.publisher_list:
