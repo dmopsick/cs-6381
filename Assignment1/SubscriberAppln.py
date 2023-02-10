@@ -231,7 +231,8 @@ class SubscriberAppln():
 
                 self.logger.debug(publicationTimestamp)
 
-                # publication.tstamp = publicationTimestamp
+                # Store the converted timestamp in the message
+                publication.tstamp = publicationTimestamp
 
                 # Make the publication and latency a set
                 publicationTuple = (publication, latency)
