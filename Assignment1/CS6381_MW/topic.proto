@@ -11,11 +11,8 @@ syntax = "proto3";
 
 // Description of the disseminated topic information
 message Publication {
-    MsgTypes msg_type = 1;
-    oneof Content {
-        string topic = 1; // Topic name
-        string content = 2; // The contents of the published sample
-        string publisher_id = 3; // Publisher's ID (This should be unique)
-        float timestamp = 4; // Timestamp of publication at publisher
-    }
+    string topic = 1; // Topic name
+    string content = 2; // The contents of the published sample
+    string publisher_id = 3; // Publisher's ID (This should be unique)
+    float timestamp = 4; // Timestamp of publication at publisher
 }
