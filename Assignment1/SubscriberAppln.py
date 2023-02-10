@@ -225,7 +225,9 @@ class SubscriberAppln():
                 latency = receivedTimestamp - publication.tstamp
 
                 # Change the publication's timestamp back into a datetime to display
-                publication.tstamp = datetime.datetime.fromtimestamp(publication.tstamp)
+                publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
+
+                publication.tstamp = publicationTimestamp
 
                 # Make the publication and latency a set
                 publicationTuple = (publication, latency)
