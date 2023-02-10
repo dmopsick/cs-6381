@@ -38,6 +38,7 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import datetime
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
@@ -56,6 +57,7 @@ class SubscriberMW ():
         self.handle_events = True # in general we keep going thru the event loop
         self.lookup = None # one of the diff ways we do lookup
         self.dissemination = None # direct or via broker
+        self.receivedMessageList = []
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''
@@ -311,15 +313,27 @@ class SubscriberMW ():
             self.logger.debug("SubscriberMW::consume - Data received")
 
             # Decode the data 
-            # publication = topic_pb2.Publication()
-            # publication.ParseFromString(bytesReceived)
-            publication = bytesReceived.decode("utf-8")
+            publication = topic_pb2.Publication()
+            publication.ParseFromString(bytesReceived)
+            # publication = bytesReceived.decode("utf-8")
+
+            # Received timestamp
+            # receivedTimestamp = datetime.datetime.now()
+
+            # Find the duration between the timestamps
+            # latency = receivedTimestamp - publication.timestamp
+
+            # Format a String 
+            # receivedMessage = publication.topic + ", " + publication.content + ", " + publication.publisher_id + ", " + str(publication.timestamp), 
 
             # Add the data to some list to export to a csv?
+            # self.receivedMessageList.append(receivedMessage)
+
+            self.logger.debug("SubscriberMW::consume - Received " + publication.content)
 
             self.logger.debug("SubscriberMW::consume - Consumption complete")
             
-            return publication
+            return publication.content
 
         except Exception as e:
             raise e
