@@ -34,3 +34,11 @@ class Subscriber:
         self.ip_address = None
         self.port = None
         self.topic_list = None
+
+class Constants:
+
+    DISSEMINATION_STRATEGY_DIRECT = "Direct"
+    DISSEMINATION_STRATEGY_BROKER = "Broker"
+
+    def __init__(self):
+        pass

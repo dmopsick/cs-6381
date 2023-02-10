@@ -42,6 +42,9 @@ from CS6381_MW.SubscriberMW import SubscriberMW
 # We also need the message formats to handle incoming responses.
 from CS6381_MW import discovery_pb2
 
+# Import the constants for the dissemination strategy
+from CS6381_MW.Common import Constants
+
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
 class SubscriberAppln():
@@ -310,16 +313,23 @@ class SubscriberAppln():
                 self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")
 
                 # Check the dissemination strategy chosen
-                self.logger.debug("SubscriberAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
+                # self.logger.debug("SubscriberAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
 
-                # Connect to each of list of publishers 
-                for publisher in lookup_resp.publisher_list:
-                    self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
-                    
-                    # Connect to this publisher for the topics we are interested in via MW
-                    self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
+                if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
+                    self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Using direct dissimenation strategy")
+                    # Connect to each of list of publishers 
+                    for publisher in lookup_resp.publisher_list:
+                        self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
+                        
+                        # Connect to this publisher for the topics we are interested in via MW
+                        self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
 
-                self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Done connecting to publishers")
+                    self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Done connecting to publishers")
+                elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
+                    self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Using broker dissimenation strategy")
+                    pass
+                else:
+                    raise ValueError("ERROR: Unexpected dissemination strategy chosen: {}".format(self.dissemination))
 
                 # Change the state to CONSUME time for us to just accept data
                 self.state = self.State.CONSUME
