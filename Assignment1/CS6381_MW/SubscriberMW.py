@@ -307,7 +307,9 @@ class SubscriberMW ():
         try:
             self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
             
-            bytesReceived = self.sub.recv_string()
+            # bytesReceived = self.sub.recv_string()
+            bytesReceived = self.sub.recv_multipart()
+
 
             self.logger.debug("SubscriberMW::consume - Data received")
 
