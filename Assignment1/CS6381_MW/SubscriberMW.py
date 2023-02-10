@@ -309,14 +309,14 @@ class SubscriberMW ():
             bytesReceived = self.sub.recv_multipart()
             # Receiving two parts of the message topic, serializedObject
 
-            self.logger.debug("RECEIVED: ")
-            self.logger.debug(bytesReceived)
+            # self.logger.debug("RECEIVED: ")
+            # self.logger.debug(bytesReceived)
 
             # Get the second element 
             publicationBytes = bytesReceived[1]
 
-            self.logger.debug("ELEMENT 1: ")
-            self.logger.debug(publicationBytes)
+            # self.logger.debug("ELEMENT 1: ")
+            # self.logger.debug(publicationBytes)
 
             # Turn the bytes into a string
             # publicationString = publicationBytes.decode("utf-8")

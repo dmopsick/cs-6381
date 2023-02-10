@@ -216,11 +216,13 @@ class SubscriberAppln():
 
                 publication = self.mw_obj.consume()
 
+                self.logger.info("Received data: {}".format(publication))
+
                 # Timestamp of receiving the message
                 receivedTimestamp = datetime.datetime.now()
 
                 # Find the duration between the timestamps
-                latency = receivedTimestamp - publication.timestamp
+                latency = receivedTimestamp - publication.tstamp
 
                 # Make the publication and latency a set
                 publicationTuple = (publication, latency)
@@ -228,7 +230,7 @@ class SubscriberAppln():
                 # Add the data to some list to export to a csv?
                 self.receivedPublicationList.append(publicationTuple)
 
-                self.logger.info("Received data: {}".format(publicationTuple))
+                self.logger.info("Added Latency: {}".format(publicationTuple))
 
                 self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
 
