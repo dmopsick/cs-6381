@@ -33,6 +33,7 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
+import datetime
 
 from topic_selector import TopicSelector
 
@@ -69,6 +70,7 @@ class SubscriberAppln():
         self.num_topics = None # total num of topics the subscriber is interested in
         self.topiclist = None # the different topics that the subscriber is interested in
         self.frequency = None # rate at which consumption takes place
+        self.receivedPublicationList = []
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -212,8 +214,21 @@ class SubscriberAppln():
                 # We are connected... now we CONSUME the data
                 self.logger.debug ("PublisherAppln::invoke_operation - start Consuming data")
 
-                data = self.mw_obj.consume()
-                self.logger.info("Received data: {}".format(data))
+                publication = self.mw_obj.consume()
+
+                # Timestamp of receiving the message
+                receivedTimestamp = datetime.datetime.now()
+
+                # Find the duration between the timestamps
+                latency = receivedTimestamp - publication.timestamp
+
+                # Make the publication and latency a set
+                publicationTuple = (publication, latency)
+
+                # Add the data to some list to export to a csv?
+                self.receivedPublicationList.append(publicationTuple)
+
+                self.logger.info("Received data: {}".format(publicationTuple))
 
                 self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
 
