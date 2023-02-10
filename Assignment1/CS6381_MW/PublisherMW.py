@@ -355,7 +355,7 @@ class PublisherMW ():
       send_str = topic + ":" + data
       self.logger.debug ("PublisherMW::disseminate - {}".format(buf2send))
 
-      self.logger.debug("PublisherMW::disseminate - send stringified buffer to Discovery service")
+      self.logger.debug("PublisherMW::disseminate - Publish the stringified buffer")
       # send the info as bytes. See how we are providing an encoding of utf-8
       # self.pub.send(bytes(send_str, "utf-8"))
       self.pub.send(buf2send)

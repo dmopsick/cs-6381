@@ -240,7 +240,6 @@ class SubscriberMW ():
             return timeout 
 
         except Exception as e:
-            print("FLAG 0")
             raise e
 
     #############################################################
@@ -308,7 +307,7 @@ class SubscriberMW ():
         try:
             self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
             
-            bytesReceived = self.sub.recv()
+            bytesReceived = self.sub.recv_string()
 
             self.logger.debug("SubscriberMW::consume - Data received")
 
