@@ -227,12 +227,10 @@ class SubscriberAppln():
                 # self.logger.info("PublisherAppln Latency: {}".format(latency))
 
                 # Change the publication's timestamp back into a datetime to display
-                publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
-
-                self.logger.debug(publicationTimestamp)
-
+                # publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
+                # self.logger.debug(publicationTimestamp)
                 # Store the converted timestamp in the message
-                publication.tstamp = publicationTimestamp
+                # publication.tstamp = publicationTimestamp
 
                 # Make the publication and latency a set
                 publicationTuple = (publication, latency)
