@@ -219,10 +219,13 @@ class SubscriberAppln():
                 self.logger.info("Received data: {}".format(publication))
 
                 # Timestamp of receiving the message
-                receivedTimestamp = datetime.datetime.now()
+                receivedTimestamp = datetime.datetime.now().timestamp()
 
                 # Find the duration between the timestamps
                 latency = receivedTimestamp - publication.tstamp
+
+                # Change the publication's timestamp back into a datetime to display
+                publication.tstamp = datetime.datetime.fromtimestamp(publication.tstamp)
 
                 # Make the publication and latency a set
                 publicationTuple = (publication, latency)
