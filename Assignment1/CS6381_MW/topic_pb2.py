@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0btopic.proto\"V\n\x0bPublication\x12\r\n\x05topic\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\x12\x14\n\x0cpublisher_id\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x02\x62\x06proto3'
+  serialized_pb=b'\n\x0btopic.proto\"M\n\x0bPublication\x12\r\n\x05topic\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\x12\x0e\n\x06pub_id\x18\x03 \x01(\t\x12\x0e\n\x06tstamp\x18\x04 \x01(\x02\x62\x06proto3'
 )
 
 
@@ -48,14 +48,14 @@ _PUBLICATION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='publisher_id', full_name='Publication.publisher_id', index=2,
+      name='pub_id', full_name='Publication.pub_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='Publication.timestamp', index=3,
+      name='tstamp', full_name='Publication.tstamp', index=3,
       number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -74,7 +74,7 @@ _PUBLICATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=15,
-  serialized_end=101,
+  serialized_end=92,
 )
 
 DESCRIPTOR.message_types_by_name['Publication'] = _PUBLICATION
