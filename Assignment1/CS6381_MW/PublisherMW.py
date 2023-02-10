@@ -345,7 +345,7 @@ class PublisherMW ():
 
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
 
-      self.logger.debug ("PublisherMW::disseminate - publication to send: " + str(publication))
+      # self.logger.debug ("PublisherMW::disseminate - publication to send: " + str(publication))
 
       # Serialize the publication
       buf2send = publication.SerializeToString()
@@ -357,7 +357,7 @@ class PublisherMW ():
 
       self.logger.debug("PublisherMW::disseminate - send stringified buffer to Discovery service")
       # send the info as bytes. See how we are providing an encoding of utf-8
-      self.pub.send(buf2send)
+      self.pub.send(bytes(buf2send, "utf-8"))
       # self.pub.send(bytes(send_str, "utf-8"))
 
       self.logger.debug ("PublisherMW::disseminate complete")
