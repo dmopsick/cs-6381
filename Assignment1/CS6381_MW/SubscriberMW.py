@@ -313,6 +313,8 @@ class SubscriberMW ():
 
             self.logger.debug("SubscriberMW::consume - Data received")
 
+            self.logger.debug(bytesReceived)
+
             # Decode the data 
             publication = topic_pb2.Publication()
             publication.ParseFromString(bytesReceived)
