@@ -351,7 +351,7 @@ class PublisherMW ():
       # Now use the protobuf logic to encode the info and send it.  But for now
       # we are simply sending the string to make sure dissemination is working.
       # send_str = topic + ":" + data
-      self.logger.debug ("PublisherMW::disseminate - {}".format(send_str))
+      self.logger.debug ("PublisherMW::disseminate - {}".format(buf2send))
 
       self.logger.debug("PublisherMW::disseminate - send stringified buffer to Discovery service")
       # send the info as bytes. See how we are providing an encoding of utf-8
