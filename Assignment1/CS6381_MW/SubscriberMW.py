@@ -311,19 +311,24 @@ class SubscriberMW ():
             bytesReceived = self.sub.recv_multipart()
             # Receiving two parts of the message topic, serializedObject
 
+            self.logger.debug("RECEIVED: ")
+            self.logger.debug(bytesReceived)
+
             # Get the second element 
             publicationBytes = bytesReceived[1]
 
+            self.logger.debug("ELEMENT 1: ")
+            self.logger.debug(publicationBytes)
+
             # Turn the bytes into a string
-            publicationString = publicationBytes.decode("utf-8")
+            # publicationString = publicationBytes.decode("utf-8")
 
             self.logger.debug("SubscriberMW::consume - Data received")
 
-            self.logger.debug(bytesReceived)
 
             # Decode the data 
             publication = topic_pb2.Publication()
-            publication.ParseFromString(publicationString)
+            publication.ParseFromString(publicationBytes)
             # publication = bytesReceived.decode("utf-8")
 
             # Received timestamp
