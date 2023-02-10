@@ -42,3 +42,9 @@ class BrokerAppln():
     # import any other packages you need.
     from enum import Enum  # for an enumeration we are using to describe what state we are in
 
+    ########################################
+    # Constructor
+    ########################################
+    def __init__(self):
+        pass
+
