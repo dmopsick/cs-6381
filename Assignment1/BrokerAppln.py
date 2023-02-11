@@ -288,21 +288,15 @@ class BrokerAppln():
                 # Check the dissemination strategy chosen
                 # self.logger.debug("BrokerAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
 
-                if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
-                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Using direct dissimenation strategy")
-                    # Connect to each of list of publishers 
-                    for publisher in lookup_resp.publisher_list:
-                        self.logger.debug("BrokerAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
-                        
-                        # Connect to this publisher for the topics we are interested in via MW
-                        self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
+                # Connect to each of list of publishers 
+                for publisher in lookup_resp.publisher_list:
+                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
+                    
+                    # Connect to this publisher for the topics we are interested in via MW
+                    self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
 
-                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Done connecting to publishers")
-                elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
-                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Using broker dissimenation strategy")
-                    pass
-                else:
-                    raise ValueError("ERROR: Unexpected dissemination strategy chosen: {}".format(self.dissemination))
+                self.logger.debug("BrokerAppln::lookup_publisher_list_response - Done connecting to publishers")
+
 
                 # Change the state to ACTIVE
                 # It is time to consume then republish
