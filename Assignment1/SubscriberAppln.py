@@ -248,7 +248,7 @@ class SubscriberAppln():
 
                     self.logger.info("SubscriberAppln::invoke_operation -  Received Data: {}".format(publicationTuple))
 
-                    self.logger.debug ("SubscriberAppln::invoke_operation - Consumption completed")
+                    # self.logger.debug ("SubscriberAppln::invoke_operation - Consumption completed")
 
                     # Now sleep for an interval of time to ensure we consume at the
                     # frequency that was configured.
