@@ -23,7 +23,7 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging
-from Assignment1.CS6381_MW.Common import Constants
+from CS6381_MW.Common import Constants
 
 from topic_selector import TopicSelector
 
