@@ -300,7 +300,7 @@ class BrokerMW():
             disc_req = discovery_pb2.DiscoveryReq()
             disc_req.msg_type = discovery_pb2.TYPE_LOOKUP_ALL_PUBS
 
-            disc_req.lookup_req.CopyFrom(lookup_req)
+            disc_req.lookup_all_resp.CopyFrom(lookup_req)
             self.logger.debug("BrokerMW::lookup_all_publishers - done building the outer message")
       
             # Stringify the buffer and print it
