@@ -22,7 +22,9 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
-import logging # for logging. Use it in place of print statements.
+import logging
+
+from topic_selector import TopicSelector
 
 # Now import our CS6381 Middleware
 from CS6381_MW.BrokerMW import BrokerMW
@@ -47,8 +49,9 @@ class BrokerAppln():
         CONFIGURE = 1,
         REGISTER = 2,
         ISREADY = 3,
-        ACTIVE = 4,
-        COMPLETED = 5
+        QUERY_PUBS = 4,
+        ACTIVE = 5,
+        COMPLETED = 6
 
     ########################################
     # Constructor
@@ -86,7 +89,11 @@ class BrokerAppln():
             self.lookup = config["Discovery"]["Strategy"]
             self.dissemination = config["Dissemination"]["Strategy"]
 
-            # Does broker need topic list? I feel like no
+            # The broker subscribes to all topics
+            self.logger.debug ("BrokerAppln::configure - selecting our topic list")
+            ts = TopicSelector()
+            self.topiclist = ts.interest(self.num_topics)  # let topic selector give us the desired num of topics
+
 
             # Now setup up our underlying middleware object to which we delegate
             # everything
@@ -144,8 +151,20 @@ class BrokerAppln():
                 # We are waiting for a reply
                 return None
             elif (self.state == self.State.ISREADY):
+                # Check if the system is all set up
+                pass
+            elif (self.state == self.State.QUERY_PUBS):
+                # Load the publishers for all topics
+                # Subscribe to all topics
+                # Connect to all publishers
                 pass
             elif (self.state == self.State.ACTIVE):
+                # The system is ready
+                # We have the publishers
+                # Time to receive 
+
+                # once we receive, we turn around and publish
+
                 pass
             elif (self.state == self.State.COMPLETED):
                 pass
@@ -178,7 +197,113 @@ class BrokerAppln():
             self.logger.info("BrokerAppln::register_response")
 
             # Check the status of the response
-            if (reg_resp.status == discovery_pb2.STATUS_SUCCESS)
+            if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
+                # We have registered, now let's see if the system is ready
+                self.state = self.State.ISREADY
+
+                # Not immediately waiting for call back
+                # Return 0 and keep it moving
+                return 0
+            else:
+                self.logger.debug ("BrokerAppln::register_response - registration is a failure with reason {}".format (reg_resp.reason))
+                raise ValueError ("Broker needs to have unique id")
 
         except Exception as e:
             raise e
+
+    def isready_response(self, isready_resp):
+        ''' Handle isready response '''
+
+        try:
+            self.logger.info("BrokerAppln::isready_response")
+
+            # Check the the status is true, meaning it is ready
+            if not isready_resp.status:
+                self.logger.debug("BrokerAppln::isready_response - Not ready yet; check again")
+                time.sleep(10)  # sleep between calls so that we don't make excessive calls
+            else:
+                # Set to is acive
+                # Time for broker to be the publisher and subscriber
+                self.state = self.State.ACTIVE
+
+            # Return a timeout of 0 so event loop can continue
+            return 0
+
+        except Exception as e:
+            raise e
+
+###################################
+# Parse command line arguments
+#
+###################################
+def parseCmdLineArgs ():
+    parser = argparse.ArgumentParser (description="Broker Application")
+
+    # Now specify all the optional arguments we support
+    # At a minimum, you will need a way to specify the IP and port of the lookup
+    # service, the role we are playing, what dissemination approach are we
+    # using, what is our endpoint (i.e., port where we are going to bind at the
+    # ZMQ level)
+
+    parser.add_argument("-n", "--name", default="pub", help="Some name assigned to us. Keep it unique per publisher")
+
+    parser.add_argument("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
+
+    parser.add_argument("-p", "--port", default=5566, help="Port number on which our underlying publisher ZMQ service runs, default=5566")
+        
+    parser.add_argument("-d", "--discovery", default="localhost:5556", help="IP Addr:Port combo for the discovery service, default localhost:5556")
+
+    parser.add_argument ("-T", "--num_topics", type=int, choices=range(1,10), default=1, help="Number of topics to publish, currently restricted to max of 9")
+
+    parser.add_argument("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
+
+    parser.add_argument("-f", "--frequency", type=int,default=1, help="Rate at which topics disseminated: default once a second - use integers")
+
+    parser.add_argument("-i", "--iters", type=int, default=1000, help="number of publication iterations (default: 1000)")
+
+    parser.add_argument("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
+  
+    return parser.parse_args()
+
+###################################
+# Main program
+#
+###################################
+def main():
+    try:
+        # obtain a system wide logger and initialize it to debug level to begin with
+        logging.debug("Main - acquire a child logger and then log messages in the child")
+        logger = logging.getLogger("BrokerAppln")
+
+        # Parse the provided command line arguments
+        logger.debug("Main: parse command line arguments")
+        args = parseCmdLineArgs()
+
+        # Reset the log level to to the specified level in the arguments
+        logger.debug ("Main: resetting log level to {}".format (args.loglevel))
+        logger.setLevel(args.loglevel)
+        logger.debug ("Main: effective log level is {}".format (logger.getEffectiveLevel ()))
+
+        # Obtain a subscriber application 
+        logger.debug("Main: obtain the object")
+        sub_app = BrokerAppln(logger)
+
+        # Configure the objject
+        sub_app.configure(args)
+
+        # Invoke the driver program
+        sub_app.driver()
+
+    except Exception as e:
+       logger.error("Exception caught in main - {}".format (e)) 
+
+###################################
+# Main entry point
+#
+###################################
+if __name__ == "__main__":
+    # set underlying default logging capabilities
+  logging.basicConfig (level=logging.DEBUG,
+                       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+  main()

@@ -268,7 +268,7 @@ class PublisherMW ():
   # method of the application object.
   ########################################
   def is_ready (self):
-    ''' register the appln with the discovery service '''
+    ''' Check twith the discovery service to see if the system is ready '''
 
     try:
       self.logger.info ("PublisherMW::is_ready")
