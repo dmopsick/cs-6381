@@ -260,7 +260,7 @@ class DiscoveryAppln():
                 # Check if specified number of brokers is met 
                 # For now hard coding one broker but perhaps one day we want multiple
                 if (len(self.broker_list) < self.specified_num_brokers):
-                    self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
+                    self.logger.debug("DiscoveryAppln::register_request Creating a new broker record")
                     # Create new Entity object
                     broker = Entity()
 
@@ -418,6 +418,8 @@ def lookup_all_publishers(self, lookup_all_resp):
             status = discovery_pb2.STATUS_SUCCESS
         else:
             status = discovery_pb2.STATUS_CHECK_AGAIN
+
+        self.logger.debug("DiscoveryAppln::lookup_all_publishers Done looking up all publishers")
 
         # Send a response to the look up all publisher request
         self.mw_obj.send_lookup_all_publisher_response(status, all_publisher_list)
