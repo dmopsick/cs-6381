@@ -278,7 +278,6 @@ class BrokerMW():
             # self.pub.send(bytes(send_str, "utf-8"))
             self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
 
-
             self.logger.debug ("BrokerMW::disseminate complete")
         except Exception as e:
             raise e

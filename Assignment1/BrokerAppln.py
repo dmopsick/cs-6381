@@ -198,7 +198,7 @@ class BrokerAppln():
 
                 # Do we want the broker to rest? Or just push along as soon as possible
                 # I feel like no rest
-                # time.sleep (1/float (self.frequency)) 
+                time.sleep (1/float (self.frequency)) 
 
                 # Timeout after the sleep is done
 
