@@ -59,9 +59,6 @@ class BrokerAppln():
         self.state = self.State.INITIALIZE
         self.name = None
         self.config = None
-        self.req = None # For registering with discovery
-        self.sub = None # Broker subscribes to all the publishers
-        self.pub = None # Broker publishers to the subscribers
 
     ########################################
     # Configure/initialize
@@ -156,4 +153,32 @@ class BrokerAppln():
                 raise ValueError("Undefined state of the appln object")
         except Exception as e:
             raise e
+    ########################################
+    # dump the contents of the object 
+    ########################################
+    def dump (self):
+        ''' Pretty print '''
 
+        try:
+            self.logger.info ("**********************************")
+            self.logger.info ("PublisherAppln::dump")
+            self.logger.info ("------------------------------")
+            self.logger.info ("     Name: {}".format (self.name))
+            self.logger.info ("     Lookup: {}".format (self.lookup))
+            self.logger.info ("     Dissemination: {}".format (self.dissemination))
+            self.logger.info ("**********************************")
+
+        except Exception as e:
+            raise e
+
+    def register_response(self, reg_resp):
+        ''' Handle register response '''
+
+        try:
+            self.logger.info("BrokerAppln::register_response")
+
+            # Check the status of the response
+            if (reg_resp.status == discovery_pb2.STATUS_SUCCESS)
+
+        except Exception as e:
+            raise e
