@@ -312,7 +312,7 @@ class DiscoveryMW():
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DiscoveryResp()
             discovery_response.msg_type = discovery_pb2.TYPE_LOOKUP_ALL_PUBS
-            discovery_response.lookup_resp.CopyFrom(lookup_resp)
+            discovery_response.lookup_all_resp.CopyFrom(lookup_resp)
             self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response - Done building the outer DiscoveryResp message")
 
             # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
