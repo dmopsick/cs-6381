@@ -115,7 +115,7 @@ class DiscoveryMW():
         ''' Handle a received request '''
 
         try:
-            self.logger.info("DiscoveryMW::Handle")
+            self.logger.info("DiscoveryMW::Handle received request")
 
             # Receive the data 
             bytesRcvd = self.rep.recv()
@@ -136,7 +136,7 @@ class DiscoveryMW():
                 # Handle a request made by a subscriber to look up all publishers by topic
                 timeout = self.upcall_obj.lookup_pub_by_topiclist_request(disc_req.lookup_req)
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
-                timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_resp)
+                timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_req)
             else: # anything else is unrecognizable by this object
                 # raise an exception here
                 raise ValueError ("Unrecognized response message")
