@@ -351,10 +351,11 @@ class DiscoveryAppln():
         try:
             self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request")
 
+            # Init the publisher by topic list 
+            publisher_by_topic_list = []
+
             # Check the dissemination method
             if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
-                # Init the topic list 
-                publisher_by_topic_list = []
 
                 # Check if all the publishers have been added to the system
                 if (len(self.publisher_list) == self.specified_num_publishers):
