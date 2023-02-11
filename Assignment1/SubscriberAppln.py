@@ -121,8 +121,6 @@ class SubscriberAppln():
         except Exception as e:
             raise e
 
-        pass
-
     ########################################
     # driver program
     #
@@ -268,7 +266,7 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
 
                 # Write out the list of the publications received into a a csv for graphing
-                
+
 
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
