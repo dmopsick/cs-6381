@@ -350,7 +350,6 @@ class BrokerMW():
 
             # Specify which topics we are subscribing to on this socket
             for topic in topiclist:
-
                 self.sub.subscribe(topic)
                 self.logger.debug("BrokerMW::connect_to_publisher - Connecting to {} for topic {}".format(connect_str, topic))
 
