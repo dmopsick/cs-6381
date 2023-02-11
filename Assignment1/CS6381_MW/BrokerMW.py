@@ -10,7 +10,7 @@
 ###############################################
 
 # Designing the logic is left as an exercise for the student. Please see the
-# PublisherMW.py file as to how the middleware side of things are constructed
+# BrokerMW.py file as to how the middleware side of things are constructed
 # and accordingly design things for the broker side of things.
 #
 # As mentioned earlier, a broker serves as a proxy and hence has both
@@ -246,13 +246,13 @@ class BrokerMW():
     ####################################
     def disseminate (self, id, topic, data, timestamp):
         try:
-            self.logger.debug ("PublisherMW::disseminate")
+            self.logger.debug ("BrokerMW::disseminate")
 
             # Need to include the unique identifier of the subscriber sending this data
             # In addition to the current time at which the data was sent
             # That way we can compare when the data is sent vs received
 
-            self.logger.debug ("PublisherMW::disseminate - Build the Publication message to sent")
+            self.logger.debug ("BrokerMW::disseminate - Build the Publication message to sent")
 
             # Build the Publication message 
             publication = topic_pb2.Publication()
@@ -261,23 +261,24 @@ class BrokerMW():
             publication.pub_id = id
             publication.tstamp = timestamp # Use the time set at publisher level
 
-            self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
+            self.logger.debug ("BrokerMW::disseminate - Built the Publication message to sent")
 
-            # self.logger.debug ("PublisherMW::disseminate - publication to send: " + str(publication))
+            # self.logger.debug ("BrokerMW::disseminate - publication to send: " + str(publication))
 
             # Serialize the publication
             buf2send = publication.SerializeToString()
             
             # Now use the protobuf logic to encode the info and send it.  But for now
             # we are simply sending the string to make sure dissemination is working.
-            self.logger.debug ("PublisherMW::disseminate - {}".format(buf2send))
+            self.logger.debug ("BrokerMW::disseminate - {}".format(buf2send))
 
-            self.logger.debug("PublisherMW::disseminate - Publish the stringified buffer")
+            self.logger.debug("BrokerMW::disseminate - Publish the stringified buffer")
             # send the info as bytes. See how we are providing an encoding of utf-8
             # self.pub.send(bytes(send_str, "utf-8"))
             self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
 
-            self.logger.debug ("PublisherMW::disseminate complete")
+
+            self.logger.debug ("BrokerMW::disseminate complete")
         except Exception as e:
             raise e
 
