@@ -289,7 +289,7 @@ class DiscoveryMW():
             self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response")
 
             # Build the inner LookupPubByTopicReq  object
-            lookup_resp = discovery_pb2.LookupPubByTopicResp()
+            lookup_resp = discovery_pb2.LookupAllPubResp()
             lookup_resp.status = status
 
             # Only build out the list of publishers if there any to send

@@ -305,13 +305,13 @@ class BrokerAppln():
                 # It is time to consume then republish
                 self.state = self.State.ACTIVE
 
-            elif (lookup_all_resp.status == discovery_pb2.STATUS_CHECK_AGAIN):
+            elif (lookup_all_resp.status == discovery_pb2.STATUSSTATUS_CHECK_AGAIN_CHECK_AGAIN):
                 # Discovery service is not ready yet to give out list of pubs yet
                 self.logger.debug ("BrokerAppln::lookup_all_publisher_list_response - Not ready yet; check again")
                 time.sleep(10)  # sleep between calls so that we don't make excessive calls
 
             else:
-                raise ValueError ("Unexpected status provided from Discovery for the lookup all publisher list request")
+                raise ValueError ("Unexpected status provided from Discovery for the lookup all publisher list request {}".format(lookup_all_resp.status))
 
             # Return time out 0 to continue the logic
             return 0  
