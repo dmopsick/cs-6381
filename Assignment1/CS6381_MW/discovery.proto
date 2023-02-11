@@ -103,6 +103,20 @@ message LookupPubByTopicResp
     repeated RegistrantInfo publisher_list = 2; // A list of the registrant info for the publishers
 }
 
+// Pass in registrant info, only a registered broker should be able to make this call
+message LookupAllPubReq
+{
+    // Do not need anything in here at this time
+    // Maybe registrant info?
+    // Do we care who makes this call?
+}
+
+message LookupAllPubResp
+{
+    Status status = 1;
+    repeated RegistrantInfo publisher_list = 2;
+}
+
 // Finally, we are going to make a union of all these request and response messages
 
 // Discovery message (one of many)
@@ -113,7 +127,7 @@ message DiscoveryReq
               RegisterReq register_req = 2;
               IsReadyReq isready_req = 3;
               LookupPubByTopicReq lookup_req = 4;
-              // add more 
+              LookupAllPubReq lookup_all_req = 5;
         }
 }
 
@@ -125,6 +139,6 @@ message DiscoveryResp
               RegisterResp register_resp = 2;
               IsReadyResp isready_resp = 3;
               LookupPubByTopicResp lookup_resp = 4;
-              // add more 
+              LookupAllPubResp lookup_all_resp = 5;
         }
 }

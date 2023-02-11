@@ -78,7 +78,6 @@ class BrokerMW():
             self.req.connect (connect_str)
 
             self.logger.debug("BrokerMW::configure - bind to the pub socket")
-
             bind_string = "tcp://*:" + str(self.port)
             self.pub.bind (bind_string)
             
@@ -229,9 +228,9 @@ class BrokerMW():
                 timeout = self.upcall_obj.register_response(disc_resp.register_resp)
             elif(disc_resp.msg_type == discovery_pb2.TYPE_ISREADY):
                 timeout = self.upcall_obj.isready_response (disc_resp.isready_resp)
-            elif(disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
+            elif(disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
                 # Invoke the application logic to handle the reponse from discovery for looking up pub list by topic list
-                timeout = self.upcall_obj.lookup_publisher_list_response(disc_resp.lookup_resp)
+                timeout = self.upcall_obj.lookup_all_publisher_list_response(disc_resp.lookup_all_req)
             else:
                 raise ValueError("Unrecognized response message")
 
@@ -286,24 +285,23 @@ class BrokerMW():
     # Look up a list of publishers by the topic list
     #
     ################################################
-    def lookup_publishers_by_topiclist(self, topiclist):
+    def lookup_all_publishers(self, name):
         ''' Look up a list of publishers by topic list '''
         try:
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist")
+            self.logger.debug("BrokerMW::lookup_all_publishers")
 
-            # Build the inner BrokerMW  message
-            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - populate the nested LookupPubByTopicReq msg")
-            lookup_req = discovery_pb2.LookupPubByTopicReq()  
-            lookup_req.topiclist[:] = topiclist
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - done populating nested LookupPubByTopicReq msg")
+            # Build the inner LookupAllPubReq  message
+            self.logger.debug("BrokerMW::lookup_all_publishers - populate the nested LookupAllPubReq msg")
+            lookup_req = discovery_pb2.LookupAllPubReq()  
+            self.logger.debug("BrokerMW::lookup_all_publishers - done populating nested LookupAllPubReq msg")
 
             # Build the outer layer Discovery message
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - build the outer DiscoveryReq message")
+            self.logger.debug("BrokerMW::lookup_all_publishers - build the outer DiscoveryReq message")
             disc_req = discovery_pb2.DiscoveryReq()
-            disc_req.msg_type = discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC
+            disc_req.msg_type = discovery_pb2.TYPE_LOOKUP_ALL_PUBS
 
             disc_req.lookup_req.CopyFrom(lookup_req)
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - done building the outer message")
+            self.logger.debug("BrokerMW::lookup_all_publishers - done building the outer message")
       
             # Stringify the buffer and print it
             # Actually a sequence not a string
@@ -311,11 +309,11 @@ class BrokerMW():
             self.logger.debug("Stringified serialized buf = {}".format(buf2send))
 
             # Send this to our discovery service
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - send stringified buffer to Discovery service")
+            self.logger.debug("BrokerMW::lookup_all_publishers - send stringified buffer to Discovery service")
             self.req.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
       
             # Now go to our event loop to receive a response to this request
-            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - now wait for reply")
+            self.logger.debug("BrokerMW::lookup_all_publishers - now wait for reply")
 
         except Exception as e:
             raise e

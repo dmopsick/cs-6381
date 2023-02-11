@@ -135,6 +135,8 @@ class DiscoveryMW():
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
                 # Handle a request made by a subscriber to look up all publishers by topic
                 timeout = self.upcall_obj.lookup_pub_by_topiclist_request(disc_req.lookup_req)
+            elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
+                timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_resp)
             else: # anything else is unrecognizable by this object
                 # raise an exception here
                 raise ValueError ("Unrecognized response message")
@@ -235,8 +237,6 @@ class DiscoveryMW():
         try:
             self.logger.info("DiscoveryMW::send_lookup_pub_by_topiclist_response")
 
-            self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response Done converting each publisher into a Registrant Info record")
-
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response building nested look_resp object")
         
             # Build the inner LookupPubByTopicReq  object
@@ -251,11 +251,11 @@ class DiscoveryMW():
                 # Build a list of Registrant info
                 for publisher in publisher_list:
                     # Add a new Registrant info to the list of publishers
-                    registrantInfo = lookup_resp.publisher_list.add()
+                    registrant_info = lookup_resp.publisher_list.add()
                     # Update the new registrant's data
-                    registrantInfo.id = publisher.name
-                    registrantInfo.addr = publisher.ip_address
-                    registrantInfo.port = publisher.port
+                    registrant_info.id = publisher.name
+                    registrant_info.addr = publisher.ip_address
+                    registrant_info.port = publisher.port
 
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
 
@@ -282,6 +282,55 @@ class DiscoveryMW():
         except Exception as e:
             raise e
     
+    def send_lookup_all_publisher_response(self, status, all_publisher_list):
+        ''' Send a response to a request for all publishers '''
+
+        try:
+            self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response")
+
+            # Build the inner LookupPubByTopicReq  object
+            lookup_resp = discovery_pb2.LookupPubByTopicResp()
+            lookup_resp.status = status
+
+            # Only build out the list of publishers if there any to send
+            if (len(all_publisher_list) > 0):
+            
+                self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response Converting each publisher into a Registrant Info record")
+
+                # Build a list of Registrant info
+                for publisher in all_publisher_list:
+                    # Add a new Registrant info to the list of publishers
+                    registrant_info = lookup_resp.publisher_list.add()
+                    # Update the new registrant's data
+                    registrant_info.id = publisher.name
+                    registrant_info.addr = publisher.ip_address
+                    registrant_info.port = publisher.port
+
+            self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response done building nested look_resp object")
+
+            self.logger.debug ("DiscoveryMW::send_lookup_all_publisher_response - build the outer DiscoveryResp message")
+            # Build the outer discovery response object
+            discovery_response = discovery_pb2.DiscoveryResp()
+            discovery_response.msg_type = discovery_pb2.TYPE_LOOKUP_ALL_PUBS
+            discovery_response.lookup_resp.CopyFrom(lookup_resp)
+            self.logger.debug("DiscoveryMW::send_lookup_all_publisher_response - Done building the outer DiscoveryResp message")
+
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = discovery_response.SerializeToString ()
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+            # Send a response back to the registrant that attempted to look up publishers
+            self.logger.debug ("DiscoveryMW::send_lookup_all_publisher_response - send stringified buffer to Discovery service")
+            self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+
+            self.logger.info("DiscoveryMW::send_lookup_all_publisher_response sending lookup response finished")
+        
+            # Return timeout of zero
+            return 0
+
+        except Exception as e:
+            raise e
 
     ########################################
     # set upcall handle

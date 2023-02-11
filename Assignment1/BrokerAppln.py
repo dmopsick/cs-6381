@@ -160,10 +160,12 @@ class BrokerAppln():
                 # Awaiting a reply from the Discovery service
                 return None
             elif (self.state == self.State.QUERY_PUBS):
-                self.logger.debug("BrokerAppln::invoke_operation - Query for a list of publishers based on our topic list")
+                self.logger.debug("BrokerAppln::invoke_operation - Broker needs to subscribe to all publishers")
                 
                 # Use the MW object to send a look up publishers by topic list request
-                self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
+                # self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
+                # Load all of the publishers in the system
+                self.mw_obj.lookup_all_publishers(self.name)
 
                 # We are awaiting a reply from the discovery service
                 return None
@@ -275,43 +277,41 @@ class BrokerAppln():
         except Exception as e:
             raise e
         
-    ########################################
-    # Handle lookup publisher list by topic list response 
+    ######################################################
+    # Handle lookup all publisher list request
     #
-    ########################################
-    def lookup_publisher_list_response(self, lookup_resp):
+    # This will give the broker the list of all publishers to subscribe to
+    #######################################################
+    def lookup_all_publisher_list_response(self, lookup_all_req):
         ''' Handle the response to a lookup publisher list by topic list request '''
 
         try :
-            self.logger.info("BrokerAppln::lookup_publisher_list_response")
+            self.logger.info("BrokerAppln::lookup_all_publisher_list_response")
 
-            if (lookup_resp.status == discovery_pb2.STATUS_SUCCESS):
-                self.logger.debug("BrokerAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")
-
-                # Check the dissemination strategy chosen
-                # self.logger.debug("BrokerAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
+            if (lookup_all_req.status == discovery_pb2.STATUS_SUCCESS):
+                self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Success! List of publishers provided from Discovery")
 
                 # Connect to each of list of publishers 
-                for publisher in lookup_resp.publisher_list:
-                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
+                for publisher in lookup_all_req.publisher_list:
+                    self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
                     
                     # Connect to this publisher for the topics we are interested in via MW
                     self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
 
-                self.logger.debug("BrokerAppln::lookup_publisher_list_response - Done connecting to publishers")
+                self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Done connecting to publishers")
 
 
                 # Change the state to ACTIVE
                 # It is time to consume then republish
                 self.state = self.State.ACTIVE
 
-            elif (lookup_resp.status == discovery_pb2.STATUS_CHECK_AGAIN):
+            elif (lookup_all_req.status == discovery_pb2.STATUS_CHECK_AGAIN):
                 # Discovery service is not ready yet to give out list of pubs yet
-                self.logger.debug ("BrokerAppln::lookup_publisher_list_response - Not ready yet; check again")
+                self.logger.debug ("BrokerAppln::lookup_all_publisher_list_response - Not ready yet; check again")
                 time.sleep(10)  # sleep between calls so that we don't make excessive calls
 
             else:
-                raise ValueError ("Unexpected status provided from Discovery for the lookup publisher list request")
+                raise ValueError ("Unexpected status provided from Discovery for the lookup all publisher list request")
 
             # Return time out 0 to continue the logic
             return 0  

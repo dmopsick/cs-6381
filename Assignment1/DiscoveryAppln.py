@@ -394,8 +394,36 @@ class DiscoveryAppln():
             # Return timeout of 0 to return to the event loop
             return 0
         except Exception as e:
-            raise
+            raise e
 
+################################################
+# Look up all of the publishers in the system
+#
+# Only should be usable by broker
+################################################
+def lookup_all_publishers(self, lookup_all_resp):
+    ''' Look up all publishers '''
+
+    try:
+        self.logger.info("DiscoveryAppln::lookup_all_publishers")
+
+        all_publisher_list = []
+
+        # Check if all the publishers have been added to the system
+        if (len(self.publisher_list) == self.specified_num_publishers):
+            # Return all of the publishers
+            all_publisher_list = self.publisher_list
+
+            # We got what we needed 
+            status = discovery_pb2.STATUS_SUCCESS
+        else:
+            status = discovery_pb2.STATUS_CHECK_AGAIN
+
+        # Send a response to the look up all publisher request
+        self.mw_obj.send_lookup_all_publisher_response(status, all_publisher_list)
+        
+    except Exception as e:
+        raise e
 
 ###################################
 #
