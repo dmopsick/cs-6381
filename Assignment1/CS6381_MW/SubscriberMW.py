@@ -292,7 +292,6 @@ class SubscriberMW ():
 
             # Specify which topics we are subscribing to on this socket
             for topic in topiclist:
-                # Instead of the setsockopt, go ahead and do the subscribe logic here
                 self.sub.subscribe(topic)
                 self.logger.debug("SubscriberMW::connect_to_publisher - Connecting to {} for topic {}".format(connect_str, topic))
 

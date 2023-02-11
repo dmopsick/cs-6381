@@ -87,7 +87,6 @@ class BrokerAppln():
             ts = TopicSelector()
             self.topiclist = ts.interest(self.num_topics)  # let topic selector give us the desired num of topics
 
-
             # Now setup up our underlying middleware object to which we delegate
             # everything
             self.logger.debug ("BrokerAppln::configure - initialize the middleware object")
@@ -111,15 +110,24 @@ class BrokerAppln():
              # dump our contents (debugging purposes)
             self.dump()
 
-            # Set the upcall handle on our MW
-            self.logger.debug("BrokerAppln::driver - upcall handle")
-            self.mw_obj.set_upcall_handle(self)
+            # Confirm that we are using broker strategy, if not we do nothing
+            if (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
+                # Set the upcall handle on our MW
+                self.logger.debug("BrokerAppln::driver - upcall handle")
+                self.mw_obj.set_upcall_handle(self)
 
-            self.state = self.State.REGISTER
+                self.state = self.State.REGISTER
 
-            self.mw_obj.event_loop(timeout=0)
+                self.mw_obj.event_loop(timeout=0)
 
-            self.logger.info("BrokerAppln::driver completed")
+                self.logger.info("BrokerAppln::driver completed")
+            elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
+                self.logger.info("BrokerAppln::driver Broker loaded, but dissemination strategy is direct. Nothing to do.")
+
+                # We are not using Broker strategy, turn off the broker
+                self.state = self.State.COMPLETED
+
+                self.logger.info("BrokerAppln::driver completed")
 
         except Exception as e:
             raise e
@@ -138,18 +146,20 @@ class BrokerAppln():
             self.logger.info ("BrokerAppln::invoke_operation")
 
             if (self.state == self.State.REGISTER):
-                self.logger.debug ("BrokerAppln::invoke_operation - register with the discovery service")
-                self.mw_obj.register (self.name, self.topiclist)
+                self.logger.debug("BrokerAppln::invoke_operation - register with the discovery service")
+                self.mw_obj.register(self.name, self.topiclist)
 
                 # We are waiting for a reply
                 return None
             elif (self.state == self.State.ISREADY):
                 # Check if the system is all set up
-                self.logger.debug ("BrokerAppln::invoke_operation - check if are ready to go")
+                self.logger.debug("BrokerAppln::invoke_operation - check if are ready to go")
                 self.mw_obj.is_ready() 
-                pass
+
+                # Awaiting a reply from the Discovery service
+                return None
             elif (self.state == self.State.QUERY_PUBS):
-                self.logger.debug ("BrokerAppln::invoke_operation - Query for a list of publishers based on our topic list")
+                self.logger.debug("BrokerAppln::invoke_operation - Query for a list of publishers based on our topic list")
                 
                 # Use the MW object to send a look up publishers by topic list request
                 self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
@@ -159,13 +169,40 @@ class BrokerAppln():
             elif (self.state == self.State.ACTIVE):
                 # The system is ready
                 # We have the publishers
-                # Time to receive 
+                self.logger.debug("BrokerAppln::invoke_operation - start Consuming data")
 
-                # once we receive, we turn around and publish
+                # We could specify a number of iterations to run the broker option
+                # And complete after 
 
-                pass
+                # Time to receive a message 
+                publication = self.mw_obj.consume()
+
+                self.logger.info("Received Data: {}".format(publication))
+
+                # Parse out the values of the publication for passing on
+                id = publication.id
+                topic = publication.topic
+                content = publication.content
+                timestamp = publication.tstamp
+
+                self.logger.debug("BrokerAppln::invoke_operation - Now we disseminate what we received")
+
+                # Now disseminate the data the Broker has received
+                self.mw_obj.disseminate(id, topic, content, timestamp)
+                
+                #
+                self.logger.debug("BrokerAppln::invoke_operation:: ")
+
+                # Do we want the broker to rest? Or just push along as soon as possible
+                # I feel like no rest
+                # time.sleep (1/float (self.frequency)) 
+
+                # Timeout after the sleep is done
+
+                return 0
             elif (self.state == self.State.COMPLETED):
-                pass
+                self.mw_obj.disable_event_loop ()
+                return None
             else:
                 raise ValueError("Undefined state of the appln object")
         except Exception as e:

@@ -246,11 +246,11 @@ class SubscriberAppln():
 
                 self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
 
-                # Now sleep for an interval of time to ensure we disseminate at the
+                # Now sleep for an interval of time to ensure we consume at the
                 # frequency that was configured.
-                time.sleep (1/float (self.frequency))  # ensure we get a floating point num
+                time.sleep (1/float (self.frequency)) 
 
-                # Time eout after the sleep is done
+                # Timeout after the sleep is done
                 return 0
             elif (self.state == self.State.COMPLETED):
                 # At this time the consumer will never know when it ends up being done

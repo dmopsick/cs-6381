@@ -370,6 +370,8 @@ class BrokerMW():
             # bytesReceived = self.sub.recv_string()
             bytesReceived = self.sub.recv_multipart()
 
+            # The first element of the received array is the topic
+            # The second is the publication object
             # Get the second element 
             publicationBytes = bytesReceived[1]
 
