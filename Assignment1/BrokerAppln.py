@@ -165,7 +165,7 @@ class BrokerAppln():
                 # Use the MW object to send a look up publishers by topic list request
                 # self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
                 # Load all of the publishers in the system
-                self.mw_obj.lookup_all_publishers(self.name)
+                self.mw_obj.lookup_all_publishers()
 
                 # We are awaiting a reply from the discovery service
                 return None
@@ -282,17 +282,17 @@ class BrokerAppln():
     #
     # This will give the broker the list of all publishers to subscribe to
     #######################################################
-    def lookup_all_publisher_list_response(self, lookup_all_req):
+    def lookup_all_publisher_list_response(self, lookup_all_resp):
         ''' Handle the response to a lookup publisher list by topic list request '''
 
         try :
             self.logger.info("BrokerAppln::lookup_all_publisher_list_response")
 
-            if (lookup_all_req.status == discovery_pb2.STATUS_SUCCESS):
+            if (lookup_all_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Success! List of publishers provided from Discovery")
 
                 # Connect to each of list of publishers 
-                for publisher in lookup_all_req.publisher_list:
+                for publisher in lookup_all_resp.publisher_list:
                     self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
                     
                     # Connect to this publisher for the topics we are interested in via MW
@@ -305,7 +305,7 @@ class BrokerAppln():
                 # It is time to consume then republish
                 self.state = self.State.ACTIVE
 
-            elif (lookup_all_req.status == discovery_pb2.STATUS_CHECK_AGAIN):
+            elif (lookup_all_resp.status == discovery_pb2.STATUS_CHECK_AGAIN):
                 # Discovery service is not ready yet to give out list of pubs yet
                 self.logger.debug ("BrokerAppln::lookup_all_publisher_list_response - Not ready yet; check again")
                 time.sleep(10)  # sleep between calls so that we don't make excessive calls
