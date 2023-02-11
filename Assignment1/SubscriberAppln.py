@@ -75,6 +75,7 @@ class SubscriberAppln():
         self.frequency = None # rate at which consumption takes place
         self.receivedPublicationList = []
         self.dissemination = None # Hold the dissemination strategy
+        self.iters = None # Number of iterations to receive data
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -215,40 +216,48 @@ class SubscriberAppln():
                 return None
             elif (self.state == self.State.CONSUME):
                 # We are connected... now we CONSUME the data
-                self.logger.debug ("PublisherAppln::invoke_operation - start Consuming data")
+                self.logger.debug ("SubscriberAppln::invoke_operation - start Consuming data")
 
-                publication = self.mw_obj.consume()
+                # Only want to consume the defined amount of times
+                for i in range(self.iters):
 
-                # self.logger.info("Received data: {}".format(publication))
+                    publication = self.mw_obj.consume()
 
-                # Timestamp of receiving the message
-                receivedTimestamp = datetime.datetime.now().timestamp()
+                    # self.logger.info("Received data: {}".format(publication))
 
-                # Find the duration between the timestamps
-                # latency = publication.tstamp - receivedTimestamp
-                latency = receivedTimestamp - publication.tstamp
+                    # Timestamp of receiving the message
+                    receivedTimestamp = datetime.datetime.now().timestamp()
 
-                # self.logger.info("PublisherAppln Latency: {}".format(latency))
+                    # Find the duration between the timestamps
+                    # latency = publication.tstamp - receivedTimestamp
+                    latency = receivedTimestamp - publication.tstamp
 
-                # Change the publication's timestamp back into a datetime to display
-                # publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
-                # self.logger.debug(publicationTimestamp)
-                # Store the converted timestamp in the message
-                # publication.tstamp = publicationTimestamp
+                    # self.logger.info("PublisherAppln Latency: {}".format(latency))
 
-                # Make the publication and latency a set
-                publicationTuple = (publication, latency)
+                    # Change the publication's timestamp back into a datetime to display
+                    # publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
+                    # self.logger.debug(publicationTimestamp)
+                    # Store the converted timestamp in the message
+                    # publication.tstamp = publicationTimestamp
 
-                # Add the data to some list to export to a csv?
-                self.receivedPublicationList.append(publicationTuple)
+                    # Make the publication and latency a set
+                    publicationTuple = (publication, latency)
 
-                self.logger.info("Received Data: {}".format(publicationTuple))
+                    # Add the data to some list to export to a csv?
+                    self.receivedPublicationList.append(publicationTuple)
 
-                self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
+                    self.logger.info("SubscriberAppln::invoke_operation -  Received Data: {}".format(publicationTuple))
 
-                # Now sleep for an interval of time to ensure we consume at the
-                # frequency that was configured.
-                time.sleep (1/float (self.frequency)) 
+                    self.logger.debug ("SubscriberAppln::invoke_operation - Consumption completed")
+
+                    # Now sleep for an interval of time to ensure we consume at the
+                    # frequency that was configured.
+                    time.sleep (1/float (self.frequency)) 
+
+                self.logger.debug("SubscriberAppln::invoke_operation - Consumption completed")
+
+                # We are done consuming
+                self.state = self.State.COMPLETED
 
                 # Timeout after the sleep is done
                 return 0
@@ -256,6 +265,8 @@ class SubscriberAppln():
                 # At this time the consumer will never know when it ends up being done
                 # Perhaps in a later iteration
                 
+                self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
+
                 # Write out the list of the publications received into a a csv for graphing
 
                 # we are done. Time to break the event loop. So we created this special method on the

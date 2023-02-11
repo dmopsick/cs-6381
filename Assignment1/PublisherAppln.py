@@ -260,6 +260,7 @@ class PublisherAppln ():
         return 0
         
       elif (self.state == self.State.COMPLETED):
+        self.logger.debug ("PublisherAppln::invoke_operation - Publisher lifecycle completed")
 
         # we are done. Time to break the event loop. So we created this special method on the
         # middleware object to kill its event loop
