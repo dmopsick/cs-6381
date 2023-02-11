@@ -234,6 +234,9 @@ class BrokerAppln():
 
             # Check the status of the response
             if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
+                # Now that we are registered, subscribe to all of our topics
+                self.mw_obj.subscribe(self.topiclist)
+
                 # We have registered, now let's see if the system is ready
                 self.state = self.State.ISREADY
 
