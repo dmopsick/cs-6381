@@ -230,7 +230,7 @@ class BrokerMW():
                 timeout = self.upcall_obj.isready_response (disc_resp.isready_resp)
             elif(disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
                 # Invoke the application logic to handle the reponse from discovery for looking up pub list by topic list
-                timeout = self.upcall_obj.lookup_all_publisher_list_response(disc_resp.lookup_all_req)
+                timeout = self.upcall_obj.lookup_all_publisher_list_response(disc_resp.lookup_all_resp)
             else:
                 raise ValueError("Unrecognized response message")
 
