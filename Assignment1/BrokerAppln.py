@@ -85,7 +85,8 @@ class BrokerAppln():
             # The broker subscribes to all topics
             self.logger.debug ("BrokerAppln::configure - selecting our topic list")
             ts = TopicSelector()
-            self.topiclist = ts.interest(self.num_topics)  # let topic selector give us the desired num of topics
+            # Select all of the topics available in the topic selector
+            self.topiclist = ts.interest(len(ts.topiclist))
 
             # Now setup up our underlying middleware object to which we delegate
             # everything
