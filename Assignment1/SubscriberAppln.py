@@ -100,10 +100,9 @@ class SubscriberAppln():
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read(args.config)
-            # What do these values mean or do | They are the lookup strategies from config.ini
+            # Load the specified lookup and dissemination strategy
             self.lookup = config["Discovery"]["Strategy"]
             self.dissemination = config["Dissemination"]["Strategy"]
-            # This is for the look up strategy and the experiments which comes later
 
             # Now get the list of topics that this subscriber will be interested in
             self.logger.debug ("SubscriberAppln::configure - selecting our topic list")
