@@ -183,7 +183,7 @@ class BrokerAppln():
                 self.logger.info("Received Data: {}".format(publication))
 
                 # Parse out the values of the publication for passing on
-                id = publication.id
+                id = publication.pub_id
                 topic = publication.topic
                 content = publication.content
                 timestamp = publication.tstamp
@@ -299,7 +299,6 @@ class BrokerAppln():
                     self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
 
                 self.logger.debug("BrokerAppln::lookup_all_publisher_list_response - Done connecting to publishers")
-
 
                 # Change the state to ACTIVE
                 # It is time to consume then republish
