@@ -25,7 +25,7 @@ import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
 
 # Now import our CS6381 Middleware
-from CS6381_MW.PublisherMW import PublisherMW
+from CS6381_MW.BrokerMW import BrokerMW
 # We also need the message formats to handle incoming responses.
 from CS6381_MW import discovery_pb2
 
@@ -47,7 +47,7 @@ class BrokerAppln():
         CONFIGURE = 1,
         REGISTER = 2,
         ISREADY = 3,
-        DISSEMINATE = 4,
+        ACTIVE = 4,
         COMPLETED = 5
 
     ########################################
@@ -58,7 +58,10 @@ class BrokerAppln():
         self.mw_obj = None
         self.state = self.State.INITIALIZE
         self.name = None
-
+        self.config = None
+        self.req = None # For registering with discovery
+        self.sub = None # Broker subscribes to all the publishers
+        self.pub = None # Broker publishers to the subscribers
 
     ########################################
     # Configure/initialize
@@ -76,7 +79,26 @@ class BrokerAppln():
             # Initialize our variables
             self.name = args.name
 
+            # Now, get the configuration object
+            self.logger.debug ("BrokerAppln::configure - parsing config.ini")
+            config = configparser.ConfigParser ()
+            config.read (args.config)
+
             # Get the config | Do we need to do this?
+            # Isn't this file ONLY started when broker specified?
+            self.lookup = config["Discovery"]["Strategy"]
+            self.dissemination = config["Dissemination"]["Strategy"]
+
+            # Does broker need topic list? I feel like no
+
+            # Now setup up our underlying middleware object to which we delegate
+            # everything
+            self.logger.debug ("BrokerAppln::configure - initialize the middleware object")
+            self.mw_obj = BrokerMW(self.logger)
+            self.mw_obj.configure(args) # pass remainder of the args to the m/w object
+            
+            self.logger.info ("PublishBrokerApplnerAppln::configure - configuration complete")
+            
         except Exception as e:
             raise e
 
@@ -85,7 +107,25 @@ class BrokerAppln():
     ########################################
     def driver(self):
         ''' Driver program '''
-        pass
+
+        try:
+            self.logger.info("BrokerAppln::driver")
+
+             # dump our contents (debugging purposes)
+            self.dump()
+
+            # Set the upcall handle on our MW
+            self.logger.debug("BrokerAppln::driver - upcall handle")
+            self.mw_obj.set_upcall_handle(self)
+
+            self.state = self.State.REGISTER
+
+            self.mw_obj.event_loop(timeout=0)
+
+            self.logger.info("BrokerAppln::driver completed")
+
+        except Exception as e:
+            raise e
 
     ########################################
     # generic invoke method called as part of upcall
@@ -95,4 +135,25 @@ class BrokerAppln():
     # occurred.
     ########################################
     def invoke_operation (self):
-        pass
+        ''' Invoke operation depending on state '''
+
+        try:
+            self.logger.info ("BrokerAppln::invoke_operation")
+
+            if (self.state == self.State.REGISTER):
+                self.logger.debug ("BrokerAppln::invoke_operation - register with the discovery service")
+                self.mw_obj.register (self.name, self.topiclist)
+
+                # We are waiting for a reply
+                return None
+            elif (self.state == self.State.ISREADY):
+                pass
+            elif (self.state == self.State.ACTIVE):
+                pass
+            elif (self.state == self.State.COMPLETED):
+                pass
+            else:
+                raise ValueError("Undefined state of the appln object")
+        except Exception as e:
+            raise e
+
