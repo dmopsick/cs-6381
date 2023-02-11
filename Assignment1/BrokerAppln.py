@@ -23,6 +23,7 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging
+from Assignment1.CS6381_MW.Common import Constants
 
 from topic_selector import TopicSelector
 
@@ -35,14 +36,6 @@ from CS6381_MW import discovery_pb2
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
 class BrokerAppln():
-
-    # Now import our CS6381 Middleware
-    from CS6381_MW.PublisherMW import PublisherMW
-    # We also need the message formats to handle incoming responses.
-    from CS6381_MW import discovery_pb2
-
-    # import any other packages you need.
-    from enum import Enum  # for an enumeration we are using to describe what state we are in
 
     class State (Enum):
         INITIALIZE = 0,
@@ -152,12 +145,17 @@ class BrokerAppln():
                 return None
             elif (self.state == self.State.ISREADY):
                 # Check if the system is all set up
+                self.logger.debug ("BrokerAppln::invoke_operation - check if are ready to go")
+                self.mw_obj.is_ready() 
                 pass
             elif (self.state == self.State.QUERY_PUBS):
-                # Load the publishers for all topics
-                # Subscribe to all topics
-                # Connect to all publishers
-                pass
+                self.logger.debug ("BrokerAppln::invoke_operation - Query for a list of publishers based on our topic list")
+                
+                # Use the MW object to send a look up publishers by topic list request
+                self.mw_obj.lookup_publishers_by_topiclist(self.topiclist)
+
+                # We are awaiting a reply from the discovery service
+                return None
             elif (self.state == self.State.ACTIVE):
                 # The system is ready
                 # We have the publishers
@@ -211,6 +209,10 @@ class BrokerAppln():
         except Exception as e:
             raise e
 
+    ##############################################
+    # Handle the isready_response from the Discoery service
+    #
+    #############################################
     def isready_response(self, isready_resp):
         ''' Handle isready response '''
 
@@ -223,14 +225,65 @@ class BrokerAppln():
                 time.sleep(10)  # sleep between calls so that we don't make excessive calls
             else:
                 # Set to is acive
-                # Time for broker to be the publisher and subscriber
-                self.state = self.State.ACTIVE
+                # Time for broker to query for the list of pubs
+                self.state = self.State.QUERY_PUBS
 
             # Return a timeout of 0 so event loop can continue
             return 0
 
         except Exception as e:
             raise e
+        
+    ########################################
+    # Handle lookup publisher list by topic list response 
+    #
+    ########################################
+    def lookup_publisher_list_response(self, lookup_resp):
+        ''' Handle the response to a lookup publisher list by topic list request '''
+
+        try :
+            self.logger.info("BrokerAppln::lookup_publisher_list_response")
+
+            if (lookup_resp.status == discovery_pb2.STATUS_SUCCESS):
+                self.logger.debug("BrokerAppln::lookup_publisher_list_response - Success! List of publishers provided from Discovery")
+
+                # Check the dissemination strategy chosen
+                # self.logger.debug("BrokerAppln::lookup_publisher_list_response - FLAG 0: Chosen strategy {}".format(self.dissemination))
+
+                if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
+                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Using direct dissimenation strategy")
+                    # Connect to each of list of publishers 
+                    for publisher in lookup_resp.publisher_list:
+                        self.logger.debug("BrokerAppln::lookup_publisher_list_response - Connecting to publisher {} {}:{}".format(publisher.id, publisher.addr, publisher.port))
+                        
+                        # Connect to this publisher for the topics we are interested in via MW
+                        self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
+
+                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Done connecting to publishers")
+                elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
+                    self.logger.debug("BrokerAppln::lookup_publisher_list_response - Using broker dissimenation strategy")
+                    pass
+                else:
+                    raise ValueError("ERROR: Unexpected dissemination strategy chosen: {}".format(self.dissemination))
+
+                # Change the state to ACTIVE
+                # It is time to consume then republish
+                self.state = self.State.ACTIVE
+
+            elif (lookup_resp.status == discovery_pb2.STATUS_CHECK_AGAIN):
+                # Discovery service is not ready yet to give out list of pubs yet
+                self.logger.debug ("BrokerAppln::lookup_publisher_list_response - Not ready yet; check again")
+                time.sleep(10)  # sleep between calls so that we don't make excessive calls
+
+            else:
+                raise ValueError ("Unexpected status provided from Discovery for the lookup publisher list request")
+
+            # Return time out 0 to continue the logic
+            return 0  
+
+        except Exception as e:
+            raise e
+    
 
 ###################################
 # Parse command line arguments

@@ -47,17 +47,16 @@ from CS6381_MW import discovery_pb2
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
 # Simple data models I created to hold info about publishers and subscribers
-from CS6381_MW.Common import Publisher
-from CS6381_MW.Common import Subscriber # We do not really need to store info but cannot hurt
+from CS6381_MW.Common import Entity
 
 ##################################
 #       DiscoveryAppln class
 ##################################
 class DiscoveryAppln():
+
+    # At this time I only want one broker, maybe one day I want more
+    DEFAULT_NUM_BROKERS = 1
     
-      # these are the states through which our publisher appln object goes thru.
-    # We maintain the state so we know where we are in the lifecycle and then
-    # take decisions accordingly
     class State (Enum):
         INITIALIZE = 0,
         CONFIGURE = 1,
@@ -67,10 +66,12 @@ class DiscoveryAppln():
     def __init__ (self, logger):
         self.specified_num_publishers = None
         self.specified_num_subscribers = None
+        self.specified_num_brokers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
         self.publisher_list = []
         self.subscriber_list = []
+        self.broker_list = []
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -85,6 +86,7 @@ class DiscoveryAppln():
             # Initialize our variables
             self.specified_num_publishers = args.num_publishers
             self.specified_num_subscribers = args.num_subscribers
+            self.specified_num_brokers = self.DEFAULT_NUM_BROKERS
             
             # Now get the configuration object
             self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
@@ -169,9 +171,10 @@ class DiscoveryAppln():
                     self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
                    
                     # Create a new publisher record
-                    publisher = Publisher()
+                    publisher = Entity()
 
                     # Load the publisher with values from RegistrantInfo
+                    publisher.role = discovery_pb2.ROLE_BOTH
                     publisher.name = reg_req.info.id
                     publisher.ip_address = reg_req.info.addr
                     publisher.port = reg_req.info.port
@@ -209,9 +212,10 @@ class DiscoveryAppln():
                 if (len(self.subscriber_list) < self.specified_num_subscribers):
                     self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
                     # Create new subscriber object
-                    subscriber = Subscriber()
+                    subscriber = Entity()
 
                     # Load the subscriber values from registrant info
+                    subscriber.role = discovery_pb2.ROLE_SUBSCRIBER
                     subscriber.name = reg_req.info.id
                     subscriber.ip_address = reg_req.info.addr
                     subscriber.port = reg_req.info.port
@@ -227,7 +231,18 @@ class DiscoveryAppln():
                     reason = None
                     
                     self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
-                   
+                elif (role == discovery_pb2.ROLE_BOTH):
+                    self.logger.info("DiscoveryAppln::register_request Registering a broker")
+
+                    # Check if specified number of brokers is met 
+                    # For now hard coding one broker but perhaps one day we want multiple
+                    if (len(self.broker_list) < self.specified_num_brokers):
+                        # We have room in the system for a broker
+                        pass
+                    else:
+                        # No room in the system for a broker
+                        pass
+
                 else:
                     self.logger.info("DiscoveryAppln::register_request Subscriber attempting to register, but no more subscriber roles are allocated")
 
@@ -273,7 +288,7 @@ class DiscoveryAppln():
                 isready = True
             else:
                 # The specified number of subscribers and publishers has not been reached
-                isready = True
+                isready = False
 
             # Send the isready response in the MW
             self.mw_obj.send_isready_response(isready)

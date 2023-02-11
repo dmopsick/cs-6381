@@ -227,8 +227,11 @@ class BrokerMW():
             # Check the type of reply
             if (disc_resp.msg_type == discovery_pb2.TYPE_REGISTER):
                 timeout = self.upcall_obj.register_response(disc_resp.register_resp)
-            elif (disc_resp.msg_type == discovery_pb2.TYPE_ISREADY):
+            elif(disc_resp.msg_type == discovery_pb2.TYPE_ISREADY):
                 timeout = self.upcall_obj.isready_response (disc_resp.isready_resp)
+            elif(disc_resp.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
+                # Invoke the application logic to handle the reponse from discovery for looking up pub list by topic list
+                timeout = self.upcall_obj.lookup_publisher_list_response(disc_resp.lookup_resp)
             else:
                 raise ValueError("Unrecognized response message")
 
@@ -276,6 +279,110 @@ class BrokerMW():
             self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
 
             self.logger.debug ("PublisherMW::disseminate complete")
+        except Exception as e:
+            raise e
+
+    #################################################
+    # Look up a list of publishers by the topic list
+    #
+    ################################################
+    def lookup_publishers_by_topiclist(self, topiclist):
+        ''' Look up a list of publishers by topic list '''
+        try:
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist")
+
+            # Build the inner BrokerMW  message
+            self.logger.debug("SubscriberMW::lookup_publishers_by_topiclist - populate the nested LookupPubByTopicReq msg")
+            lookup_req = discovery_pb2.LookupPubByTopicReq()  
+            lookup_req.topiclist[:] = topiclist
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - done populating nested LookupPubByTopicReq msg")
+
+            # Build the outer layer Discovery message
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - build the outer DiscoveryReq message")
+            disc_req = discovery_pb2.DiscoveryReq()
+            disc_req.msg_type = discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC
+
+            disc_req.lookup_req.CopyFrom(lookup_req)
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - done building the outer message")
+      
+            # Stringify the buffer and print it
+            # Actually a sequence not a string
+            buf2send = disc_req.SerializeToString()
+            self.logger.debug("Stringified serialized buf = {}".format(buf2send))
+
+            # Send this to our discovery service
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - send stringified buffer to Discovery service")
+            self.req.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+      
+            # Now go to our event loop to receive a response to this request
+            self.logger.debug("BrokerMW::lookup_publishers_by_topiclist - now wait for reply")
+
+        except Exception as e:
+            raise e
+
+    #############################################################
+    # Subscribe to an list of topics
+    #############################################################
+    def subscribe(self, topic_list):
+        ''' Subscribe to a list of topics '''
+
+        for topic in topic_list:
+            self.logger.debug("SubscriberMW::subscribe - Subscribing to topic {}".format(topic))
+            # Pass in the binary representation of the topic name to the subscribe socket
+            # Use UTF-8 encoding
+            self.sub.setsockopt(zmq.SUBSCRIBE, bytes(topic, "utf-8"))
+
+
+    ##################################################
+    # Connect to a publisher
+    #
+    # Need to tell only subscribe to the topics this subscriber is interested in
+    ##################################################
+    def connect_to_publisher(self, ip_address, port, topiclist):
+        ''' Connect to a publisher for the list of topics we are interested in '''
+
+        try :
+            # Build connection string
+            connect_str = "tcp://" + ip_address + ":" + str(port)
+
+            self.logger.debug("BrokerMW::connect_to_publisher - connecting to {}".format(connect_str))
+            self.sub.connect(connect_str)
+
+            # Specify which topics we are subscribing to on this socket
+            for topic in topiclist:
+
+                self.sub.subscribe(topic)
+                self.logger.debug("BrokerMW::connect_to_publisher - Connecting to {} for topic {}".format(connect_str, topic))
+
+        except Exception as e:
+            raise e
+
+    ####################################################
+    # Consume data from the publishers we have subscribed to
+    #
+    # Print out the messages we receive
+    ####################################################
+    def consume(self):
+        ''' Consume messages sent from the publishers we subscribe to '''
+        try:
+            self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
+            
+            # bytesReceived = self.sub.recv_string()
+            bytesReceived = self.sub.recv_multipart()
+
+            # Get the second element 
+            publicationBytes = bytesReceived[1]
+
+            # Decode the data 
+            publication = topic_pb2.Publication()
+            publication.ParseFromString(publicationBytes)
+    
+            # self.logger.debug("SubscriberMW::consume - Received " + publication.content)
+
+            self.logger.debug("SubscriberMW::consume - Consumption complete")
+            
+            return publication
+
         except Exception as e:
             raise e
 

@@ -145,6 +145,10 @@ class SubscriberMW ():
         except Exception as e:
             raise e
 
+    #################################################
+    # Look up a list of publishers by the topic list
+    #
+    ################################################
     def lookup_publishers_by_topiclist (self, topiclist):
         ''' Look up a list of publishers by topic list'''
 
