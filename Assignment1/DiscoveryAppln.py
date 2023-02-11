@@ -375,14 +375,21 @@ class DiscoveryAppln():
                     # I feel like no, we have talked about scenarios when no pub for a topic
                     status = discovery_pb2.STATUS_SUCCESS
                 else:
+                    # Publishers not ready, check again
                     status = discovery_pb2.STATUS_CHECK_AGAIN
             elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
-                # The broker(s) is the only thing subscribers need to describe to for 
-                # Broker dissemination
-                publisher_by_topic_list = self.broker_list
 
-                # The call was made succesfully 
-                status = discovery_pb2.STATUS_SUCCESS
+                # Make sure the broker has been added 
+                if (len(self.broker_list) == self.specified_num_brokers):
+                    # The broker(s) is the only thing subscribers need to describe to for 
+                    # Broker dissemination
+                    publisher_by_topic_list = self.broker_list
+
+                    # The call was made succesfully 
+                    status = discovery_pb2.STATUS_SUCCESS
+                else:
+                    # Broker not registered, check again
+                    status = discovery_pb2.STATUS_CHECK_AGAIN
             else:
                 raise ValueError("ERROR: Invalid dissemination provided in the config: {}".format(self.dissemination))
 
