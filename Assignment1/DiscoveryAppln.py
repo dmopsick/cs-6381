@@ -265,7 +265,7 @@ class DiscoveryAppln():
                     broker = Entity()
 
                     # Load the subscriber values from registrant info
-                    broker.role = discovery_pb2.BOTH
+                    broker.role = discovery_pb2.ROLE_BOTH
                     broker.name = reg_req.info.id
                     broker.ip_address = reg_req.info.addr
                     broker.port = reg_req.info.port
