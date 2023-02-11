@@ -380,6 +380,9 @@ class DiscoveryAppln():
                 # The broker(s) is the only thing subscribers need to describe to for 
                 # Broker dissemination
                 publisher_by_topic_list = self.broker_list
+
+                # The call was made succesfully 
+                status = discovery_pb2.STATUS_SUCCESS
             else:
                 raise ValueError("ERROR: Invalid dissemination provided in the config: {}".format(self.dissemination))
 
