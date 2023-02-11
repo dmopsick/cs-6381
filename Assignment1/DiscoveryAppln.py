@@ -46,6 +46,9 @@ from CS6381_MW import discovery_pb2
 # import any other packages you need.
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
+# Import the constants for the dissemination strategy
+from CS6381_MW.Common import Constants
+
 # Simple data models I created to hold info about publishers and subscribers
 from CS6381_MW.Common import Entity
 
@@ -72,6 +75,8 @@ class DiscoveryAppln():
         self.publisher_list = []
         self.subscriber_list = []
         self.broker_list = []
+        self.lookup = None
+        self.dissemination = None
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -88,10 +93,14 @@ class DiscoveryAppln():
             self.specified_num_subscribers = args.num_subscribers
             self.specified_num_brokers = self.DEFAULT_NUM_BROKERS
             
-            # Now get the configuration object
-            self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
+            # Now, get the configuration object
+            self.logger.debug ("DiscoveryAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read (args.config)
+            # What do these values mean and where do they come from?
+            # They come from our config.ini
+            self.lookup = config["Discovery"]["Strategy"]
+            self.dissemination = config["Dissemination"]["Strategy"]
 
             # Set up underlying middleware object
             self.logger.debug("DiscoveryAppln::configure - initialize the middleware object")
@@ -231,17 +240,6 @@ class DiscoveryAppln():
                     reason = None
                     
                     self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
-                elif (role == discovery_pb2.ROLE_BOTH):
-                    self.logger.info("DiscoveryAppln::register_request Registering a broker")
-
-                    # Check if specified number of brokers is met 
-                    # For now hard coding one broker but perhaps one day we want multiple
-                    if (len(self.broker_list) < self.specified_num_brokers):
-                        # We have room in the system for a broker
-                        pass
-                    else:
-                        # No room in the system for a broker
-                        pass
 
                 else:
                     self.logger.info("DiscoveryAppln::register_request Subscriber attempting to register, but no more subscriber roles are allocated")
@@ -256,7 +254,48 @@ class DiscoveryAppln():
                 self.mw_obj.send_register_response(status, reason)
 
                 self.logger.info("DiscoveryAppln::register_request Done registering a subscriber")
-                   
+            elif (role == discovery_pb2.ROLE_BOTH):
+                self.logger.info("DiscoveryAppln::register_request Registering a broker")
+
+                # Check if specified number of brokers is met 
+                # For now hard coding one broker but perhaps one day we want multiple
+                if (len(self.broker_list) < self.specified_num_brokers):
+                    self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
+                    # Create new Entity object
+                    broker = Entity()
+
+                    # Load the subscriber values from registrant info
+                    broker.role = discovery_pb2.BOTH
+                    broker.name = reg_req.info.id
+                    broker.ip_address = reg_req.info.addr
+                    broker.port = reg_req.info.port
+                    broker.topic_list = reg_req.topiclist
+
+                    # Add the created object to the list of publishers registered
+                    self.broker_list.append(broker)
+
+                    # Set status to success if we have gotten this far
+                    status = discovery_pb2.STATUS_SUCCESS
+
+                    # No reason to send
+                    reason = None
+                    
+                    self.logger.debug("DiscoveryAppln::register_request Done creating a new broker record")
+
+                else:
+                    self.logger.info("DiscoveryAppln::register_request Broker attempting to register, but no more brokers roles are allocated")
+
+                    # Set status to failure
+                    status = discovery_pb2.STATUS_FAILURE
+
+                    # Pass in a reason to let the registrant know why it failed
+                    reason = "Max brokers already reached for this system"
+
+                # Send a register reply with the MW
+                self.mw_obj.send_register_response(status, reason)
+
+                self.logger.info("DiscoveryAppln::register_request Done registering a broker")
+
             else:
                 self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
                 raise ValueError("Invalid role provided for registration request to Discovery server")
@@ -311,30 +350,38 @@ class DiscoveryAppln():
 
         try:
             self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request")
-            
-            # Init the topic list 
-            publisher_by_topic_list = []
 
-            # Check if all the publishers have been added to the system
-            if (len(self.publisher_list) == self.specified_num_publishers):
-                # Parse out the topic list from the lookup req
-                topic_list = lookup_req.topiclist  
+            # Check the dissemination method
+            if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
+                # Init the topic list 
+                publisher_by_topic_list = []
 
-                # Build out the publisher list
-                for pub in self.publisher_list:
-                    # Check if the publisher has any topics that match the topic list
-                    # Use the any function to avoid loading duplicate publsihers
-                    if (any(topic in topic_list for topic in pub.topic_list)):
-                        publisher_by_topic_list.append(pub)
+                # Check if all the publishers have been added to the system
+                if (len(self.publisher_list) == self.specified_num_publishers):
+                    # Parse out the topic list from the lookup req
+                    topic_list = lookup_req.topiclist  
 
-                # self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Built out the following list of pubs: {}".format(publisher_by_topic_list))
+                    # Build out the publisher list
+                    for pub in self.publisher_list:
+                        # Check if the publisher has any topics that match the topic list
+                        # Use the any function to avoid loading duplicate publsihers
+                        if (any(topic in topic_list for topic in pub.topic_list)):
+                            publisher_by_topic_list.append(pub)
 
-                # If the publisher list has been built, status is success
-                # Should it only be success if there is one or more pubs that match specifications?
-                # I feel like no, we have talked about scenarios when no pub for a topic
-                status = discovery_pb2.STATUS_SUCCESS
+                    # self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Built out the following list of pubs: {}".format(publisher_by_topic_list))
+
+                    # If the publisher list has been built, status is success
+                    # Should it only be success if there is one or more pubs that match specifications?
+                    # I feel like no, we have talked about scenarios when no pub for a topic
+                    status = discovery_pb2.STATUS_SUCCESS
+                else:
+                    status = discovery_pb2.STATUS_CHECK_AGAIN
+            elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
+                # The broker(s) is the only thing subscribers need to describe to for 
+                # Broker dissemination
+                publisher_by_topic_list = self.broker_list
             else:
-                status = discovery_pb2.STATUS_CHECK_AGAIN
+                raise ValueError("ERROR: Invalid dissemination provided in the config: {}".format(self.dissemination))
 
             # Send the lookup_pub_by_topiclist response in the MW
             self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list)
