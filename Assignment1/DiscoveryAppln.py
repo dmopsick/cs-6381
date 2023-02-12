@@ -386,7 +386,7 @@ class DiscoveryAppln():
                     # Broker dissemination
                     publisher_by_topic_list = self.broker_list
 
-                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Here is broker list:"))
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Here is broker list:")
                     self.logger.debug(publisher_by_topic_list)
 
                     # The call was made succesfully 
