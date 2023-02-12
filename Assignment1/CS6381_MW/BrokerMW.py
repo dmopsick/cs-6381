@@ -246,8 +246,8 @@ class BrokerMW():
     #
     # Disseminate data on the pub socket
     ####################################
-    # def disseminate (self, id, topic, data, timestamp):
-    def disseminate (self, publication):    
+    def disseminate (self, id, topic, data, timestamp):
+    # def disseminate (self, publication):    
         ''' Disseminate the data '''
 
         try:
@@ -260,11 +260,11 @@ class BrokerMW():
             # self.logger.debug ("BrokerMW::disseminate - Build the Publication message to sent")
 
             # Build the Publication message 
-            # publication = topic_pb2.Publication()
-            # publication.topic = topic
-            # publication.content = data
-            # publication.pub_id = id
-            # publication.tstamp = timestamp # Use the time set at publisher level
+            publication = topic_pb2.Publication()
+            publication.topic = topic
+            publication.content = data
+            publication.pub_id = id
+            publication.tstamp = timestamp # Use the time set at publisher level
 
             # self.logger.debug ("BrokerMW::disseminate - Built the Publication message to sent")
 

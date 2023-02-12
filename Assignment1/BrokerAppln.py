@@ -184,16 +184,16 @@ class BrokerAppln():
                 self.logger.info("Received Data: {}".format(publication))
 
                 # Parse out the values of the publication for passing on
-                # id = publication.pub_id
-                # topic = publication.topic
-                # content = publication.content
-                # timestamp = publication.tstamp
+                id = publication.pub_id
+                topic = publication.topic
+                content = publication.content
+                timestamp = publication.tstamp
 
                 self.logger.debug("BrokerAppln::invoke_operation - Now we disseminate what we received")
 
                 # Now disseminate the data the Broker has received
-                # self.mw_obj.disseminate(id, topic, content, timestamp)
-                self.mw_obj.disseminate(publication)
+                self.mw_obj.disseminate(id, topic, content, timestamp)
+                # self.mw_obj.disseminate(publication)
                 
                 self.logger.debug("BrokerAppln::invoke_operation:: Data has been disseminated")
 
@@ -332,7 +332,7 @@ def parseCmdLineArgs ():
     # using, what is our endpoint (i.e., port where we are going to bind at the
     # ZMQ level)
 
-    parser.add_argument("-n", "--name", default="pub", help="Some name assigned to us. Keep it unique per publisher")
+    parser.add_argument("-n", "--name", default="broker", help="Some name assigned to us. Keep it unique per publisher")
 
     parser.add_argument("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 

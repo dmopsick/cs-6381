@@ -85,6 +85,7 @@ class SubscriberMW ():
             # Register the req socket for incoming request
             self.logger.debug ("SubscriberMW::configure - register the REQ socket for incoming replies")
             self.poller.register(self.req, zmq.POLLIN)
+            self.poller.register(self.sub, zmq.POLLIN)
 
             # Connect to the discovery service 
             # Use TCP followed by Ip addr:port number

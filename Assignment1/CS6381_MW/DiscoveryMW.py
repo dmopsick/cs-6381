@@ -256,7 +256,7 @@ class DiscoveryMW():
                     registrant_info.id = publisher.name
                     registrant_info.addr = publisher.ip_address
                     registrant_info.port = publisher.port
-                    self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response - FLAG 1: Adding " + registrant_info.id + " " + registrant_info.addr  + " " +  str(registrant_info.port))
+                    # self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response - FLAG 1: Adding " + registrant_info.id + " " + registrant_info.addr  + " " +  str(registrant_info.port))
 
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response done building nested look_resp object")
 
