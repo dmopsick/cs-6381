@@ -46,18 +46,20 @@ from CS6381_MW import discovery_pb2
 # import any other packages you need.
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
+# Import the constants for the dissemination strategy
+from CS6381_MW.Common import Constants
+
 # Simple data models I created to hold info about publishers and subscribers
-from CS6381_MW.Common import Publisher
-from CS6381_MW.Common import Subscriber # We do not really need to store info but cannot hurt
+from CS6381_MW.Common import Entity
 
 ##################################
 #       DiscoveryAppln class
 ##################################
 class DiscoveryAppln():
+
+    # At this time I only want one broker, maybe one day I want more
+    DEFAULT_NUM_BROKERS = 1
     
-      # these are the states through which our publisher appln object goes thru.
-    # We maintain the state so we know where we are in the lifecycle and then
-    # take decisions accordingly
     class State (Enum):
         INITIALIZE = 0,
         CONFIGURE = 1,
@@ -67,10 +69,14 @@ class DiscoveryAppln():
     def __init__ (self, logger):
         self.specified_num_publishers = None
         self.specified_num_subscribers = None
+        self.specified_num_brokers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
         self.publisher_list = []
         self.subscriber_list = []
+        self.broker_list = []
+        self.lookup = None
+        self.dissemination = None
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -85,11 +91,16 @@ class DiscoveryAppln():
             # Initialize our variables
             self.specified_num_publishers = args.num_publishers
             self.specified_num_subscribers = args.num_subscribers
+            self.specified_num_brokers = self.DEFAULT_NUM_BROKERS
             
-            # Now get the configuration object
-            self.logger.debug("DiscoveryAppln::configure - parsing config.ini")
+            # Now, get the configuration object
+            self.logger.debug ("DiscoveryAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read (args.config)
+            # What do these values mean and where do they come from?
+            # They come from our config.ini
+            self.lookup = config["Discovery"]["Strategy"]
+            self.dissemination = config["Dissemination"]["Strategy"]
 
             # Set up underlying middleware object
             self.logger.debug("DiscoveryAppln::configure - initialize the middleware object")
@@ -169,9 +180,10 @@ class DiscoveryAppln():
                     self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
                    
                     # Create a new publisher record
-                    publisher = Publisher()
+                    publisher = Entity()
 
                     # Load the publisher with values from RegistrantInfo
+                    publisher.role = discovery_pb2.ROLE_BOTH
                     publisher.name = reg_req.info.id
                     publisher.ip_address = reg_req.info.addr
                     publisher.port = reg_req.info.port
@@ -209,9 +221,10 @@ class DiscoveryAppln():
                 if (len(self.subscriber_list) < self.specified_num_subscribers):
                     self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
                     # Create new subscriber object
-                    subscriber = Subscriber()
+                    subscriber = Entity()
 
                     # Load the subscriber values from registrant info
+                    subscriber.role = discovery_pb2.ROLE_SUBSCRIBER
                     subscriber.name = reg_req.info.id
                     subscriber.ip_address = reg_req.info.addr
                     subscriber.port = reg_req.info.port
@@ -227,7 +240,7 @@ class DiscoveryAppln():
                     reason = None
                     
                     self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
-                   
+
                 else:
                     self.logger.info("DiscoveryAppln::register_request Subscriber attempting to register, but no more subscriber roles are allocated")
 
@@ -241,7 +254,48 @@ class DiscoveryAppln():
                 self.mw_obj.send_register_response(status, reason)
 
                 self.logger.info("DiscoveryAppln::register_request Done registering a subscriber")
-                   
+            elif (role == discovery_pb2.ROLE_BOTH):
+                self.logger.info("DiscoveryAppln::register_request Registering a broker")
+
+                # Check if specified number of brokers is met 
+                # For now hard coding one broker but perhaps one day we want multiple
+                if (len(self.broker_list) < self.specified_num_brokers):
+                    self.logger.debug("DiscoveryAppln::register_request Creating a new broker record")
+                    # Create new Entity object
+                    broker = Entity()
+
+                    # Load the subscriber values from registrant info
+                    broker.role = discovery_pb2.ROLE_BOTH
+                    broker.name = reg_req.info.id
+                    broker.ip_address = reg_req.info.addr
+                    broker.port = reg_req.info.port
+                    broker.topic_list = reg_req.topiclist
+
+                    # Add the created object to the list of publishers registered
+                    self.broker_list.append(broker)
+
+                    # Set status to success if we have gotten this far
+                    status = discovery_pb2.STATUS_SUCCESS
+
+                    # No reason to send
+                    reason = None
+                    
+                    self.logger.debug("DiscoveryAppln::register_request Done creating a new broker record")
+
+                else:
+                    self.logger.info("DiscoveryAppln::register_request Broker attempting to register, but no more brokers roles are allocated")
+
+                    # Set status to failure
+                    status = discovery_pb2.STATUS_FAILURE
+
+                    # Pass in a reason to let the registrant know why it failed
+                    reason = "Max brokers already reached for this system"
+
+                # Send a register reply with the MW
+                self.mw_obj.send_register_response(status, reason)
+
+                self.logger.info("DiscoveryAppln::register_request Done registering a broker")
+
             else:
                 self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
                 raise ValueError("Invalid role provided for registration request to Discovery server")
@@ -273,7 +327,7 @@ class DiscoveryAppln():
                 isready = True
             else:
                 # The specified number of subscribers and publishers has not been reached
-                isready = True
+                isready = False
 
             # Send the isready response in the MW
             self.mw_obj.send_isready_response(isready)
@@ -296,30 +350,55 @@ class DiscoveryAppln():
 
         try:
             self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request")
-            
-            # Init the topic list 
+
+            # Init the publisher by topic list 
             publisher_by_topic_list = []
 
-            # Check if all the publishers have been added to the system
-            if (len(self.publisher_list) == self.specified_num_publishers):
-                # Parse out the topic list from the lookup req
-                topic_list = lookup_req.topiclist  
+            # Check the dissemination method
+            if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
+                self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using Direct strategy")
+                # Check if all the publishers have been added to the system
+                if (len(self.publisher_list) == self.specified_num_publishers):
+                    # Parse out the topic list from the lookup req
+                    topic_list = lookup_req.topiclist  
 
-                # Build out the publisher list
-                for pub in self.publisher_list:
-                    # Check if the publisher has any topics that match the topic list
-                    # Use the any function to avoid loading duplicate publsihers
-                    if (any(topic in topic_list for topic in pub.topic_list)):
-                        publisher_by_topic_list.append(pub)
+                    # Build out the publisher list
+                    for pub in self.publisher_list:
+                        # Check if the publisher has any topics that match the topic list
+                        # Use the any function to avoid loading duplicate publsihers
+                        if (any(topic in topic_list for topic in pub.topic_list)):
+                            publisher_by_topic_list.append(pub)
 
-                # self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Built out the following list of pubs: {}".format(publisher_by_topic_list))
+                    # self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Built out the following list of pubs: {}".format(publisher_by_topic_list))
 
-                # If the publisher list has been built, status is success
-                # Should it only be success if there is one or more pubs that match specifications?
-                # I feel like no, we have talked about scenarios when no pub for a topic
-                status = discovery_pb2.STATUS_SUCCESS
+                    # If the publisher list has been built, status is success
+                    # Should it only be success if there is one or more pubs that match specifications?
+                    # I feel like no, we have talked about scenarios when no pub for a topic
+                    status = discovery_pb2.STATUS_SUCCESS
+                else:
+                    # Publishers not ready, check again
+                    status = discovery_pb2.STATUS_CHECK_AGAIN
+            elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
+                self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using broker strategy")
+                # Make sure the broker has been added 
+                if (len(self.broker_list) == self.specified_num_brokers):
+                    # The broker(s) is the only thing subscribers need to describe to for 
+                    # Broker dissemination
+                    for broker in self.broker_list:
+                        publisher_by_topic_list.append(broker)
+
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Sending the broker list as publisher list")
+                    # self.logger.debug(publisher_by_topic_list[0])
+
+                    # The call was made succesfully 
+                    status = discovery_pb2.STATUS_SUCCESS
+                else:
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Broker not registered check again FLAGFLAGFLAGFLAGFLAGFLAG")
+                    
+                    # Broker not registered, check again
+                    status = discovery_pb2.STATUS_CHECK_AGAIN
             else:
-                status = discovery_pb2.STATUS_CHECK_AGAIN
+                raise ValueError("ERROR: Invalid dissemination provided in the config: {}".format(self.dissemination))
 
             # Send the lookup_pub_by_topiclist response in the MW
             self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list)
@@ -329,8 +408,38 @@ class DiscoveryAppln():
             # Return timeout of 0 to return to the event loop
             return 0
         except Exception as e:
-            raise
+            raise e
 
+    ################################################
+    # Look up all of the publishers in the system
+    #
+    # Only should be usable by broker
+    ################################################
+    def lookup_all_publishers(self, lookup_all_resp):
+        ''' Look up all publishers '''
+
+        try:
+            self.logger.info("DiscoveryAppln::lookup_all_publishers")
+
+            all_publisher_list = []
+
+            # Check if all the publishers have been added to the system
+            if (len(self.publisher_list) == self.specified_num_publishers):
+                # Return all of the publishers
+                all_publisher_list = self.publisher_list
+
+                # We got what we needed 
+                status = discovery_pb2.STATUS_SUCCESS
+            else:
+                status = discovery_pb2.STATUS_CHECK_AGAIN
+
+            self.logger.debug("DiscoveryAppln::lookup_all_publishers Done looking up all publishers")
+
+            # Send a response to the look up all publisher request
+            self.mw_obj.send_lookup_all_publisher_response(status, all_publisher_list)
+            
+        except Exception as e:
+            raise e
 
 ###################################
 #
@@ -343,13 +452,13 @@ def parseCmdLineArgs ():
   
     parser.add_argument ("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 
-    parser.add_argument ("-p", "--port", type=int, default=5556, help="Port number on which our underlying publisher ZMQ service runs, default=5555")
+    parser.add_argument ("-p", "--port", type=int, default=5556, help="Port number on which our underlying publisher ZMQ service runs, default=5556")
 
     parser.add_argument ("-P", "--num_publishers", type=int, choices=range(1,50), default=1, help="Number of publishers to build for the system")
 
     parser.add_argument ("-S", "--num_subscribers", type=int, choices=range(1,50), default=1, help="Number of subscribers to build for the system")
 
-    parser.add_argument ("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
+    parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
     
     parser.add_argument ("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
 

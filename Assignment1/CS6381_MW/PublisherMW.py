@@ -29,10 +29,11 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import datetime
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
-#from CS6381_MW import topic_pb2  # you will need this eventually
+from CS6381_MW import topic_pb2
 
 # import any other packages you need.
 
@@ -267,7 +268,7 @@ class PublisherMW ():
   # method of the application object.
   ########################################
   def is_ready (self):
-    ''' register the appln with the discovery service '''
+    ''' Check twith the discovery service to see if the system is ready '''
 
     try:
       self.logger.info ("PublisherMW::is_ready")
@@ -328,13 +329,37 @@ class PublisherMW ():
       # In addition to the current time at which the data was sent
       # That way we can compare when the data is sent vs received
 
+      self.logger.debug ("PublisherMW::disseminate - Build the Publication message to sent")
+
+      # Get the current time
+      send_time = datetime.datetime.now()
+      # Get the current time as a float
+      send_timestamp = send_time.timestamp()
+
+      # Build the Publication message 
+      publication = topic_pb2.Publication()
+      publication.topic = topic
+      publication.content = data
+      publication.pub_id = id
+      publication.tstamp = send_timestamp
+
+      self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
+      self.logger.debug (publication)
+
+      # self.logger.debug ("PublisherMW::disseminate - publication to send: " + str(publication))
+
+      # Serialize the publication
+      buf2send = publication.SerializeToString()
+    
       # Now use the protobuf logic to encode the info and send it.  But for now
       # we are simply sending the string to make sure dissemination is working.
-      send_str = topic + ":" + data
-      self.logger.debug ("PublisherMW::disseminate - {}".format (send_str))
+      # send_str = topic + ":" + data
+      self.logger.debug ("PublisherMW::disseminate - {}".format(buf2send))
 
+      self.logger.debug("PublisherMW::disseminate - Publish the stringified buffer")
       # send the info as bytes. See how we are providing an encoding of utf-8
-      self.pub.send (bytes(send_str, "utf-8"))
+      # self.pub.send(bytes(send_str, "utf-8"))
+      self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
 
       self.logger.debug ("PublisherMW::disseminate complete")
     except Exception as e:

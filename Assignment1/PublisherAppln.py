@@ -241,15 +241,15 @@ class PublisherAppln ():
           # Here, we choose to disseminate on all topics that we publish.  Also, we don't care
           # about their values. But in future assignments, this can change.
           for topic in self.topiclist:
-            # For now, we have chosen to send info in the form "topic name: topic value"
-            # In later assignments, we should be using more complex encodings using
-            # protobuf.  In fact, I am going to do this once my basic logic is working.
-            dissemination_data = ts.gen_publication (topic)
-            self.mw_obj.disseminate (self.name, topic, dissemination_data)
+            # Generate the data to disseminate
+            dissemination_data = ts.gen_publication(topic)
+            
+            # Send out the data
+            self.mw_obj.disseminate(self.name, topic, dissemination_data)
 
           # Now sleep for an interval of time to ensure we disseminate at the
           # frequency that was configured.
-          time.sleep (1/float (self.frequency))  # ensure we get a floating point num
+          time.sleep (1 / float (self.frequency))  # ensure we get a floating point num
 
         self.logger.debug ("PublisherAppln::invoke_operation - Dissemination completed")
 
@@ -260,6 +260,7 @@ class PublisherAppln ():
         return 0
         
       elif (self.state == self.State.COMPLETED):
+        self.logger.debug ("PublisherAppln::invoke_operation - Publisher lifecycle completed")
 
         # we are done. Time to break the event loop. So we created this special method on the
         # middleware object to kill its event loop
@@ -388,7 +389,7 @@ def parseCmdLineArgs ():
 
   parser.add_argument ("-i", "--iters", type=int, default=1000, help="number of publication iterations (default: 1000)")
 
-  parser.add_argument ("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
+  parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
   
   return parser.parse_args()
 

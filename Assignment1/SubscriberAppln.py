@@ -33,6 +33,8 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
+import datetime
+import csv
 
 from topic_selector import TopicSelector
 
@@ -40,6 +42,9 @@ from CS6381_MW.SubscriberMW import SubscriberMW
 
 # We also need the message formats to handle incoming responses.
 from CS6381_MW import discovery_pb2
+
+# Import the constants for the dissemination strategy
+from CS6381_MW.Common import Constants
 
 from enum import Enum  # for an enumeration we are using to describe what state we are in
 
@@ -69,6 +74,9 @@ class SubscriberAppln():
         self.num_topics = None # total num of topics the subscriber is interested in
         self.topiclist = None # the different topics that the subscriber is interested in
         self.frequency = None # rate at which consumption takes place
+        self.receivedPublicationList = []
+        self.dissemination = None # Hold the dissemination strategy
+        self.iters = None # Number of iterations to receive data
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -94,10 +102,9 @@ class SubscriberAppln():
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read(args.config)
-            # What do these values mean or do | They are the lookup strategies from config.ini
+            # Load the specified lookup and dissemination strategy
             self.lookup = config["Discovery"]["Strategy"]
             self.dissemination = config["Dissemination"]["Strategy"]
-            # This is for the look up strategy and the experiments which comes later
 
             # Now get the list of topics that this subscriber will be interested in
             self.logger.debug ("SubscriberAppln::configure - selecting our topic list")
@@ -114,8 +121,6 @@ class SubscriberAppln():
             pass
         except Exception as e:
             raise e
-
-        pass
 
     ########################################
     # driver program
@@ -210,23 +215,87 @@ class SubscriberAppln():
                 return None
             elif (self.state == self.State.CONSUME):
                 # We are connected... now we CONSUME the data
-                self.logger.debug ("PublisherAppln::invoke_operation - start Consuming data")
+                self.logger.debug ("SubscriberAppln::invoke_operation - start Consuming data")
 
-                data = self.mw_obj.consume()
-                self.logger.info("Received data: {}".format(data))
+                # Only want to consume the defined amount of times
+                for i in range(self.iters):
 
-                self.logger.debug ("PublisherAppln::invoke_operation - Consumption completed")
+                    publication = self.mw_obj.consume()
 
-                # Now sleep for an interval of time to ensure we disseminate at the
-                # frequency that was configured.
-                time.sleep (1/float (self.frequency))  # ensure we get a floating point num
+                    # self.logger.info("Received data: {}".format(publication))
 
-                # Time eout after the sleep is done
+                    # Timestamp of receiving the message
+                    receivedTimestamp = datetime.datetime.now().timestamp()
+
+                    # Find the duration between the timestamps
+                    # latency = publication.tstamp - receivedTimestamp
+                    latency = receivedTimestamp - publication.tstamp
+
+                    # self.logger.info("PublisherAppln Latency: {}".format(latency))
+
+                    # Change the publication's timestamp back into a datetime to display
+                    # publicationTimestamp = datetime.datetime.fromtimestamp(publication.tstamp)
+                    # self.logger.debug(publicationTimestamp)
+                    # Store the converted timestamp in the message
+                    # publication.tstamp = publicationTimestamp
+
+                    # Make the publication and latency a set
+                    publicationTuple = (publication, latency)
+
+                    # Add the data to some list to export to a csv?
+                    self.receivedPublicationList.append(publicationTuple)
+
+                    self.logger.info("SubscriberAppln::invoke_operation -  Received Data: {}".format(publicationTuple))
+
+                    # self.logger.debug ("SubscriberAppln::invoke_operation - Consumption completed")
+
+                    # Now sleep for an interval of time to ensure we consume at the
+                    # frequency that was configured.
+                    time.sleep (1/float (self.frequency)) 
+
+                self.logger.debug("SubscriberAppln::invoke_operation - Consumption completed")
+
+                # We are done consuming
+                self.state = self.State.COMPLETED
+
+                # Timeout after the sleep is done
                 return 0
             elif (self.state == self.State.COMPLETED):
                 # At this time the consumer will never know when it ends up being done
                 # Perhaps in a later iteration
+                
+                self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed. Writing CSV")
 
+                # Write out the list of the publications received into a a csv for graphing
+                with open("./csv/" + self.name + "_" + self.dissemination.lower() + "_output.csv", "w", newline="") as f:
+                    # Create write variable 
+                    writer = csv.writer(f)
+
+                    # Write the header for the csv
+                    rowHeaders = ['topic', 'content', 'publisher_id', 'timestamp', 'latency']
+
+                    # Write the header for the csv 
+                    writer.writerow(rowHeaders)
+
+                    # Write each tuple as a row in the csv 
+                    for publicationTuple in self.receivedPublicationList:
+                        # Get the publication record, first record in the tuple we build
+                        publication = publicationTuple[0]
+
+                        # Get date string from the timestamp
+                        timestampString = datetime.datetime.fromtimestamp(publication.tstamp).isoformat()
+
+                        # Get the latency, second record in the tuple we build
+                        latency = publicationTuple[1]
+
+                        # Build the string to write
+                        rowToWrite = [publication.topic,  publication.content, publication.pub_id, timestampString, str(latency)]
+
+                        # Turn each element in our list to a row in the csv
+                        writer.writerow(rowToWrite)
+
+                self.logger.debug ("SubscriberAppln::invoke_operation - CSV written")
+                    
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
                 self.mw_obj.disable_event_loop()
@@ -253,7 +322,7 @@ class SubscriberAppln():
                 # Invoke the MW logic to subscribe to our list of topics now that we are registered
                 # I do not think I actually need to do this? 
                 # I thikn I can subscribe when I connect to each publisher
-                # self.mw_obj.subscribe(self.topiclist)
+                self.mw_obj.subscribe(self.topiclist)
 
                 # Now that we are connected we must look up a list
                 # of publishers based on our topics we are interested in
@@ -288,7 +357,7 @@ class SubscriberAppln():
                     self.mw_obj.connect_to_publisher(publisher.addr, publisher.port, self.topiclist)
 
                 self.logger.debug("SubscriberAppln::lookup_publisher_list_response - Done connecting to publishers")
-
+       
                 # Change the state to CONSUME time for us to just accept data
                 self.state = self.State.CONSUME
 
@@ -335,7 +404,7 @@ def parseCmdLineArgs ():
 
     parser.add_argument("-i", "--iters", type=int, default=1000, help="number of publication iterations (default: 1000)")
 
-    parser.add_argument("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
+    parser.add_argument("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
   
     return parser.parse_args()
 

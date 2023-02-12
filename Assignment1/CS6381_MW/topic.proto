@@ -13,6 +13,6 @@ syntax = "proto3";
 message Publication {
     string topic = 1; // Topic name
     string content = 2; // The contents of the published sample
-    string publisher_id = 3; // Publisher's ID (This should be unique)
-    float timestamp = 4; // Timestamp of publication at publisher
+    string pub_id = 3; // Publisher's ID (This should be unique)
+    float tstamp = 4; // Timestamp of publication at publisher
 }

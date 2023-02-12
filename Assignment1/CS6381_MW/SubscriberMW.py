@@ -41,6 +41,7 @@ import zmq  # ZMQ sockets
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
+from CS6381_MW import topic_pb2
 
 class SubscriberMW ():
 
@@ -54,7 +55,6 @@ class SubscriberMW ():
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
         self.lookup = None # one of the diff ways we do lookup
-        self.dissemination = None # direct or via broker
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''
@@ -85,6 +85,7 @@ class SubscriberMW ():
             # Register the req socket for incoming request
             self.logger.debug ("SubscriberMW::configure - register the REQ socket for incoming replies")
             self.poller.register(self.req, zmq.POLLIN)
+            # self.poller.register(self.sub, zmq.POLLIN)
 
             # Connect to the discovery service 
             # Use TCP followed by Ip addr:port number
@@ -144,6 +145,10 @@ class SubscriberMW ():
         except Exception as e:
             raise e
 
+    #################################################
+    # Look up a list of publishers by the topic list
+    #
+    ################################################
     def lookup_publishers_by_topiclist (self, topiclist):
         ''' Look up a list of publishers by topic list'''
 
@@ -237,7 +242,6 @@ class SubscriberMW ():
             return timeout 
 
         except Exception as e:
-            print("FLAG 0")
             raise e
 
     #############################################################
@@ -288,7 +292,6 @@ class SubscriberMW ():
 
             # Specify which topics we are subscribing to on this socket
             for topic in topiclist:
-                # Instead of the setsockopt, go ahead and do the subscribe logic here
                 self.sub.subscribe(topic)
                 self.logger.debug("SubscriberMW::connect_to_publisher - Connecting to {} for topic {}".format(connect_str, topic))
 
@@ -305,14 +308,34 @@ class SubscriberMW ():
         try:
             self.logger.debug("SubscriberMW::consume - Consume from our configured sub socket")
             
-            data = self.sub.recv()
+            # bytesReceived = self.sub.recv_string()
+            bytesReceived = self.sub.recv_multipart()
+            # Receiving two parts of the message topic, serializedObject
+
+            # self.logger.debug("RECEIVED: ")
+            # self.logger.debug(bytesReceived)
+
+            # Get the second element 
+            publicationBytes = bytesReceived[1]
+
+            # self.logger.debug("ELEMENT 1: ")
+            # self.logger.debug(publicationBytes)
+
+            # Turn the bytes into a string
+            # publicationString = publicationBytes.decode("utf-8")
+
+           #  self.logger.debug("SubscriberMW::consume - Data received")
 
             # Decode the data 
-            decodedData = data.decode("utf-8")
+            publication = topic_pb2.Publication()
+            publication.ParseFromString(publicationBytes)
+            # publication = bytesReceived.decode("utf-8")
+
+            # self.logger.debug("SubscriberMW::consume - Received " + publication.content)
 
             self.logger.debug("SubscriberMW::consume - Consumption complete")
             
-            return decodedData
+            return publication
 
         except Exception as e:
             raise e
