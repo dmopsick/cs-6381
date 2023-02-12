@@ -192,14 +192,14 @@ class BrokerAppln():
                 self.logger.debug("BrokerAppln::invoke_operation - Now we disseminate what we received")
 
                 # Now disseminate the data the Broker has received
-                self.mw_obj.disseminate(id, topic, content, timestamp)
+                # self.mw_obj.disseminate(id, topic, content, timestamp)
+                self.mw_obj.disseminate(publication)
                 
-                #
-                self.logger.debug("BrokerAppln::invoke_operation:: ")
+                self.logger.debug("BrokerAppln::invoke_operation:: Data has been disseminated")
 
                 # Do we want the broker to rest? Or just push along as soon as possible
                 # I feel like no rest
-                time.sleep (1/float (self.frequency)) 
+                # time.sleep (1/float (self.frequency)) 
 
                 # Timeout after the sleep is done
 
