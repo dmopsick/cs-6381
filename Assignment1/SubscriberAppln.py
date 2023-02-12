@@ -284,8 +284,11 @@ class SubscriberAppln():
                         # Get the latency, second record in the tuple we build
                         latency = publicationTuple[1]
 
+                        # Build the string to write
+                        rowToWrite = publication.topic + "," + publication.content + "," + publication.pub_id + "," + timestampString + "," + str(latency)
+
                         # Turn each element in our list to a row in the csv
-                        writer.write(publication.topic, publication.content, publication.pub_id, timestampString, str(latency))
+                        writer.write(rowToWrite)
                     
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
