@@ -34,6 +34,7 @@ import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
 import datetime
+import csv
 
 from topic_selector import TopicSelector
 
@@ -266,7 +267,9 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
 
                 # Write out the list of the publications received into a a csv for graphing
-
+                with open(self.name + "_output.csv", "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(self.receivedPublicationList)
 
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
@@ -374,7 +377,7 @@ def parseCmdLineArgs ():
 
     parser.add_argument("-f", "--frequency", type=int,default=1, help="Rate at which topics disseminated: default once a second - use integers")
 
-    parser.add_argument("-i", "--iters", type=int, default=1000, help="number of publication iterations (default: 1000)")
+    parser.add_argument("-i", "--iters", type=int, default=50, help="number of publication iterations (default: 1000)")
 
     parser.add_argument("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
   
