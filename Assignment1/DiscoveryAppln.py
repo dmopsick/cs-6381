@@ -356,7 +356,7 @@ class DiscoveryAppln():
 
             # Check the dissemination method
             if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
-
+                self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using Direct strategy")
                 # Check if all the publishers have been added to the system
                 if (len(self.publisher_list) == self.specified_num_publishers):
                     # Parse out the topic list from the lookup req
@@ -379,7 +379,7 @@ class DiscoveryAppln():
                     # Publishers not ready, check again
                     status = discovery_pb2.STATUS_CHECK_AGAIN
             elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
-
+                self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using broker strategy")
                 # Make sure the broker has been added 
                 if (len(self.broker_list) == self.specified_num_brokers):
                     # The broker(s) is the only thing subscribers need to describe to for 
