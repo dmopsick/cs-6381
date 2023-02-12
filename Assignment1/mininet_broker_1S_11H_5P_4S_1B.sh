@@ -8,4 +8,4 @@ h7 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 4 -n sub1 -i 60 > sub1.out 2
 h8 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 5 -n sub2 -i 60 > sub2.out 2>&1 &
 h9 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 4 -n sub3 -i 60 > sub3.out 2>&1 &
 h10 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 5 -n sub4 -i 60 > sub4.out 2>&1 &
-h11 ifconfig 10.0.0.11 python3 BrokerAppln.py -d "10.0.0.1:5556"  -a "10.0.0.11" -n broker1 > broker1.out 2>&1 &
+h11 python3 BrokerAppln.py -d "10.0.0.1:5556"  -a "10.0.0.11" -n broker1 > broker1.out 2>&1 &
