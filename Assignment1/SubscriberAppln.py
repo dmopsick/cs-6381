@@ -267,12 +267,12 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
 
                 # Write out the list of the publications received into a a csv for graphing
-                with open("./csv/" + self.name + "_" + self.dissemination + "_output.csv", "w") as f:
+                with open("./csv/" + self.name + "_" + self.dissemination + "_output.csv", "w", newline="") as f:
                     # Create write variable 
                     writer = csv.writer(f)
 
                     # Write the header for the csv
-                    rowHeaders = 'topic, content, publisher_id, timestamp, latency'
+                    rowHeaders = ['topic', 'content', 'publisher_id', 'timestamp', 'latency']
 
                     # Write the header for the csv 
                     writer.writerow(rowHeaders)
@@ -288,7 +288,7 @@ class SubscriberAppln():
                         latency = publicationTuple[1]
 
                         # Build the string to write
-                        rowToWrite = publication.topic + "," + publication.content + "," + publication.pub_id + "," + timestampString + "," + str(latency)
+                        rowToWrite = [publication.topic,  publication.content, publication.pub_id, timestampString, str(latency)]
 
                         # Turn each element in our list to a row in the csv
                         writer.writerow(rowToWrite)
