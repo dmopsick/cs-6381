@@ -387,7 +387,7 @@ class DiscoveryAppln():
                     publisher_by_topic_list.extend(self.broker_list)
 
                     self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Here is broker list:")
-                    self.logger.debug(publisher_by_topic_list)
+                    self.logger.debug(publisher_by_topic_list[0])
 
                     # The call was made succesfully 
                     status = discovery_pb2.STATUS_SUCCESS
