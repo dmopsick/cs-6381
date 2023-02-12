@@ -1,0 +1,250 @@
+"topic: ""light""
+content: ""1100""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",25.52199697494507
+"topic: ""altitude""
+content: ""16386""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",29.630901098251343
+"topic: ""light""
+content: ""800""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",30.640336990356445
+"topic: ""altitude""
+content: ""20768""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",34.79367995262146
+"topic: ""light""
+content: ""1600""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",35.81101393699646
+"topic: ""altitude""
+content: ""26281""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",41.52322006225586
+"topic: ""light""
+content: ""800""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",42.530028104782104
+"topic: ""altitude""
+content: ""25062""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",47.35385990142822
+"topic: ""light""
+content: ""800""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",48.36239290237427
+"topic: ""altitude""
+content: ""23144""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",52.414599895477295
+"topic: ""light""
+content: ""800""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",53.46985697746277
+"topic: ""altitude""
+content: ""22720""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",57.67183208465576
+"topic: ""light""
+content: ""800""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",58.68522810935974
+"topic: ""altitude""
+content: ""11148""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",62.722310066223145
+"topic: ""light""
+content: ""450""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",63.890296936035156
+"topic: ""altitude""
+content: ""10275""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",68.29253196716309
+"topic: ""light""
+content: ""1100""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",69.29923295974731
+"topic: ""altitude""
+content: ""13041""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",73.33311009407043
+"topic: ""light""
+content: ""1100""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",74.33798503875732
+"topic: ""altitude""
+content: ""28642""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",79.15217709541321
+"topic: ""light""
+content: ""450""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",80.36076188087463
+"topic: ""altitude""
+content: ""37462""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",81.43316388130188
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",82.4549241065979
+"topic: ""weather""
+content: ""cloudy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",83.46032810211182
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",84.5728509426117
+"topic: ""light""
+content: ""800""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",86.46545195579529
+"topic: ""airquality""
+content: ""good""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",88.5625650882721
+"topic: ""light""
+content: ""450""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",89.58325409889221
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",91.65083408355713
+"topic: ""altitude""
+content: ""19944""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",94.70313906669617
+"topic: ""altitude""
+content: ""13155""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",98.2130970954895
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",100.22039103507996
+"topic: ""altitude""
+content: ""23377""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",101.222088098526
+"topic: ""sound""
+content: ""77""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",103.34259605407715
+"topic: ""sound""
+content: ""70""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",104.35257411003113
+"topic: ""light""
+content: ""1600""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",106.45626902580261
+"topic: ""altitude""
+content: ""18785""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",107.46051001548767
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",108.71780300140381
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",109.91869711875916
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",110.96492099761963
+"topic: ""light""
+content: ""450""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",113.22015690803528
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",115.27502608299255
+"topic: ""light""
+content: ""800""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",116.28101396560669
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",118.36203002929688
+"topic: ""altitude""
+content: ""11457""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",121.42135405540466
+"topic: ""altitude""
+content: ""30480""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",124.46291589736938
+"topic: ""weather""
+content: ""icy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",126.5582230091095
+"topic: ""altitude""
+content: ""25992""
+pub_id: ""pub4""
+tstamp: 1676170112.0
+",127.56299805641174
+"topic: ""sound""
+content: ""63""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",129.76098704338074
+"topic: ""sound""
+content: ""56""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",130.77559399604797

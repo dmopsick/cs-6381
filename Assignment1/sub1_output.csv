@@ -1,0 +1,250 @@
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",82.37773609161377
+"topic: ""weather""
+content: ""cloudy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",83.4015040397644
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",84.40817999839783
+"topic: ""airquality""
+content: ""good""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",88.56253099441528
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",91.64582109451294
+"topic: ""humidity""
+content: ""89.47572592141097""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",92.6552460193634
+"topic: ""humidity""
+content: ""40.90970461450651""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",99.21369910240173
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",100.2207601070404
+"topic: ""humidity""
+content: ""69.49743457664434""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",102.33605694770813
+"topic: ""sound""
+content: ""77""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",103.34203910827637
+"topic: ""sound""
+content: ""70""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",104.35199809074402
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",108.71753191947937
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",109.91921496391296
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",110.96522808074951
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",115.27476596832275
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",118.36176991462708
+"topic: ""humidity""
+content: ""75.7380745483652""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",119.40983009338379
+"topic: ""humidity""
+content: ""74.50157782679291""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",125.48965001106262
+"topic: ""weather""
+content: ""icy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",126.55257892608643
+"topic: ""humidity""
+content: ""58.68472094377179""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",128.6345338821411
+"topic: ""sound""
+content: ""63""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",129.76178693771362
+"topic: ""sound""
+content: ""56""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",130.77583408355713
+"topic: ""airquality""
+content: ""good""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",134.96385598182678
+"topic: ""weather""
+content: ""cloudy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",135.98384189605713
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",136.99352502822876
+"topic: ""airquality""
+content: ""good""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",141.1335289478302
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",144.81668901443481
+"topic: ""humidity""
+content: ""67.19744991810148""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",146.50152111053467
+"topic: ""humidity""
+content: ""19.418393931200427""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",152.87780594825745
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",153.88697910308838
+"topic: ""humidity""
+content: ""54.327906585802154""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",156.8229579925537
+"topic: ""sound""
+content: ""89""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",157.83270406723022
+"topic: ""sound""
+content: ""40""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",158.85527205467224
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",163.08538103103638
+"topic: ""weather""
+content: ""rainy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",164.30309796333313
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",165.30534100532532
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",169.51954698562622
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",172.62400794029236
+"topic: ""humidity""
+content: ""27.443980448137502""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",173.793035030365
+"topic: ""humidity""
+content: ""74.44582450372003""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",181.35890293121338
+"topic: ""weather""
+content: ""foggy""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",182.37349700927734
+"topic: ""humidity""
+content: ""99.49909040490745""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",184.41577696800232
+"topic: ""sound""
+content: ""40""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",185.42421698570251
+"topic: ""sound""
+content: ""49""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",186.5551528930664
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",190.70274090766907
+"topic: ""weather""
+content: ""foggy""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",191.76970100402832
+"topic: ""airquality""
+content: ""smog""
+pub_id: ""pub3""
+tstamp: 1676170112.0
+",192.80063700675964
+"topic: ""airquality""
+content: ""poor""
+pub_id: ""pub1""
+tstamp: 1676170112.0
+",197.94377207756042
+"topic: ""airquality""
+content: ""good""
+pub_id: ""pub5""
+tstamp: 1676170112.0
+",201.6859109401703
+"topic: ""humidity""
+content: ""20.929545131012276""
+pub_id: ""pub2""
+tstamp: 1676170112.0
+",202.68850302696228
