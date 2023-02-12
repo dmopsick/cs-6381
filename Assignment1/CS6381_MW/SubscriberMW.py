@@ -253,7 +253,7 @@ class SubscriberMW ():
             self.logger.debug("SubscriberMW::subscribe - Subscribing to topic {}".format(topic))
             # Pass in the binary representation of the topic name to the subscribe socket
             # Use UTF-8 encoding
-            # self.sub.setsockopt(zmq.SUBSCRIBE, bytes(topic, "utf-8"))
+            self.sub.setsockopt(zmq.SUBSCRIBE, bytes(topic, "utf-8"))
 
     ########################################
     # set upcall handle

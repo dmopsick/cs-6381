@@ -270,7 +270,7 @@ class BrokerMW():
 
             self.logger.debug ("BrokerMW::disseminate - publication to send: ")
             self.logger.debug(publication)
-            # self.logger.debug ("BrokerMW::disseminate - topic to send for: " + topic)
+            self.logger.debug ("BrokerMW::disseminate - topic to send for: " + publication.topic,)
 
             # Serialize the publication
             buf2send = publication.SerializeToString()
