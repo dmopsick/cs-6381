@@ -267,10 +267,26 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
 
                 # Write out the list of the publications received into a a csv for graphing
-                with open(self.name + "_output.csv", "w", newline="") as f:
+                with open("./csv/" + self.name + "_" + self.dissemination + "output.csv", "w", newline="") as f:
+                    # Create write variable 
                     writer = csv.writer(f)
-                    writer.writerows(self.receivedPublicationList)
 
+                    # Write the header for the csv 
+                    writer.writerow('topic', 'content', 'publisher_id', 'timestamp', 'latency')
+
+                    for publicationTuple in self.receivedPublicationList:
+                        # Get the publication record, first record in the tuple we build
+                        publication = publicationTuple[0]
+
+                        # Get date string from the timestamp
+                        timestampString = datetime.datetime.fromtimestamp(publication.tstamp).isoformat()
+
+                        # Get the latency, second record in the tuple we build
+                        latency = publicationTuple[1]
+
+                        # Turn each element in our list to a row in the csv
+                        writer.write(publication.topic, publication.content, publication.pub_id, timestampString, str(latency))
+                    
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
                 self.mw_obj.disable_event_loop()
