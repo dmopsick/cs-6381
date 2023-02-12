@@ -4,8 +4,8 @@ h3 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.3" -T 5 -n pub2 > pub
 h4 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.4" -T 5 -n pub3 > pub3.out 2>&1 &
 h5 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.5" -T 5 -n pub4 > pub4.out 2>&1 &
 h6 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.6" -T 5 -n pub5 > pub5.out 2>&1 &
+h11 python3 BrokerAppln.py -d "10.0.0.1:5556"  -a "10.0.0.7" -n broker1 > broker1.out 2>&1 &
 h7 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 4 -n sub1 > sub1.out 2>&1 &
 h8 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 5 -n sub2 > sub2.out 2>&1 &
 h9 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 4 -n sub3 > sub3.out 2>&1 &
 h10 python3 SubscriberAppln.py -d "10.0.0.1:5556" -T 5 -n sub4 > sub4.out 2>&1 &
-h11 python3 BrokerAppln.py -d "10.0.0.1:5556"  -a "10.0.0.7" -n broker1 > broker1.out 2>&1 &
