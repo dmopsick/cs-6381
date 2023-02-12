@@ -80,9 +80,6 @@ class BrokerAppln():
             self.logger.debug ("BrokerAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
             config.read (args.config)
-
-            # Get the config | Do we need to do this?
-            # Isn't this file ONLY started when broker specified?
             self.lookup = config["Discovery"]["Strategy"]
             self.dissemination = config["Dissemination"]["Strategy"]
 
@@ -377,13 +374,13 @@ def main():
 
         # Obtain a subscriber application 
         logger.debug("Main: obtain the object")
-        sub_app = BrokerAppln(logger)
+        broker_app = BrokerAppln(logger)
 
         # Configure the objject
-        sub_app.configure(args)
+        broker_app.configure(args)
 
         # Invoke the driver program
-        sub_app.driver()
+        broker_app.driver()
 
     except Exception as e:
        logger.error("Exception caught in main - {}".format (e)) 

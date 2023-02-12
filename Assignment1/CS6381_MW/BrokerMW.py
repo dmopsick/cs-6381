@@ -274,13 +274,12 @@ class BrokerMW():
             # we are simply sending the string to make sure dissemination is working.
             self.logger.debug("BrokerMW::disseminate - {}".format(buf2send))
 
-            send_str = topic + ":" + data
+            # send_str = topic + ":" + data
 
             self.logger.debug("BrokerMW::disseminate - Publish the stringified buffer")
             # send the info as bytes. See how we are providing an encoding of utf-8
-            self.pub.send(bytes(send_str, "utf-8"))
-            # self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
-
+            # self.pub.send(bytes(send_str, "utf-8"))
+            self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
 
             self.logger.debug ("BrokerMW::disseminate complete")
         except Exception as e:
