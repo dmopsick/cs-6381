@@ -343,6 +343,7 @@ class PublisherMW ():
       publication.pub_id = id
       publication.tstamp = send_timestamp
 
+
       self.logger.debug ("PublisherMW::disseminate - Built the Publication message to sent")
       self.logger.debug (publication)
 

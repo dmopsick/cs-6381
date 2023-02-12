@@ -239,7 +239,7 @@ class DiscoveryMW():
 
             self.logger.debug("DiscoveryMW::send_lookup_pub_by_topiclist_response building nested look_resp object")
         
-            # Build the inner LookupPubByTopicReq  object
+            # Build the inner LookupPubByTopicReq object
             lookup_resp = discovery_pb2.LookupPubByTopicResp()
             lookup_resp.status = status
 
