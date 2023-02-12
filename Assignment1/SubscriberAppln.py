@@ -271,8 +271,11 @@ class SubscriberAppln():
                     # Create write variable 
                     writer = csv.writer(f)
 
+                    # Write the header for the csv
+                    rowHeaders = 'topic, content, publisher_id, timestamp, latency'
+
                     # Write the header for the csv 
-                    writer.writerow('topic', 'content', 'publisher_id', 'timestamp', 'latency')
+                    writer.writerow(rowHeaders)
 
                     for publicationTuple in self.receivedPublicationList:
                         # Get the publication record, first record in the tuple we build
