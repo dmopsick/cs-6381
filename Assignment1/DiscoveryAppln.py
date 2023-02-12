@@ -386,12 +386,14 @@ class DiscoveryAppln():
                     # Broker dissemination
                     publisher_by_topic_list.extend(self.broker_list)
 
-                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Here is broker list:")
-                    self.logger.debug(publisher_by_topic_list[0])
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Sending the broker list as publisher list")
+                    # self.logger.debug(publisher_by_topic_list[0])
 
                     # The call was made succesfully 
                     status = discovery_pb2.STATUS_SUCCESS
                 else:
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Broker not registered check again")
+                    
                     # Broker not registered, check again
                     status = discovery_pb2.STATUS_CHECK_AGAIN
             else:
