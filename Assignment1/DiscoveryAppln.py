@@ -384,7 +384,7 @@ class DiscoveryAppln():
                 if (len(self.broker_list) == self.specified_num_brokers):
                     # The broker(s) is the only thing subscribers need to describe to for 
                     # Broker dissemination
-                    publisher_by_topic_list = self.broker_list
+                    publisher_by_topic_list.extend(self.broker_list)
 
                     self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Here is broker list:")
                     self.logger.debug(publisher_by_topic_list)
