@@ -264,7 +264,7 @@ class SubscriberAppln():
                 # At this time the consumer will never know when it ends up being done
                 # Perhaps in a later iteration
                 
-                self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
+                self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed. Writing CSV")
 
                 # Write out the list of the publications received into a a csv for graphing
                 with open("./csv/" + self.name + "_" + self.dissemination.lower() + "_output.csv", "w", newline="") as f:
@@ -277,6 +277,7 @@ class SubscriberAppln():
                     # Write the header for the csv 
                     writer.writerow(rowHeaders)
 
+                    # Write each tuple as a row in the csv 
                     for publicationTuple in self.receivedPublicationList:
                         # Get the publication record, first record in the tuple we build
                         publication = publicationTuple[0]
@@ -292,6 +293,8 @@ class SubscriberAppln():
 
                         # Turn each element in our list to a row in the csv
                         writer.writerow(rowToWrite)
+
+                self.logger.debug ("SubscriberAppln::invoke_operation - CSV written")
                     
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
