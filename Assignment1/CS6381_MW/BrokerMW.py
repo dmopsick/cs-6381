@@ -257,7 +257,7 @@ class BrokerMW():
             # In addition to the current time at which the data was sent
             # That way we can compare when the data is sent vs received
 
-            self.logger.debug ("BrokerMW::disseminate - Build the Publication message to sent")
+            # self.logger.debug ("BrokerMW::disseminate - Build the Publication message to sent")
 
             # Build the Publication message 
             # publication = topic_pb2.Publication()
@@ -266,11 +266,11 @@ class BrokerMW():
             # publication.pub_id = id
             # publication.tstamp = timestamp # Use the time set at publisher level
 
-            self.logger.debug ("BrokerMW::disseminate - Built the Publication message to sent")
+            # self.logger.debug ("BrokerMW::disseminate - Built the Publication message to sent")
 
             self.logger.debug ("BrokerMW::disseminate - publication to send: ")
             self.logger.debug(publication)
-            self.logger.debug ("BrokerMW::disseminate - topic to send for: " + publication.topic)
+            # self.logger.debug ("BrokerMW::disseminate - topic to send for: " + topic)
 
             # Serialize the publication
             buf2send = publication.SerializeToString()
@@ -284,7 +284,7 @@ class BrokerMW():
             self.logger.debug("BrokerMW::disseminate - Publish the stringified buffer")
             # send the info as bytes. See how we are providing an encoding of utf-8
             # self.pub.send(bytes(send_str, "utf-8"))
-            self.pub.send_multipart([bytes(str(publication.topic), "utf-8"), buf2send])
+            self.pub.send_multipart([bytes(publication.topic, "utf-8"), buf2send])
 
             self.logger.debug ("BrokerMW::disseminate complete")
         except Exception as e:

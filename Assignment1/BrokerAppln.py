@@ -184,10 +184,10 @@ class BrokerAppln():
                 self.logger.info("Received Data: {}".format(publication))
 
                 # Parse out the values of the publication for passing on
-                id = publication.pub_id
-                topic = publication.topic
-                content = publication.content
-                timestamp = publication.tstamp
+                # id = publication.pub_id
+                # topic = publication.topic
+                # content = publication.content
+                # timestamp = publication.tstamp
 
                 self.logger.debug("BrokerAppln::invoke_operation - Now we disseminate what we received")
 

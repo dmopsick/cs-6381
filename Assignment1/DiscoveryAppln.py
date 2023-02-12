@@ -392,7 +392,7 @@ class DiscoveryAppln():
                     # The call was made succesfully 
                     status = discovery_pb2.STATUS_SUCCESS
                 else:
-                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Broker not registered check again")
+                    self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request - Broker not registered check again FLAGFLAGFLAGFLAGFLAGFLAG")
                     
                     # Broker not registered, check again
                     status = discovery_pb2.STATUS_CHECK_AGAIN
