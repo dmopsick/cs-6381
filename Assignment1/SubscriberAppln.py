@@ -267,7 +267,7 @@ class SubscriberAppln():
                 self.logger.debug ("SubscriberAppln::invoke_operation - Subscriber lifecycle completed")
 
                 # Write out the list of the publications received into a a csv for graphing
-                with open("./csv/" + self.name + "_" + self.dissemination + "_output.csv", "w", newline="") as f:
+                with open("./csv/" + self.name + "_" + self.dissemination.lower() + "_output.csv", "w", newline="") as f:
                     # Create write variable 
                     writer = csv.writer(f)
 
