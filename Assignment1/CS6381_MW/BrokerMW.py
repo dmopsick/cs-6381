@@ -263,7 +263,8 @@ class BrokerMW():
 
             self.logger.debug ("BrokerMW::disseminate - Built the Publication message to sent")
 
-            self.logger.debug ("BrokerMW::disseminate - publication to send: ".format(publication))
+            self.logger.debug ("BrokerMW::disseminate - publication to send: ")
+            self.logger.debug(publication)
             self.logger.debug ("BrokerMW::disseminate - topic to send for: " + topic)
 
             # Serialize the publication
@@ -271,12 +272,13 @@ class BrokerMW():
             
             # Now use the protobuf logic to encode the info and send it.  But for now
             # we are simply sending the string to make sure dissemination is working.
-            self.logger.debug ("BrokerMW::disseminate - {}".format(buf2send))
+            self.logger.debug("BrokerMW::disseminate - {}".format(buf2send))
 
             self.logger.debug("BrokerMW::disseminate - Publish the stringified buffer")
             # send the info as bytes. See how we are providing an encoding of utf-8
             # self.pub.send(bytes(send_str, "utf-8"))
             self.pub.send_multipart([bytes(topic, "utf-8"), buf2send])
+
 
             self.logger.debug ("BrokerMW::disseminate complete")
         except Exception as e:

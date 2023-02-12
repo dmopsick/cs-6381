@@ -340,7 +340,7 @@ def parseCmdLineArgs ():
 
     parser.add_argument("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 
-    parser.add_argument("-p", "--port", default=5566, help="Port number on which our underlying publisher ZMQ service runs, default=5566")
+    parser.add_argument("-p", "--port", default=5564, help="Port number on which our underlying publisher ZMQ service runs, default=5564")
         
     parser.add_argument("-d", "--discovery", default="localhost:5556", help="IP Addr:Port combo for the discovery service, default localhost:5556")
 
