@@ -131,6 +131,8 @@ class BrokerMW():
             reg_info.addr = self.addr  # our advertised IP addr where we are publishing
             reg_info.port = self.port # port on which we are publishing
             self.logger.debug("BrokerMW::register - done populating the Registrant Info")
+
+            self.logger.debug("BrokerMW::register - PORT is " + str (reg_info.port))
       
             # Build a RegisterReq message
             self.logger.debug("BrokerMW::register - populate the nested register req")
