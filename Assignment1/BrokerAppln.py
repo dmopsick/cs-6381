@@ -55,6 +55,8 @@ class BrokerAppln():
         self.state = self.State.INITIALIZE
         self.name = None
         self.config = None
+        self.frequency = None
+        self.iters = None
 
     ########################################
     # Configure/initialize
@@ -71,7 +73,9 @@ class BrokerAppln():
 
             # Initialize our variables
             self.name = args.name
-
+            self.frequency = args.frequency # frequency with which topics are disseminated
+            self.iters = args.iters  # num of iterations
+      
             # Now, get the configuration object
             self.logger.debug ("BrokerAppln::configure - parsing config.ini")
             config = configparser.ConfigParser ()
