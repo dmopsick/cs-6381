@@ -291,7 +291,7 @@ class SubscriberAppln():
                         rowToWrite = publication.topic + "," + publication.content + "," + publication.pub_id + "," + timestampString + "," + str(latency)
 
                         # Turn each element in our list to a row in the csv
-                        writer.write(rowToWrite)
+                        writer.writerow(rowToWrite)
                     
                 # we are done. Time to break the event loop. So we created this special method on the
                 # middleware object to kill its event loop
