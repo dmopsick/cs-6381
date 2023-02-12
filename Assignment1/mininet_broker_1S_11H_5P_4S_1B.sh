@@ -1,6 +1,3 @@
-# NOTE: The number after the h correlates to the ip address of the created host
-# EX: hn means the address will be 10.0.0.n so must be specified with the -a flag
-# EX: h1 -->  -a "10.0.0.1" because h1 means the ip address of host is 10.0.0.1
 h1 python3 DiscoveryAppln.py -P 5 -S 4 > discovery.out 2>&1 &
 h2 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.2" -T 5 -n pub1 > pub1.out 2>&1 &
 h3 python3 PublisherAppln.py -d "10.0.0.1:5556" -a "10.0.0.3" -T 5 -n pub2 > pub2.out 2>&1 &
