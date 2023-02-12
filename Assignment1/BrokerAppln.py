@@ -90,7 +90,7 @@ class BrokerAppln():
             self.topiclist = ts.interest(len(ts.topiclist))
 
             # Now setup up our underlying middleware object to which we delegate
-            # everything
+            # everything. Looking good
             self.logger.debug ("BrokerAppln::configure - initialize the middleware object")
             self.mw_obj = BrokerMW(self.logger)
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object

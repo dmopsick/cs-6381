@@ -47,6 +47,7 @@ class BrokerMW():
     ####################################
     # Configure Broker MW
     #
+    #
     ####################################
     def configure(self, args):
         ''' Initialize the object '''
