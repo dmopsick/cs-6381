@@ -6,6 +6,8 @@ import logging
 # Or should this class BE a Finger table
 class FingerTableBuilder():
 
+    DHT_KEY = "dht"
+
     def __init__(self, num_fingers, file_name):
         self.num_fingers = num_fingers
         self.file_name = file_name
@@ -24,8 +26,13 @@ class FingerTableBuilder():
         # print(dht_json)
 
         # Load the DHT from the dict 
+        dht = dht_json[self.DHT_KEY]
 
         # Sort the DHT list by hash value
+        sorted_dht = sorted(dht, key=lambda x: x['hash'])
+
+        print(sorted_dht[-1])
+
 
         
 # Create new finger table builder object
