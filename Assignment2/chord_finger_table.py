@@ -8,62 +8,42 @@ class FingerTableBuilder():
 
     DHT_KEY = "dht"
 
-    def __init__(self, m, file_name, entity_name, address_space_bytes):
-        self.m = m
-        self.file_name = file_name
-        self.entity_name = entity_name
-        self.address_space_bytes = address_space_bytes
-
-    def build(self):
+    def __init__(self):
+        self.file_name =  "dht.json"
+    
+    def build_dht(self):
         # Load the file 
         dht_json_file = open(self.file_name)
 
         # Read the file contents as string
         dht_json_string = dht_json_file.read()
 
-        # print(dht_json_string)
         # Turn the file contents into json data
         dht_json = json.loads(dht_json_string)
-
-        # print(dht_json)
 
         # Load the DHT from the dict 
         dht = dht_json[self.DHT_KEY]
 
-        # Sort the DHT list by hash value
+        # Sort the DHT list by hash value in ascending value
         sorted_dht = sorted(dht, key=lambda x: x['hash'])
 
-        # print(sorted_dht[-1])
+        return sorted_dht
 
-        entity_index = -1
+    def create_finger_table(self, node_id, m):
+        finger_table = [ ]
+        
+        # Create m entries in the finger table
+        for i in range(m):
+            start = (node_id + (2^i)) % 2^m
+            
 
-        # Find the index of the entity we are building the finger table for
-        for index, obj in enumerate(sorted_dht):
-            if obj.id == self.entity_name:
-                entity_index = index
-                break
+            print(start)
 
-        # Only proceed with a valid entity that exists in the DHT
-        if entity_index != -1:
-            entity_id = sorted_dht[entity_index].id
-
-
-            # Let's test on finding the next node based on Chord's algorithm
-            i = 1
-
-            # Attempt to use Chord's algorithm
-            next_node_hash = (entity_id + 2^(i + 1)) % self.address_space_bytes)
-
-            # Print here is the hash of next node
-
-            # Need to find the successor of the next node
-
-        else:
-            print("ERROR: Provided entity {} does not exist in the DHT".format(self.entity_name))
+        return finger_table
 
         
 # Create new finger table builder object
-finger_table_builder = FingerTableBuilder(3, "dht.json", 'disc1', 48)
+finger_table_builder = FingerTableBuilder()
 
 # Build the finger table based on the above specified parameters
-finger_table_builder.build()
+finger_table = finger_table_builder.create_finger_table(275867163294784, 3)
