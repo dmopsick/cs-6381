@@ -88,8 +88,52 @@ class FingerTableBuilder():
         return finger_table
 
     def find_successor(self, key, dht):
-        node = find_predecessor(key, dht)
+        # To find the sucessor of a value on the logical ring
+        # We can find the predecessor and then that node will
+        # Know their direct successor 
+        node = self.find_predecessor(key, dht)
         pass
+
+    
+    def find_predecessor(self, key, dht)
+        node = self.closest_preceding_node(key, dht)
+
+        while not (self.is_between(key, node["hash"], self.get_immediate_successor_of_node(node))):
+            node = self.closest_preceding_node(key, dht)
+
+        return node
+
+    def closest_preceding_node(self, key, dht):
+        # Select the first node of the DHT for the first comparison
+        node = dht[0]
+
+        # Iterate through the table, skip the first node
+        for n in dht[1:]:
+            if self.is_between(n["hash"], node["hash"], key):
+                node = n
+
+            return node
+
+    def is_between(key, node_id, successor_id):
+        # Check if the provided node_id is less than its successor
+        # This checks for the case of where the provided node is the last node
+        # And then points to the first node
+        if node_id < successor_id:
+            # Sucessor is bigger than the node, check for standard between
+            if (node_id < key) and (key < successor_id):
+                return True
+            else
+                return False
+        else:
+            # Check if the key is larger than the node or smaller than the successor
+            # if node was 10 o clock on a clock and successor would be 1
+            # This would represent the space on the clock between 10 and 1
+            if (node_id < key) or (key < successor_id):
+                result = True
+            else:
+                result = False
+        
+        return result
 
     def get_immediate_successor_of_node(self, node, dht):
         successor = None
