@@ -195,11 +195,11 @@ class FingerTableBuilder():
         return successor
         
 # Create new finger table builder object
-finger_table_builder = FingerTableBuilder()
+# finger_table_builder = FingerTableBuilder()
 
 # Build the finger table based on the above specified parameters
 # finger_table = finger_table_builder.create_finger_table(11905375445601, 48)
 # finger_table = finger_table_builder.create_finger_table(78, 8)
-finger_table = finger_table_builder.create_finger_table('disc15', 8)
+# finger_table = finger_table_builder.create_finger_table('disc15', 8)
 
-print(finger_table)
+# print(finger_table)

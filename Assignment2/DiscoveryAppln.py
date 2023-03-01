@@ -52,6 +52,8 @@ from CS6381_MW.Common import Constants
 # Simple data models I created to hold info about publishers and subscribers
 from CS6381_MW.Common import Entity
 
+from chord_finger_table import FingerTableBuilder
+
 ##################################
 #       DiscoveryAppln class
 ##################################
@@ -72,11 +74,12 @@ class DiscoveryAppln():
         self.specified_num_brokers = None
         self.mw_obj = None # handle to the underlying Middleware object
         self.logger = logger  # internal logger for print statements
-        self.publisher_list = []
+        self.publisher_list = [] # Discovery
         self.subscriber_list = []
         self.broker_list = []
         self.lookup = None
         self.dissemination = None
+        self.finger_table = None
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -106,6 +109,9 @@ class DiscoveryAppln():
             self.logger.debug("DiscoveryAppln::configure - initialize the middleware object")
             self.mw_obj = DiscoveryMW(self.logger)
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
+
+            # Create a finger table for this discovery service
+            self.finger_table = FingerTableBuilder.create_finger_table(self.name, 8)
             
             self.logger.info("DiscoveryAppln::configure - configuration complete")
       
