@@ -1,6 +1,7 @@
 import json
 import argparse # for argument parsing
 import logging
+import time # For using sleep for debug purposes
 
 # Should this class build records 
 # Or should this class BE a Finger table
@@ -35,95 +36,116 @@ class FingerTableBuilder():
     #
     # Use the provided dht.json
     ##########################################
-    def create_finger_table(self, node_hash, address_space_bits):
-        finger_table = [ ]
+    def create_finger_table(self, node_id, address_space_bits):
+        finger_table = []
 
         # Load our distributed hash table from json
         dht = self.build_dht()
 
-        # Should I add successor field to the DHT?
-
         # print(dht)
 
-        # print (node_id)
-        
-        print("FLAG 1")
-        print(2**8)
+        # Default node variable
+        node = None
 
-        # Using the number of entries in the finger table as 
-        # The same value as the address space bits
-        # But setting it to m so the formula looks more how I expect it
-        m = address_space_bits
+        # Load the node we are working with based on id
+        for node_obj in dht:
+            # Check if the node has the id we are looking for
+            # ex: disc1
+            if node_obj["id"] == node_id:
+                # This is the node we are looking for
+                node = node_obj
 
-        # Create m entries in the finger table
-        for i in range(address_space_bits):
-            # Get the next value according the chord algorithm
-            finger_value = (node_hash + 2^(i-1)) % 2**(m)
-            # print("FLAG 1 ".format(start))
+        if node != None:
+            # Using the number of entries in the finger table as 
+            # The same value as the address space bits
+            # But setting it to m so the formula looks more how I expect it
+            m = address_space_bits
 
-            # Use the next value to get the successor of the finger_value
-            finger_node = find_successor(finger_value, dht)
-            
-            
-            
-            # We determine the number of the next finger in the table
-            # Now we need to find the successor of that key in the logical ring
-            # successor = self.find_successor(start, dht)
+            # Create m entries in the finger table
+            for i in range(address_space_bits):
+                # Get the next value according the chord algorithm
+                # Adding 1 to compensate for the range going from 0 - 7
+                finger_value = (node["hash"] + 2**(i + 1 -1)) % 2**(m)
+                # print("FLAG 1 ".format(start))
 
-            # Add the object to our finger table  
-            finger_table.append(finger_node)
+                # Find the node sucessor of the generated value
+                finger_node = self.find_successor(finger_value, dht)
 
-            # print(start)
-
-        # Test that I can load the next node 
-        node = dht[1]
-
-        print(node)
-
-        immediate_successor = self.get_immediate_successor_of_node(node, dht)
-
-        print(immediate_successor)
-        
+                # Add the object to our finger table  
+                finger_table.append(finger_node)
+        else:
+            print("ERROR: Invalid node id provided: {}".format(node_id))
 
         return finger_table
 
+    #########################################
+    # Find the successor of any key in a distributed hash table
+    #
+    #########################################
     def find_successor(self, key, dht):
         # To find the sucessor of a value on the logical ring
         # We can find the predecessor and then that node will
         # Know their direct successor 
-        node = self.find_predecessor(key, dht)
-        pass
+        predecessor_node = self.find_predecessor(key, dht)
+        
+        return self.get_immediate_successor_of_node(predecessor_node, dht)
 
-    
-    def find_predecessor(self, key, dht)
+    ############################################
+    # Find the predecssor node of any hash value
+    #
+    ############################################
+    def find_predecessor(self, key, dht):
         node = self.closest_preceding_node(key, dht)
 
-        while not (self.is_between(key, node["hash"], self.get_immediate_successor_of_node(node))):
-            node = self.closest_preceding_node(key, dht)
-
+        # Check if the given key is between the node to check and its immediate successor
+        while not (self.is_between(key, node["hash"], self.get_immediate_successor_of_node(node, dht)["hash"])):
+            node = self.get_immediate_successor_of_node(node, dht)
+            # print("Checking if {} is between {} and {}".format(key, node["hash"], self.get_immediate_successor_of_node(node, dht)["hash"]))
+            # time.sleep(0.5)
         return node
 
+    ######################################
+    # Select the closest preceding node of a value on the logical ring
+    #
+    # Select the node that the key is between the node and its sucessor
+    ######################################
     def closest_preceding_node(self, key, dht):
         # Select the first node of the DHT for the first comparison
         node = dht[0]
 
         # Iterate through the table, skip the first node
         for n in dht[1:]:
-            if self.is_between(n["hash"], node["hash"], key):
+            # Check if the key is between that node and its successor
+            if self.is_between(key, n["hash"], node["hash"]):
+                # If the key is between the node and its successor
+                # Make that the node that we are now checking
+                # This will give us the closest preceding
+                # If the key is between multiple sets of nodes, will take the closest gap
                 node = n
 
             return node
 
-    def is_between(key, node_id, successor_id):
+    ###########################################
+    # Perform the actual logic for checking if a key is between a value
+    #
+    # Account for the last element in the ring
+    ###########################################
+    def is_between(self, key, node_id, successor_id):
+
+        # print("FLAG 10")
+        # print(key)
+        # print(node_id)
+        # print(successor_id)
+
         # Check if the provided node_id is less than its successor
         # This checks for the case of where the provided node is the last node
         # And then points to the first node
         if node_id < successor_id:
             # Sucessor is bigger than the node, check for standard between
             if (node_id < key) and (key < successor_id):
-                return True
-            else
-                return False
+                result = True
+            else:
+                result = False
         else:
             # Check if the key is larger than the node or smaller than the successor
             # if node was 10 o clock on a clock and successor would be 1
@@ -134,11 +156,19 @@ class FingerTableBuilder():
                 result = False
         
         return result
-
+    
+    #############################################
+    # Load the immediate successor of a node
+    #
+    # Each node will know about its immediate successor, this is how
+    # We get the index of the node we are working with, and take the next one
+    ##############################################
     def get_immediate_successor_of_node(self, node, dht):
         successor = None
 
         entity_index = -1
+
+        # print("Checking next hash after {}".format(node["id"]))
 
         # SHOULD I SORT BY ASCENDING EVERY TIME I CHECK
         # I suppose yes if things were going in out out
@@ -151,12 +181,14 @@ class FingerTableBuilder():
                 entity_index = index
                 break
         
+        
         # Check to make sure it is not the last element in the array
         if entity_index == (len(dht) - 1):
             # We are working with last node in the logical ring
             # Point to the first node
             successor = dht[0]
         else:
+            # print("GRAB INDEX: {}".format(entity_index))
             # Get the index + 1 as the immediate successor 
             successor = dht[entity_index + 1]
        
@@ -166,6 +198,8 @@ class FingerTableBuilder():
 finger_table_builder = FingerTableBuilder()
 
 # Build the finger table based on the above specified parameters
-finger_table = finger_table_builder.create_finger_table(11905375445601, 3, 8)
+# finger_table = finger_table_builder.create_finger_table(11905375445601, 48)
+# finger_table = finger_table_builder.create_finger_table(78, 8)
+finger_table = finger_table_builder.create_finger_table('disc15', 8)
 
 print(finger_table)

@@ -1,0 +1,3 @@
+{
+    "fingerTable": [{"id": "disc2", "hash": 81, "IP": "10.0.0.3", "port": 5555, "host": "h3"}, {"id": "disc2", "hash": 81, "IP": "10.0.0.3", "port": 5555, "host": "h3"}, {"id": "disc4", "hash": 106, "IP": "10.0.0.6", "port": 5555, "host": "h6"}, {"id": "disc4", "hash": 106, "IP": "10.0.0.6", "port": 5555, "host": "h6"}, {"id": "disc4", "hash": 106, "IP": "10.0.0.6", "port": 5555, "host": "h6"}, {"id": "disc13", "hash": 116, "IP": "10.0.0.6", "port": 5557, "host": "h6"}, {"id": "disc5", "hash": 161, "IP": "10.0.0.11", "port": 5555, "host": "h11"}, {"id": "disc6", "hash": 207, "IP": "10.0.0.4", "port": 5555, "host": "h4"}]
+}
