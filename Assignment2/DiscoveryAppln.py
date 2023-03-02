@@ -215,10 +215,71 @@ class DiscoveryAppln():
                 if key_successor["id"] == self.name:
                     # The current discovery node is the successor of the hash of the topic
                     # That means we can save the entity to this node
-                    pass
-                else:
-                    # The successor of the key of the topic's hash is a different node
+                    self.logger.info("DiscoveryAppln::register_request This node is the successor of the topic hash. We register it here")
+ 
+                    # Check what type of entity is attempting to register
+                    if entity.role == discovery_pb2.ROLE_PUBLISHER:
+                        # Save the entity to the publisher list of this discovery node
+                        self.logger.info("DiscoveryAppln::register_request Registering a publisher")
 
+                        # Add the created object to the list of publishers registered
+                        self.publisher_list.append(entity)
+
+                        # Set status to success if we have gotten this far
+                        status = discovery_pb2.STATUS_SUCCESS
+
+                        # No reason to send
+                        reason = None
+                        
+                        self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
+                   
+                        # Send a register reply with the MW
+                        self.mw_obj.send_register_response(status, reason)
+
+                    elif entity.role == discovery_pb2.ROLE_SUBSCRIBER:
+                        # Save the entity as a subscriber
+                        self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
+
+                        # Add the created object to the list of publishers registered
+                        self.subscriber_list.append(entity)
+
+                        # Set status to success if we have gotten this far
+                        status = discovery_pb2.STATUS_SUCCESS
+
+                        # No reason to send
+                        reason = None
+                        
+                        self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
+                   
+                        # Send a register reply with the MW
+                        self.mw_obj.send_register_response(status, reason)
+
+                    elif entity.role == discovery_pb2.ROLE_BOTH:
+                        # Save the entity as a broker
+                        self.logger.info("DiscoveryAppln::register_request Registering a broker")
+ 
+                        # Add the created object to the list of publishers registered
+                        self.broker_list.append(entity)
+
+                        # Set status to success if we have gotten this far
+                        status = discovery_pb2.STATUS_SUCCESS
+
+                        # No reason to send
+                        reason = None
+                        
+                        self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
+                   
+                        # Send a register reply with the MW
+                        self.mw_obj.send_register_response(status, reason)
+
+                    else:
+                        self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
+                        raise ValueError("Invalid role provided for registration request to Discovery server")
+
+                # The successor of the key of the topic's hash is a different node
+                else:
+                    self.logger.info("DiscoveryAppln::register_request This node is not the successor of the topic hash")
+ 
                     # Declare a variable to hold the node
                     found_successor = False
 
@@ -233,125 +294,17 @@ class DiscoveryAppln():
                     if found_successor != None:
                         # We did find the successor
                         # Pass on the register request to that found successor of the key
+                        self.logger.info("DiscoveryAppln::register_request The successor is in the finger table of this node")
+ 
                         pass
                     else:
                         # The successor for the provided key is not in this node's hash table
                         # We need to pass on the Request as far away in our finger table as possible
-                        pass
+                        self.logger.info("DiscoveryAppln::register_request The successor is not in the finger table, just need to resend this message as far away as possible")
 
-
-
+                        # Select the last node in the finger table, send it there
             
-            
-            # Handle registration differently based on the role of the entity attempting to register
-            if (role == discovery_pb2.ROLE_PUBLISHER):
-                self.logger.info("DiscoveryAppln::register_request Registering a publisher")
-
-                self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
-                   
-                # Create a new publisher record
-                publisher = Entity()
-
-                # Load the publisher with values from RegistrantInfo
-                publisher.role = discovery_pb2.ROLE_PUBLISHER
-                publisher.name = reg_req.info.id
-                publisher.ip_address = reg_req.info.addr
-                publisher.port = reg_req.info.port
-                publisher.topic_list = reg_req.topiclist
-
-                # Add the created object to the list of publishers registered
-                self.publisher_list.append(publisher)
-
-                # Set status to success if we have gotten this far
-                status = discovery_pb2.STATUS_SUCCESS
-
-                # No reason to send
-                reason = None
-                
-                self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
-                   
-
-
-                # Send a register reply with the MW
-                self.mw_obj.send_register_response(status, reason)
-
-                self.logger.info("DiscoveryAppln::register_request Done registering a publisher")
-
-            elif (role == discovery_pb2.ROLE_SUBSCRIBER):
-                self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
-
-              
-                self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
-                # Create new subscriber object
-                subscriber = Entity()
-
-                # Load the subscriber values from registrant info
-                subscriber.role = discovery_pb2.ROLE_SUBSCRIBER
-                subscriber.name = reg_req.info.id
-                subscriber.ip_address = reg_req.info.addr
-                subscriber.port = reg_req.info.port
-                subscriber.topic_list = reg_req.topiclist
-
-                # Add the created object to the list of publishers registered
-                self.subscriber_list.append(subscriber)
-
-                # Set status to success if we have gotten this far
-                status = discovery_pb2.STATUS_SUCCESS
-
-                # No reason to send
-                reason = None
-                
-                self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
-                
-                # Send a register reply with the MW
-                self.mw_obj.send_register_response(status, reason)
-
-                self.logger.info("DiscoveryAppln::register_request Done registering a subscriber")
-            elif (role == discovery_pb2.ROLE_BOTH):
-                self.logger.info("DiscoveryAppln::register_request Registering a broker")
-
-                # Check if specified number of brokers is met 
-                # For now hard coding one broker but perhaps one day we want multiple
-                if (len(self.broker_list) < self.specified_num_brokers):
-                    self.logger.debug("DiscoveryAppln::register_request Creating a new broker record")
-                    # Create new Entity object
-                    broker = Entity()
-
-                    # Load the subscriber values from registrant info
-                    broker.role = discovery_pb2.ROLE_BOTH
-                    broker.name = reg_req.info.id
-                    broker.ip_address = reg_req.info.addr
-                    broker.port = reg_req.info.port
-                    broker.topic_list = reg_req.topiclist
-
-                    # Add the created object to the list of publishers registered
-                    self.broker_list.append(broker)
-
-                    # Set status to success if we have gotten this far
-                    status = discovery_pb2.STATUS_SUCCESS
-
-                    # No reason to send
-                    reason = None
-                    
-                    self.logger.debug("DiscoveryAppln::register_request Done creating a new broker record")
-
-                else:
-                    self.logger.info("DiscoveryAppln::register_request Broker attempting to register, but no more brokers roles are allocated")
-
-                    # Set status to failure
-                    status = discovery_pb2.STATUS_FAILURE
-
-                    # Pass in a reason to let the registrant know why it failed
-                    reason = "Max brokers already reached for this system"
-
-                # Send a register reply with the MW
-                self.mw_obj.send_register_response(status, reason)
-
-                self.logger.info("DiscoveryAppln::register_request Done registering a broker")
-
-            else:
-                self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
-                raise ValueError("Invalid role provided for registration request to Discovery server")
+            # Done registering the entity at the nodes of the successors of each of its hashed topics
 
             # This register request has been handled 
             # We are not awaiting any incoming call for this logic
