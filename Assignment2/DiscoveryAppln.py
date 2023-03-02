@@ -480,7 +480,7 @@ def parseCmdLineArgs ():
     
     parser.add_argument("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
 
-    parser.add_argument ("-H", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
+    parser.add_argument ("-j", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
 
     return parser.parse_args()
 

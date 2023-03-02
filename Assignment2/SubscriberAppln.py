@@ -408,7 +408,7 @@ def parseCmdLineArgs ():
 
     parser.add_argument("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
   
-    parser.add_argument ("-H", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
+    parser.add_argument ("-j", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
 
     return parser.parse_args()
 
