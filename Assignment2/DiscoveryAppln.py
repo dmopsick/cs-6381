@@ -71,7 +71,7 @@ class DiscoveryAppln():
         COMPLETED = 3
 
     def __init__ (self, logger):
-        self.name - None
+        self.name = None
         self.specified_num_publishers = None
         self.specified_num_subscribers = None
         self.specified_num_brokers = None
