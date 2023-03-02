@@ -1,11 +1,10 @@
 import json
-import argparse # for argument parsing
-import logging
 import time # For using sleep for debug purposes
+import random
 
 # Should this class build records 
 # Or should this class BE a Finger table
-class FingerTableBuilder():
+class DhtUtil():
 
     DHT_KEY = "dht"
 
@@ -31,6 +30,24 @@ class FingerTableBuilder():
 
         return sorted_dht
 
+    ###############################################
+    # Select a random note in the DHT 
+    #
+    # This is for use in the pubs/subs
+    ###############################################
+    def get_random_node_from_dht_file_name(self, dht_file_name):
+        # Load the DHT
+        dht = self.build_dht(dht_file_name)
+
+        # Select a random index from the entire DHT
+        random_index = random.randint(0, len(dht) -1)
+
+        # Get the node at the random index
+        random_node = dht[random_index]
+
+        # Return the randomly selected node
+        return random_node
+
     ##########################################
     # Create the finger table for a node 
     #
@@ -43,7 +60,6 @@ class FingerTableBuilder():
         dht = self.build_dht(dht_file_name)
 
         # print(dht)
-
         # Default node variable
         node = None
 

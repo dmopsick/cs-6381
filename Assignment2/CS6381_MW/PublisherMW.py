@@ -35,7 +35,7 @@ import datetime
 from CS6381_MW import discovery_pb2
 from CS6381_MW import topic_pb2
 
-# import any other packages you need.
+from DhtUtil import DhtUtil
 
 ##################################
 #       Publisher Middleware class
@@ -54,6 +54,8 @@ class PublisherMW ():
     self.port = None # port num where we are going to publish our topics
     self.upcall_obj = None # handle to appln obj to handle appln-specific data
     self.handle_events = True # in general we keep going thru the event loop
+    self.dht_file_name = None
+    self.selected_dht_node = None
 
   ########################################
   # configure/initialize
@@ -68,6 +70,8 @@ class PublisherMW ():
       # First retrieve our advertised IP addr and the publication port num
       self.port = args.port
       self.addr = args.addr
+      # Retrieve the specified DHT File Name
+      self.dht_file_name = args.dht_name
       
       # Next get the ZMQ context
       self.logger.debug ("PublisherMW::configure - obtain ZMQ context")
@@ -89,14 +93,25 @@ class PublisherMW ():
       # any sense to register it with the poller for an incoming message.
       self.logger.debug ("PublisherMW::configure - register the REQ socket for incoming replies")
       self.poller.register (self.req, zmq.POLLIN)
-      
+
+      self.logger.debug("PublisherMW::configure - Selecting a DHT node to connect to")
+
+      # Init the DHT Utility file I wrote
+      dhtUtil = DhtUtil()
+      # Select a DHT node to connect to
+      self.selected_dht_node = dhtUtil.get_random_node_from_dht_file_name(self.dht_file_name)
+
+      self.logger.debug("PublisherMW::configure - Selected a DHT node to connect to")
+      self.logger.debug(self.selected_dht_node)
+
       # Now connect ourselves to the discovery service. Recall that the IP/port were
       # supplied in our argument parsing. Best practices of ZQM suggest that the
       # one who maintains the REQ socket should do the "connect"
       self.logger.debug ("PublisherMW::configure - connect to Discovery service")
       # For our assignments we will use TCP. The connect string is made up of
       # tcp:// followed by IP addr:port number.
-      connect_str = "tcp://" + args.discovery
+      # connect_str = "tcp://" + args.discovery
+      connect_str = "tcp://" + self.selected_dht_node["IP"] + self.selected_dht_node["port"]
       self.req.connect (connect_str)
       
       # Since we are the publisher, the best practice as suggested in ZMQ is for us to

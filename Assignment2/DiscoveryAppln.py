@@ -52,7 +52,7 @@ from CS6381_MW.Common import Constants
 # Simple data models I created to hold info about publishers and subscribers
 from CS6381_MW.Common import Entity
 
-from chord_finger_table import FingerTableBuilder
+from DhtUtil import DhtUtil
 
 ADDRESS_SPACE = 8
 
@@ -117,8 +117,8 @@ class DiscoveryAppln():
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
 
             # Create a finger table for this discovery service
-            fingerTableBuilder = FingerTableBuilder()
-            self.finger_table = fingerTableBuilder.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
+            dhtUtil = DhtUtil()
+            self.finger_table = dhtUtil.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
 
             self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
             self.logger.debug(self.finger_table)
