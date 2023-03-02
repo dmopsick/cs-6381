@@ -54,6 +54,8 @@ from CS6381_MW.Common import Entity
 
 from DhtUtil import DhtUtil
 
+from exp_generator import ExperimentGenerator
+
 ADDRESS_SPACE = 8
 
 ##################################
@@ -204,7 +206,7 @@ class DiscoveryAppln():
             for topic in entity.topic_list:
                 # Generate the hash of the topic 
                 # Use the same hash function that we used to generate the table
-                topic_hash = 0 # placeholder
+                topic_hash = ExperimentGenerator.hash_func(topic)
 
                 # Get the successor of the hashed value of the topic
                 key_successor = self.dht_util.find_successor(topic_hash)
@@ -222,8 +224,22 @@ class DiscoveryAppln():
 
                     # Check if that node is in the finger table of this node
                     for node in self.finger_table:
-                        if node["hash"] == key_successor
-                
+                        if node["hash"] == key_successor:
+                            # The found successor is in the finger table
+                            found_successor = node
+                            break
+                    
+                    # Check to see if we found the successor
+                    if found_successor != None:
+                        # We did find the successor
+                        # Pass on the register request to that found successor of the key
+                        pass
+                    else:
+                        # The successor for the provided key is not in this node's hash table
+                        # We need to pass on the Request as far away in our finger table as possible
+                        pass
+
+
 
             
             
