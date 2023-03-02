@@ -111,7 +111,7 @@ class PublisherMW ():
       # For our assignments we will use TCP. The connect string is made up of
       # tcp:// followed by IP addr:port number.
       # connect_str = "tcp://" + args.discovery
-      connect_str = "tcp://" + str(self.selected_dht_node["IP"]) + str(self.selected_dht_node["port"])
+      connect_str = "tcp://" + str(self.selected_dht_node["IP"]) + ":" + str(self.selected_dht_node["port"])
       self.req.connect (connect_str)
       
       # Since we are the publisher, the best practice as suggested in ZMQ is for us to
