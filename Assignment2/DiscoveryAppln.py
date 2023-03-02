@@ -204,10 +204,26 @@ class DiscoveryAppln():
             for topic in entity.topic_list:
                 # Generate the hash of the topic 
                 # Use the same hash function that we used to generate the table
-                hash = 0 # placeholder
+                topic_hash = 0 # placeholder
 
                 # Get the successor of the hashed value of the topic
-                successor = self.dht_util.find_successor
+                key_successor = self.dht_util.find_successor(topic_hash)
+
+                # Check if the current running discovery node is the successor of the topic's hash
+                if key_successor["id"] == self.name:
+                    # The current discovery node is the successor of the hash of the topic
+                    # That means we can save the entity to this node
+                    pass
+                else:
+                    # The successor of the key of the topic's hash is a different node
+
+                    # Declare a variable to hold the node
+                    found_successor = False
+
+                    # Check if that node is in the finger table of this node
+                    for node in self.finger_table:
+                        if node["hash"] == key_successor
+                
 
             
             
