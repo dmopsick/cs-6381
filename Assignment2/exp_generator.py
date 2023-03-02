@@ -280,7 +280,8 @@ class ExperimentGenerator ():
           # generate intested in topics in the range of 5 to 9 because
           # our topic helper currently has 9 topics in it.
           num_topics = random.randint (5, 9)
-          frequency = random.choice ([0.25, 0.5, 0.75, 1, 2, 3, 4])
+         # frequency = random.choice ([0.25, 0.5, 0.75, 1, 2, 3, 4])
+          frequency = random.choice ([1, 2, 3, 4])
           iterations = random.choice ([1000, 2000, 3000])
 
           # build the command line
