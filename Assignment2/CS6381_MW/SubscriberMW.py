@@ -43,6 +43,8 @@ import zmq  # ZMQ sockets
 from CS6381_MW import discovery_pb2
 from CS6381_MW import topic_pb2
 
+from DhtUtil import DhtUtil
+
 class SubscriberMW ():
 
     def __init__(self, logger):
@@ -55,6 +57,8 @@ class SubscriberMW ():
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
         self.lookup = None # one of the diff ways we do lookup
+        self.dht_file_name = None # The file name of the DHT we are working with
+        self.selected_dht_node = None # The selected DHT node to connect to
 
     def configure(self, args):
         ''' Initialize the subscriber middleware object '''
@@ -66,6 +70,8 @@ class SubscriberMW ():
             # Retrieve advertised IP address and subscriber port num
             self.port = args.port
             self.addr = args.addr
+            # Retrieve the specified DHT File Name
+            self.dht_file_name = args.dht_name
 
             # Get the ZMQ context
             self.logger.debug("SubscriberMW::configure - obtain ZMQ context")
@@ -87,11 +93,21 @@ class SubscriberMW ():
             self.poller.register(self.req, zmq.POLLIN)
             # self.poller.register(self.sub, zmq.POLLIN)
 
+            self.logger.debug("Subscriber::configure - Selecting a DHT node to connect to")
+
+             # Init the DHT Utility file I wrote
+            dhtUtil = DhtUtil()
+            # Select a DHT node to connect to
+            self.selected_dht_node = dhtUtil.get_random_node_from_dht_file_name(self.dht_file_name)
+
+            self.logger.debug("Subscriber::configure - Selected a DHT node to connect to")
+            self.logger.debug(self.selected_dht_node)
+
             # Connect to the discovery service 
             # Use TCP followed by Ip addr:port number
             self.logger.debug("SubscriberMW::configure - connect to Discovery service")
-            connect_str = "tcp://" + args.discovery
-         
+            # connect_str = "tcp://" + args.discovery
+            connect_str = "tcp://" + str(self.selected_dht_node["IP"]) + ":" + str(self.selected_dht_node["port"])
             self.req.connect(connect_str)
 
             self.logger.info("SubscriberMW::configure completed")

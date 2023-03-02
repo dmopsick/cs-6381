@@ -54,8 +54,8 @@ class PublisherMW ():
     self.port = None # port num where we are going to publish our topics
     self.upcall_obj = None # handle to appln obj to handle appln-specific data
     self.handle_events = True # in general we keep going thru the event loop
-    self.dht_file_name = None
-    self.selected_dht_node = None
+    self.dht_file_name = None # The file name of the DHT we are working with
+    self.selected_dht_node = None # The selected DHT node to connect to
 
   ########################################
   # configure/initialize
