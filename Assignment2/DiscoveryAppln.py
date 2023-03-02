@@ -117,7 +117,8 @@ class DiscoveryAppln():
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
 
             # Create a finger table for this discovery service
-            self.finger_table = FingerTableBuilder.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
+            fingerTableBuilder = FingerTableBuilder()
+            self.finger_table = fingerTableBuilder.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
 
             self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
             self.logger.debug(self.finger_table)
