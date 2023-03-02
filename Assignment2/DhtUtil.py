@@ -53,11 +53,8 @@ class DhtUtil():
     #
     # Use the provided dht.json
     ##########################################
-    def create_finger_table(self, node_id, dht_file_name, address_space_bits):
+    def create_finger_table(self, node_id, dht, address_space_bits):
         finger_table = []
-
-        # Load our distributed hash table from json
-        dht = self.build_dht(dht_file_name)
 
         # print(dht)
         # Default node variable

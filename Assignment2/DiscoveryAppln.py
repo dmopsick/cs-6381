@@ -83,7 +83,9 @@ class DiscoveryAppln():
         self.lookup = None
         self.dissemination = None
         self.dht_file_name = None
+        self.dht = None
         self.finger_table = None
+        self.dht_util
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -116,9 +118,14 @@ class DiscoveryAppln():
             self.mw_obj = DiscoveryMW(self.logger)
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
 
-            # Create a finger table for this discovery service
-            dhtUtil = DhtUtil()
-            self.finger_table = dhtUtil.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
+            self.logger.debug("DiscoveryAppln::configure - Loading DHT Util, building DHT, then creating Finger Table")
+
+            # Create a DHT Util class for use in the discovery logic
+            self.dht_util = DhtUtil()
+            # Build a DHT for this node to use
+            self.dht = self.dht_util.build_dht(self.dht_file_name)
+            # Create a finger table for this node, from the DHT we built
+            self.finger_table = self.dht_util.create_finger_table(self.name, self.dht, ADDRESS_SPACE)
 
             self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
             self.logger.debug(self.finger_table)
@@ -185,46 +192,53 @@ class DiscoveryAppln():
         try:
             self.logger.info("DiscoveryAppln::register_request")
 
-            # Load the role of the entity attempting to register
-            role = reg_req.role
+            # Create a new entity record with the incoming reg_req data
+            entity = Entity()
+            entity.role = reg_req.role
+            entity.name = reg_req.info.id
+            entity.ip_address = reg_req.info.addr
+            entity.port = reg_req.info.port
+            entity.topic_list = reg_req.topiclist
 
+            # Iterate through each topic in the topic list for the entity attempting to register
+            for topic in entity.topic_list:
+                # Generate the hash of the topic 
+                # Use the same hash function that we used to generate the table
+                hash = 0 # placeholder
+
+                # Get the successor of the hashed value of the topic
+                successor = self.dht_util.find_successor
+
+            
+            
             # Handle registration differently based on the role of the entity attempting to register
             if (role == discovery_pb2.ROLE_PUBLISHER):
                 self.logger.info("DiscoveryAppln::register_request Registering a publisher")
 
-                # Verify that there is still room for publishers in the system
-                if (len(self.publisher_list) < self.specified_num_publishers):
-                    self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
+                self.logger.debug("DiscoveryAppln::register_request Creating a new publisher record")
                    
-                    # Create a new publisher record
-                    publisher = Entity()
+                # Create a new publisher record
+                publisher = Entity()
 
-                    # Load the publisher with values from RegistrantInfo
-                    publisher.role = discovery_pb2.ROLE_BOTH
-                    publisher.name = reg_req.info.id
-                    publisher.ip_address = reg_req.info.addr
-                    publisher.port = reg_req.info.port
-                    publisher.topic_list = reg_req.topiclist
+                # Load the publisher with values from RegistrantInfo
+                publisher.role = discovery_pb2.ROLE_PUBLISHER
+                publisher.name = reg_req.info.id
+                publisher.ip_address = reg_req.info.addr
+                publisher.port = reg_req.info.port
+                publisher.topic_list = reg_req.topiclist
 
-                    # Add the created object to the list of publishers registered
-                    self.publisher_list.append(publisher)
+                # Add the created object to the list of publishers registered
+                self.publisher_list.append(publisher)
 
-                    # Set status to success if we have gotten this far
-                    status = discovery_pb2.STATUS_SUCCESS
+                # Set status to success if we have gotten this far
+                status = discovery_pb2.STATUS_SUCCESS
 
-                    # No reason to send
-                    reason = None
-                    
-                    self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
+                # No reason to send
+                reason = None
+                
+                self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
                    
-                else:
-                    self.logger.info("DiscoveryAppln::register_request Publisher attempting to register, but no more publisher roles are allocated")
 
-                    # Set status to failure
-                    status = discovery_pb2.STATUS_FAILURE
-
-                    # Pass in a reason to let the registrant know why it failed
-                    reason = "Max publishers already reached for this system"
 
                 # Send a register reply with the MW
                 self.mw_obj.send_register_response(status, reason)
@@ -234,38 +248,28 @@ class DiscoveryAppln():
             elif (role == discovery_pb2.ROLE_SUBSCRIBER):
                 self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
 
-                # Verify that there is still room for subscribers in the system
-                if (len(self.subscriber_list) < self.specified_num_subscribers):
-                    self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
-                    # Create new subscriber object
-                    subscriber = Entity()
+              
+                self.logger.debug("DiscoveryAppln::register_request Creating a new subscriber record")
+                # Create new subscriber object
+                subscriber = Entity()
 
-                    # Load the subscriber values from registrant info
-                    subscriber.role = discovery_pb2.ROLE_SUBSCRIBER
-                    subscriber.name = reg_req.info.id
-                    subscriber.ip_address = reg_req.info.addr
-                    subscriber.port = reg_req.info.port
-                    subscriber.topic_list = reg_req.topiclist
+                # Load the subscriber values from registrant info
+                subscriber.role = discovery_pb2.ROLE_SUBSCRIBER
+                subscriber.name = reg_req.info.id
+                subscriber.ip_address = reg_req.info.addr
+                subscriber.port = reg_req.info.port
+                subscriber.topic_list = reg_req.topiclist
 
-                    # Add the created object to the list of publishers registered
-                    self.subscriber_list.append(subscriber)
+                # Add the created object to the list of publishers registered
+                self.subscriber_list.append(subscriber)
 
-                    # Set status to success if we have gotten this far
-                    status = discovery_pb2.STATUS_SUCCESS
+                # Set status to success if we have gotten this far
+                status = discovery_pb2.STATUS_SUCCESS
 
-                    # No reason to send
-                    reason = None
-                    
-                    self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
-
-                else:
-                    self.logger.info("DiscoveryAppln::register_request Subscriber attempting to register, but no more subscriber roles are allocated")
-
-                    # Set status to failure
-                    status = discovery_pb2.STATUS_FAILURE
-
-                    # Pass in a reason to let the registrant know why it failed
-                    reason = "Max subscribers already reached for this system"
+                # No reason to send
+                reason = None
+                
+                self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
                 
                 # Send a register reply with the MW
                 self.mw_obj.send_register_response(status, reason)
