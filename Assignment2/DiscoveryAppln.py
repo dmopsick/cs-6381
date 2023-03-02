@@ -54,6 +54,8 @@ from CS6381_MW.Common import Entity
 
 from chord_finger_table import FingerTableBuilder
 
+ADDRESS_SPACE = 8
+
 ##################################
 #       DiscoveryAppln class
 ##################################
@@ -69,6 +71,7 @@ class DiscoveryAppln():
         COMPLETED = 3
 
     def __init__ (self, logger):
+        self.name - None
         self.specified_num_publishers = None
         self.specified_num_subscribers = None
         self.specified_num_brokers = None
@@ -79,6 +82,7 @@ class DiscoveryAppln():
         self.broker_list = []
         self.lookup = None
         self.dissemination = None
+        self.dht_file_name = None
         self.finger_table = None
 
     def configure(self, args):
@@ -92,9 +96,11 @@ class DiscoveryAppln():
             self.state = self.State.CONFIGURE
 
             # Initialize our variables
+            self.name = args.name
             self.specified_num_publishers = args.num_publishers
             self.specified_num_subscribers = args.num_subscribers
             self.specified_num_brokers = self.DEFAULT_NUM_BROKERS
+            self.dht_file_name = args.dht_name
             
             # Now, get the configuration object
             self.logger.debug ("DiscoveryAppln::configure - parsing config.ini")
@@ -111,7 +117,10 @@ class DiscoveryAppln():
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
 
             # Create a finger table for this discovery service
-            self.finger_table = FingerTableBuilder.create_finger_table(self.name, 8)
+            self.finger_table = FingerTableBuilder.create_finger_table(self.name, self.dht_file_name, ADDRESS_SPACE)
+
+            self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
+            self.logger.debug(self.finger_table)
             
             self.logger.info("DiscoveryAppln::configure - configuration complete")
       
@@ -129,6 +138,7 @@ class DiscoveryAppln():
             self.logger.info ("**********************************")
             self.logger.info ("DiscoveryAppln::dump")
             self.logger.info ("------------------------------")
+            self.logger.info ("     Num Publishers: {}".format (self.name))
             self.logger.info ("     Num Publishers: {}".format (self.specified_num_publishers))
             self.logger.info ("     Num Subscribers: {}".format (self.specified_num_subscribers))
             self.logger.info ("**********************************")
@@ -455,29 +465,33 @@ class DiscoveryAppln():
 def parseCmdLineArgs ():
     # instantiate a ArgumentParser object
     parser = argparse.ArgumentParser (description="Publisher Application")
-  
-    parser.add_argument ("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 
-    parser.add_argument ("-p", "--port", type=int, default=5556, help="Port number on which our underlying publisher ZMQ service runs, default=5556")
+    parser.add_argument("-n", "--name", default="disc", help="Some name assigned to us. Keep it unique per discovery")
 
-    parser.add_argument ("-P", "--num_publishers", type=int, choices=range(1,50), default=1, help="Number of publishers to build for the system")
+    parser.add_argument("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 
-    parser.add_argument ("-S", "--num_subscribers", type=int, choices=range(1,50), default=1, help="Number of subscribers to build for the system")
+    parser.add_argument("-p", "--port", type=int, default=5556, help="Port number on which our underlying publisher ZMQ service runs, default=5556")
 
-    parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
+    parser.add_argument("-P", "--num_publishers", type=int, choices=range(1,50), default=1, help="Number of publishers to build for the system")
+
+    parser.add_argument("-S", "--num_subscribers", type=int, choices=range(1,50), default=1, help="Number of subscribers to build for the system")
+
+    parser.add_argument("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
     
-    parser.add_argument ("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
+    parser.add_argument("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
+
+    parser.add_argument ("-H", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
 
     return parser.parse_args()
 
 def main():
     try:
         # obtain a system wide logger and initialize it to debug level to begin with
-        logging.info ("Main - acquire a child logger and then log messages in the child")
+        logging.info("Main - acquire a child logger and then log messages in the child")
         logger = logging.getLogger("DiscoveryAppln")
 
         # first parse the arguments
-        logger.debug ("Main: parse command line arguments")
+        logger.debug("Main: parse command line arguments")
         args = parseCmdLineArgs()
 
         # reset the log level to as specified

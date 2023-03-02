@@ -10,12 +10,12 @@ class FingerTableBuilder():
     DHT_KEY = "dht"
 
     def __init__(self):
-        self.file_name =  "dht.json"
+        pass
     
     # Build the DHT for use in finger table construction
-    def build_dht(self):
+    def build_dht(self, dht_file_name):
         # Load the file 
-        dht_json_file = open(self.file_name)
+        dht_json_file = open(dht_file_name)
 
         # Read the file contents as string
         dht_json_string = dht_json_file.read()
@@ -36,11 +36,11 @@ class FingerTableBuilder():
     #
     # Use the provided dht.json
     ##########################################
-    def create_finger_table(self, node_id, address_space_bits):
+    def create_finger_table(self, node_id, dht_file_name, address_space_bits):
         finger_table = []
 
         # Load our distributed hash table from json
-        dht = self.build_dht()
+        dht = self.build_dht(dht_file_name)
 
         # print(dht)
 
@@ -77,6 +77,23 @@ class FingerTableBuilder():
             print("ERROR: Invalid node id provided: {}".format(node_id))
 
         return finger_table
+
+    #######################################
+    # Find the successor of a key from a node
+    #
+    # Taken from Week 4 async slides 
+    ########################################
+    def find_successor_from_node(self, key, node, dht):
+        if self.is_between(key, node, self.get_immediate_successor_of_node(node, dht)):
+            # The key is between the node and its successor
+            # Return the successor of the node
+            return self.get_immediate_successor_of_node(node, dht)
+        else:
+            # The key is not between the node and its successor
+            # Need to go find the closest preceding node
+            # Then select the successor of that node
+            node_to_check = self.closest_preceding_node(key, dht)
+            return self.get_immediate_successor_of_node(node_to_check, dht)
 
     #########################################
     # Find the successor of any key in a distributed hash table
@@ -200,6 +217,6 @@ class FingerTableBuilder():
 # Build the finger table based on the above specified parameters
 # finger_table = finger_table_builder.create_finger_table(11905375445601, 48)
 # finger_table = finger_table_builder.create_finger_table(78, 8)
-# finger_table = finger_table_builder.create_finger_table('disc15', 8)
+# finger_table = finger_table_builder.create_finger_table('disc15', "dht.json", 8)
 
 # print(finger_table)

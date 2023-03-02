@@ -92,6 +92,7 @@ class PublisherAppln ():
     self.dissemination = None # direct or via broker
     self.mw_obj = None # handle to the underlying Middleware object
     self.logger = logger  # internal logger for print statements
+    self.dht_file_name = None
 
   ########################################
   # configure/initialize
@@ -111,6 +112,7 @@ class PublisherAppln ():
       self.iters = args.iters  # num of iterations
       self.frequency = args.frequency # frequency with which topics are disseminated
       self.num_topics = args.num_topics  # total num of topics we publish
+      self.dht_file_name = args.dht_name
 
       # Now, get the configuration object
       self.logger.debug ("PublisherAppln::configure - parsing config.ini")
@@ -391,6 +393,8 @@ def parseCmdLineArgs ():
 
   parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
   
+  parser.add_argument ("-H", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
+
   return parser.parse_args()
 
 

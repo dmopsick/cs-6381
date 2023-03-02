@@ -77,6 +77,7 @@ class SubscriberAppln():
         self.receivedPublicationList = []
         self.dissemination = None # Hold the dissemination strategy
         self.iters = None # Number of iterations to receive data
+        self.dht_file_name = None
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -97,6 +98,7 @@ class SubscriberAppln():
             self.iters = args.iters # Number of iterations
             self.frequency = args.frequency
             self.num_topics = args.num_topics
+            self.dht_file_name = args.dht_name
 
             # Get the configuration object
             self.logger.debug("SubscriberAppln::configure - parsing config.ini")
@@ -406,6 +408,8 @@ def parseCmdLineArgs ():
 
     parser.add_argument("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 10=logging.DEBUG")
   
+    parser.add_argument ("-H", "--dht_name", default="dht.json", help="Enter the name of the distributed hash table to use")
+
     return parser.parse_args()
 
 ###################################
