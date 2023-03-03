@@ -28,6 +28,10 @@ import zmq  # ZMQ sockets
 # import serialization logic
 from CS6381_MW import discovery_pb2
 
+from DhtUtil import DhtUtil
+
+ADDRESS_SPACE = 8
+
 class DiscoveryMW():
     
     ########################################
@@ -42,11 +46,16 @@ class DiscoveryMW():
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
         self.req_list = [] # The list of req sockets 
+        self.dht_file_name = None
+        self.dht = None
+        self.finger_table = None
+        self.dht_util = None
 
     ########################################
     # configure/initialize
     ########################################
     def configure(self, args):
+        ''' Initialize the object '''
 
         try:
             # Here we initialize any internal variables
@@ -75,12 +84,19 @@ class DiscoveryMW():
 
             self.logger.debug("DiscoveryMW::configure - Load finger table from Appln to build list of req sockets")
 
-            # Need to get the finger table from the DiscoveryAppln
-            finger_table = self.upcall_obj.finger_table
+            self.logger.debug("DiscoveryAppln::configure - Loading DHT Util, building DHT, then creating Finger Table")
+
+            # Create a DHT Util class for use in the discovery logic
+            self.dht_util = DhtUtil()
+            # Build a DHT for this node to use
+            self.dht = self.dht_util.build_dht(self.dht_file_name)
+            # Create a finger table for this node, from the DHT we built
+            self.finger_table = self.dht_util.create_finger_table(self.name, self.dht, ADDRESS_SPACE)
+
+            self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
+            self.logger.debug(self.finger_table)
 
             self.logger.debug("DiscoveryMW::configure - Create a REQ socket for each distinct node")
-
-            print(finger_table)
 
             # Create a REQ socket for each of the distinct nodes in the finger table
 
