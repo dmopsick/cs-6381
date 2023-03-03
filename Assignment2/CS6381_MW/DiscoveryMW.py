@@ -64,6 +64,7 @@ class DiscoveryMW():
             # First retrieve our advertised IP addr and the publication port num
             self.port = args.port
             self.addr = args.addr
+            self.dht_file_name = args.dht_name
 
             # Next get the ZMQ context
             self.logger.debug("DiscoveryMW::configure - obtain ZMQ context")
