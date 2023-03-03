@@ -78,23 +78,9 @@ class DiscoveryMW():
             # Need to get the finger table from the DiscoveryAppln
             finger_table = self.upcall_obj.finger_table
 
-            # Declare a second list to hold the distinct entries
-            name_set = set()
-            distinct_finger_table_entries = []
-
-            self.logger.debug("DiscoveryMW::configure - Build list of only the distinct nodes from the finger table")
-
-            # Iterate through the list of finger tables to build list of distnct finger table entries
-            for node in finger_table:
-                if node["id"] not in name_set:
-                    name_set.add(node["id"])
-                    distinct_finger_table_entries.append(node)
-
-            self.logger.debug("DiscoveryMW::configure - Distinct nodes in finger table loaded")
-
             self.logger.debug("DiscoveryMW::configure - Create a REQ socket for each distinct node")
 
-            print(distinct_finger_table_entries)
+            print(finger_table)
 
             # Create a REQ socket for each of the distinct nodes in the finger table
 
