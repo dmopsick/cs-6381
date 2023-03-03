@@ -87,7 +87,7 @@ class DiscoveryAppln():
         self.dht_file_name = None
         self.dht = None
         self.finger_table = None
-        self.dht_util
+        self.dht_util = None
 
     def configure(self, args):
         ''' Initialize the object '''
