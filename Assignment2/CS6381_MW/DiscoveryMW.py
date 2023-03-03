@@ -92,7 +92,7 @@ class DiscoveryMW():
             # Build a DHT for this node to use
             self.dht = self.dht_util.build_dht(self.dht_file_name)
             # Create a finger table for this node, from the DHT we built
-            self.finger_table = self.dht_util.create_finger_table(self.name, self.dht, ADDRESS_SPACE)
+            self.finger_table = self.dht_util.create_finger_table(args.name, self.dht, ADDRESS_SPACE)
 
             self.logger.debug("DiscoveryAppln::configure - created Finger table: ")
             self.logger.debug(self.finger_table)
