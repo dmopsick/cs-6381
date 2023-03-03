@@ -35,12 +35,13 @@ class DiscoveryMW():
     ########################################
     def __init__(self, logger):
         self.logger = logger # internal logger for print statements
-        self.rep = None # ZMQ RES socket used to receive requests from pubs and subs
+        self.rep = None # ZMQ RES socket used to receive requests from pubs and subs AND other nodes now
         self.poller = None # used to wait on incoming replies
         self.addr = None # Advertised IP address
         self.port = None # The port num where we are going to publish our topic
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
+        self.req_list = [] # The list of req sockets 
 
     ########################################
     # configure/initialize
@@ -71,6 +72,32 @@ class DiscoveryMW():
             self.poller.register(self.rep, zmq.POLLIN)
 
             self.logger.debug("DiscoveryMW::configure - REP socket registered")
+
+            self.logger.debug("DiscoveryMW::configure - Load finger table from Appln to build list of req sockets")
+
+            # Need to get the finger table from the DiscoveryAppln
+            finger_table = self.upcall_obj.finger_table
+
+            # Declare a second list to hold the distinct entries
+            name_set = set()
+            distinct_finger_table_entries = []
+
+            self.logger.debug("DiscoveryMW::configure - Build list of only the distinct nodes from the finger table")
+
+            # Iterate through the list of finger tables to build list of distnct finger table entries
+            for node in finger_table:
+                if node["id"] not in name_set:
+                    name_set.add(node["id"])
+                    distinct_finger_table_entries.append(node)
+
+            self.logger.debug("DiscoveryMW::configure - Distinct nodes in finger table loaded")
+
+            self.logger.debug("DiscoveryMW::configure - Create a REQ socket for each distinct node")
+
+
+            # Create a REQ socket for each of the distinct nodes in the finger table
+
+            self.logger.debug("DiscoveryMW::configure - Done configuring a REQ socket for each distinct node")
 
             # note that we publish on any interface hence the * followed by port number.
             # We always use TCP as the transport mechanism (at least for these assignments)

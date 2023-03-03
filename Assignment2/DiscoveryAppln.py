@@ -222,8 +222,10 @@ class DiscoveryAppln():
                         # Save the entity to the publisher list of this discovery node
                         self.logger.info("DiscoveryAppln::register_request Registering a publisher")
 
-                        # Add the created object to the list of publishers registered
-                        self.publisher_list.append(entity)
+                        # Only add the subscriber to the list if it does not already exist in the list
+                        if not any(publisher.name == entity.name for publisher in self.publisher_list):
+                            # Add the created object to the list of publishers registered
+                            self.publisher_list.append(entity)
 
                         # Set status to success if we have gotten this far
                         status = discovery_pb2.STATUS_SUCCESS
@@ -240,8 +242,10 @@ class DiscoveryAppln():
                         # Save the entity as a subscriber
                         self.logger.info("DiscoveryAppln::register_request Registering a subscriber")
 
-                        # Add the created object to the list of publishers registered
-                        self.subscriber_list.append(entity)
+                        # Only add the subscriber to the list if it does not already exist in the list
+                        if not any(subscriber.name == entity.name for subscriber in self.subscriber_list):
+                            # Add the created object to the list of publishers registered
+                            self.subscriber_list.append(entity)
 
                         # Set status to success if we have gotten this far
                         status = discovery_pb2.STATUS_SUCCESS
@@ -258,8 +262,10 @@ class DiscoveryAppln():
                         # Save the entity as a broker
                         self.logger.info("DiscoveryAppln::register_request Registering a broker")
  
-                        # Add the created object to the list of publishers registered
-                        self.broker_list.append(entity)
+                        # Only add the subscriber to the list if it does not already exist in the list
+                        if not any(broker.name == entity.name for broker in self.broker_list):
+                            # Add the created object to the list of publishers registered
+                            self.broker_list.append(entity)
 
                         # Set status to success if we have gotten this far
                         status = discovery_pb2.STATUS_SUCCESS
