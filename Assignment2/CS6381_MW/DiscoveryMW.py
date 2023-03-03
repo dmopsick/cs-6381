@@ -94,6 +94,7 @@ class DiscoveryMW():
 
             self.logger.debug("DiscoveryMW::configure - Create a REQ socket for each distinct node")
 
+            print(distinct_finger_table_entries)
 
             # Create a REQ socket for each of the distinct nodes in the finger table
 
