@@ -100,8 +100,24 @@ class DiscoveryMW():
             self.logger.debug("DiscoveryMW::configure - Create a REQ socket for each distinct node")
 
             # Create a REQ socket for each of the distinct nodes in the finger table
+            for node in self.finger_table:
+                # Create one socket per node
+                socket = context.socket(zmq.REQ)
+
+                # Build the connection string
+                connect_str = "tcp://" + node["IP"] + ":" + str(node["port"])
+
+                # Connect the socket
+                socket.connect(connect_str)
+
+                # Register the socket for POLLIN events
+                self.poller.register(socket, zmq.POLLIN)
+
+                # Add to the list of req sockets
+                self.req_list.append(socket)
 
             self.logger.debug("DiscoveryMW::configure - Done configuring a REQ socket for each distinct node")
+            self.logger.debug(self.req_list)
 
             # note that we publish on any interface hence the * followed by port number.
             # We always use TCP as the transport mechanism (at least for these assignments)

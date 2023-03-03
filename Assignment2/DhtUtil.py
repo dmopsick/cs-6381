@@ -225,11 +225,17 @@ class DhtUtil():
         return successor
         
 # Create new finger table builder object
-# finger_table_builder = FingerTableBuilder()
+dht_util = DhtUtil()
+
+dht = dht_util.build_dht("dht.json")
+
+# print("Flag 1")
+# print(dht)
+# print("Flag 2")
 
 # Build the finger table based on the above specified parameters
 # finger_table = finger_table_builder.create_finger_table(11905375445601, 48)
 # finger_table = finger_table_builder.create_finger_table(78, 8)
-# finger_table = finger_table_builder.create_finger_table('disc15', "dht.json", 8)
+finger_table = dht_util.create_finger_table("disc13", dht, 8)
 
-# print(finger_table)
+print(finger_table)
