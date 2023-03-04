@@ -143,6 +143,8 @@ class DiscoveryMW():
                 # The return value is a socket to event mask mapping
                 events = dict(self.poller.poll(timeout=timeout))
 
+                # Where do I put the check for messages from other nodes?
+
                 # if not events:
                 #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
@@ -377,6 +379,54 @@ class DiscoveryMW():
             # Return timeout of zero
             return 0
 
+        except Exception as e:
+            raise e
+
+    ####################################################
+    # Forward a register request to another node for completion
+    #
+    # This DHT node received that it is not able to complete
+    # Because it is not the successor of the hashed topic of the node
+    # Pass it on to another node to register/pass on again
+    ####################################################
+    def forward_reg_req_to_node(self, reg_req, node_to_forward_to):
+
+        try:
+            # Declare a variable for the index of the node to forward to
+            node_index = -1
+
+            # Find the specified req to send to based on the node we want to forward to
+            # Find the index of the node we are forwarding to in the finger table
+            for index, node in enumerate(self.finger_table):
+                # Check if the entry in the finger table pertains to the node we will forward to
+                if node["id"] == node_to_forward_to["id"]:
+                    node_index = index
+                    break
+    
+            # The req socket we want to send to has the same index in the req table
+            # As the chosen node does in the finger table
+            specified_req = self.req_list[node_index]
+
+            # Build the outer layer DiscoveryReq message 
+            disc_req = discovery_pb2.DiscoveryReq()
+            disc_req.msg_type = discovery_pb2.TYPE_REGISTER  # set message type
+            # It was observed that we cannot directly assign the nested field here.
+            # A way around is to use the CopyFrom method as shown
+            disc_req.register_req.CopyFrom (reg_req)
+            self.logger.debug("DiscoveryMW::forward_reg_req_to_node - done building the outer message")
+            
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = disc_req.SerializeToString()
+            self.logger.debug("Stringified serialized buf = {}".format(buf2send))
+
+            # now send this to our discovery service
+            self.logger.debug("DiscoveryMW::forward_reg_req_to_node - send stringified buffer to Discovery service")
+            specified_req.send(buf2send)
+
+            # now go to our event loop to receive a response to this request
+            self.logger.info("DiscoveryMW::forward_reg_req_to_node - sent register message and now now wait for reply")
+    
         except Exception as e:
             raise e
 
