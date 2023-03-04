@@ -126,6 +126,10 @@ class DiscoveryAppln():
             # Init the experiment generator
             self.experiment_generator = ExperimentGenerator(self.logger)
 
+            # Set the num bits of the hash to use
+            # Must use the same address space that we used to create the DHT
+            self.experiment_generator.bits_hash = ADDRESS_SPACE
+
             # Create a DHT Util class for use in the discovery logic
             self.dht_util = DhtUtil()
             # Build a DHT for this node to use
