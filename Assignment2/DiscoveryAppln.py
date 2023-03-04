@@ -88,6 +88,7 @@ class DiscoveryAppln():
         self.dht = None
         self.finger_table = None
         self.dht_util = None
+        self.experiment_generator = None
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -121,6 +122,9 @@ class DiscoveryAppln():
             self.mw_obj.configure(args) # pass remainder of the args to the m/w object
 
             self.logger.debug("DiscoveryAppln::configure - Loading DHT Util, building DHT, then creating Finger Table")
+
+            # Init the experiment generator
+            self.experiment_generator = ExperimentGenerator()
 
             # Create a DHT Util class for use in the discovery logic
             self.dht_util = DhtUtil()
@@ -206,7 +210,7 @@ class DiscoveryAppln():
             for topic in entity.topic_list:
                 # Generate the hash of the topic 
                 # Use the same hash function that we used to generate the table
-                topic_hash = ExperimentGenerator.hash_func(topic)
+                topic_hash = self.experiment_generator.hash_func(topic)
 
                 # Get the successor of the hashed value of the topic
                 key_successor = self.dht_util.find_successor(topic_hash)
