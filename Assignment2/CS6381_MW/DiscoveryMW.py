@@ -247,6 +247,9 @@ class DiscoveryMW():
 
             self.logger.info("DiscoveryMW::send_register_response Register finished")
         
+            # Return a timeout of 0
+            return 0
+
         except Exception as e:
             raise e
     
@@ -284,6 +287,9 @@ class DiscoveryMW():
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
             self.logger.info("DiscoveryMW::send_isready_response sending isready response finished")
+
+            # Return a timeout of 0
+            return 0
 
         except Exception as e:
             raise e
