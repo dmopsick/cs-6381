@@ -148,10 +148,14 @@ class DiscoveryMW():
                 # if not events:
                 #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
-                    timeout = self.handle_request()
-                else:
-                    pass
-                    # raise Exception("Unknown event after poll")
+                    timeout = self.handle_request(self.rep)
+               
+                # Iterate through each of the req_list and check for events
+                for req in self.req_list:
+                    # Check if there is an incoming request on the specified port
+                    if req in events:
+                        # Handle the incoming request from another DHT node
+                        timeout = self.handle_request(req)
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
         except Exception as e:
@@ -160,14 +164,14 @@ class DiscoveryMW():
     #################################################
     # Top level logic for processing requests to the discovery server
     #################################################
-    def handle_request(self):
+    def handle_request(self, socket):
         ''' Handle a received request '''
 
         try:
             self.logger.info("DiscoveryMW::Handle received request")
 
-            # Receive the data 
-            bytesRcvd = self.rep.recv()
+            # Receive the data from the specified socket
+            bytesRcvd = socket.recv()
 
             # Deserialize the incoming bytes as a DiscoveryReq
             # That is what the pubs and subs are building 

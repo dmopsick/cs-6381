@@ -291,7 +291,7 @@ class DiscoveryAppln():
                     self.logger.info("DiscoveryAppln::register_request This node is not the successor of the topic hash")
  
                     # Declare a variable to hold the node
-                    found_successor = False
+                    found_successor = None
 
                     # Check if that node is in the finger table of this node
                     for node in self.finger_table:
