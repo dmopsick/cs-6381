@@ -221,7 +221,7 @@ class DiscoveryAppln():
                 self.logger.debug("DiscoveryAppln::register_request - Generated hash {}".format(topic_hash))
 
                 # Get the successor of the hashed value of the topic
-                key_successor = self.dht_util.find_successor(topic_hash)
+                key_successor = self.dht_util.find_successor(topic_hash, self.dht)
 
                 self.logger.debug("DiscoveryAppln::register_request - The successor of the generated hash")
                 self.logger.debug(key_successor)
