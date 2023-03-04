@@ -306,7 +306,7 @@ class DiscoveryAppln():
 
                     # Check if that node is in the finger table of this node
                     for node in self.finger_table:
-                        if node["hash"] == key_successor:
+                        if node["hash"] == key_successor["hash"]:
                             # The found successor is in the finger table
                             found_successor = node
                             break

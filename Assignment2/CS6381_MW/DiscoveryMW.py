@@ -437,7 +437,7 @@ class DiscoveryMW():
             specified_req.send(buf2send)
 
             # now go to our event loop to receive a response to this request
-            self.logger.info("DiscoveryMW::forward_reg_req_to_node - sent register message and now now wait for reply")
+            self.logger.info("DiscoveryMW::forward_reg_req_to_node - The register request has been succesfully forwarded")
     
         except Exception as e:
             raise e
