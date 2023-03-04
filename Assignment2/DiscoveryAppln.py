@@ -162,6 +162,7 @@ class DiscoveryAppln():
 
     def driver(self):
         ''' Discovery driver program '''
+
         try:
             self.logger.info("DiscoveryAppln::driver")
 
@@ -207,12 +208,19 @@ class DiscoveryAppln():
 
             # Iterate through each topic in the topic list for the entity attempting to register
             for topic in entity.topic_list:
+                self.logger.debug("DiscoveryAppln::register_request - Registering entity {} for topic {}".format(entity.name, topic))
+
                 # Generate the hash of the topic 
                 # Use the same hash function that we used to generate the table
                 topic_hash = self.experiment_generator.hash_func(topic)
 
+                self.logger.debug("DiscoveryAppln::register_request - Generated hash {}".format(topic_hash))
+
                 # Get the successor of the hashed value of the topic
                 key_successor = self.dht_util.find_successor(topic_hash)
+
+                self.logger.debug("DiscoveryAppln::register_request - The successor of the generated hash")
+                self.logger.debug(key_successor)
 
                 # Check if the current running discovery node is the successor of the topic's hash
                 if key_successor["id"] == self.name:
