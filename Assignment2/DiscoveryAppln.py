@@ -124,7 +124,7 @@ class DiscoveryAppln():
             self.logger.debug("DiscoveryAppln::configure - Loading DHT Util, building DHT, then creating Finger Table")
 
             # Init the experiment generator
-            self.experiment_generator = ExperimentGenerator()
+            self.experiment_generator = ExperimentGenerator(self.logger)
 
             # Create a DHT Util class for use in the discovery logic
             self.dht_util = DhtUtil()
@@ -159,7 +159,6 @@ class DiscoveryAppln():
 
         except Exception as e:
             raise e
-
 
     def driver(self):
         ''' Discovery driver program '''

@@ -121,7 +121,7 @@ class DhtUtil():
         return self.get_immediate_successor_of_node(predecessor_node, dht)
 
     ############################################
-    # Find the predecssor node of any hash value
+    # Find the predecssor node of any hash value key
     #
     ############################################
     def find_predecessor(self, key, dht):
@@ -160,7 +160,7 @@ class DhtUtil():
     #
     # Account for the last element in the ring
     ###########################################
-    def is_between(self, key, node_id, successor_id):
+    def is_between(self, key, node_hash, successor_hash):
 
         # print("FLAG 10")
         # print(key)
@@ -170,9 +170,9 @@ class DhtUtil():
         # Check if the provided node_id is less than its successor
         # This checks for the case of where the provided node is the last node
         # And then points to the first node
-        if node_id < successor_id:
+        if node_hash < successor_hash:
             # Sucessor is bigger than the node, check for standard between
-            if (node_id < key) and (key < successor_id):
+            if (node_hash < key) and (key <= successor_hash):
                 result = True
             else:
                 result = False
@@ -180,7 +180,7 @@ class DhtUtil():
             # Check if the key is larger than the node or smaller than the successor
             # if node was 10 o clock on a clock and successor would be 1
             # This would represent the space on the clock between 10 and 1
-            if (node_id < key) or (key < successor_id):
+            if (node_hash < key) or (key <= successor_hash):
                 result = True
             else:
                 result = False
@@ -210,7 +210,6 @@ class DhtUtil():
             if obj['id'] == node['id']:
                 entity_index = index
                 break
-        
         
         # Check to make sure it is not the last element in the array
         if entity_index == (len(dht) - 1):
