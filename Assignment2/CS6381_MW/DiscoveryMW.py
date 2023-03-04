@@ -159,6 +159,8 @@ class DiscoveryMW():
                 for req in self.req_list:
                     # Check if there is an incoming request on the specified port
                     if req in events:
+                        self.logger.info("DiscoveryMW::event_loop - Received a message on a req socket")
+
                         # Handle the incoming request from another DHT node
                         timeout = self.handle_request(req)
 
@@ -439,6 +441,9 @@ class DiscoveryMW():
             # now go to our event loop to receive a response to this request
             self.logger.info("DiscoveryMW::forward_reg_req_to_node - The register request has been succesfully forwarded")
     
+            # Return the timeout of 0
+            return 0
+
         except Exception as e:
             raise e
 

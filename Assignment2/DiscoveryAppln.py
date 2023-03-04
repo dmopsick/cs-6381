@@ -313,7 +313,7 @@ class DiscoveryAppln():
                     
                     # Check to see if we found the successor
                     if found_successor != None:
-                        # We did find the successor
+                        # We did find the succe:q!ssor
                         self.logger.info("DiscoveryAppln::register_request The successor is in the finger table of this node")
 
                         # Pass on the register request to that found successor of the key
