@@ -102,19 +102,24 @@ class DiscoveryMW():
             # Create a REQ socket for each of the distinct nodes in the finger table
             for node in self.finger_table:
                 # Create one socket per node
-                socket = context.socket(zmq.REQ)
+                node_req = context.socket(zmq.REQ)
 
                 # Build the connection string
                 connect_str = "tcp://" + node["IP"] + ":" + str(node["port"])
 
-                # Connect the socket
-                socket.connect(connect_str)
-
                 # Register the socket for POLLIN events
-                self.poller.register(socket, zmq.POLLIN)
+                self.poller.register(node_req, zmq.POLLIN)
+
+                # Add settings from our class Slack to try to prevent deadlock
+                node_req.setsockopt(zmq.RCVTIMEO, 2000)
+                node_req.setsockopt(zmq.LINGER, 0)
+                node_req.setsockopt(zmq.REQ_RELAXED,1)
+
+                # Connect the socket
+                node_req.connect(connect_str)
 
                 # Add to the list of req sockets
-                self.req_list.append(socket)
+                self.req_list.append(node_req)
 
             self.logger.debug("DiscoveryMW::configure - Done configuring a REQ socket for each distinct node")
             self.logger.debug(self.req_list)
@@ -396,9 +401,12 @@ class DiscoveryMW():
     def forward_reg_req_to_node(self, reg_req, node_to_forward_to):
 
         try:
+            self.logger.debug("DiscoveryMW::forward_reg_req_to_node - Forwarding a register request to {}".format(node_to_forward_to["id"]))
+
             # Declare a variable for the index of the node to forward to
             node_index = -1
 
+            self.logger.debug("DiscoveryMW::forward_reg_req_to_node - Find the index of the REQ socket to foward to")
             # Find the specified req to send to based on the node we want to forward to
             # Find the index of the node we are forwarding to in the finger table
             for index, node in enumerate(self.finger_table):
