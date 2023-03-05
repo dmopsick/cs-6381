@@ -243,6 +243,9 @@ class DiscoveryMW():
             buf2send = discovery_response.SerializeToString ()
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
+            self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
+            self.logger.debg(self.rep)
+
             # Send a response back to the registrant that attempted to register
             self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes

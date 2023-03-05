@@ -250,6 +250,10 @@ class DiscoveryAppln():
                         
                         self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
                    
+                        # Check whether or not this request was forwarded from another DHT
+                        # How could we determine or track this?
+                        # How do we know if the rep socket we are sending to is NOT a dht
+
                         # Send a register reply with the MW
                         self.mw_obj.send_register_response(status, reason)
 
