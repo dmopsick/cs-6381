@@ -226,6 +226,8 @@ class DiscoveryMW():
                 register_response.reason = reason
             self.logger.debug("DiscoveryMW::register - done populating nested RegisterResp")
 
+            self.logger.info("Sending response of status: {}, reason: {}")
+
             self.logger.debug("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DiscoveryResp()
@@ -242,7 +244,7 @@ class DiscoveryMW():
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
             # Send a response back to the registrant that attempted to register
-            self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer to Discovery service")
+            self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
             self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
             self.logger.info("DiscoveryMW::send_register_response Register finished")
