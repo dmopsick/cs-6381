@@ -258,7 +258,7 @@ class DiscoveryMW():
         except Exception as e:
             raise e
 
-    def dump_object_properties(obj):
+    def dump_object_properties(self, obj):
         props = [prop for prop in dir(obj) if not prop.startswith('__')]
         prop_str = "\n".join([f"{prop}: {getattr(obj, prop)}" for prop in props])
         return prop_str
