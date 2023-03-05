@@ -514,11 +514,16 @@ class DiscoveryMW():
     # This DHT node received that it is not able to complete
     # Because it is not the successor of the hashed topic of the node
     # Pass it on to another node to register/pass on again
+    # We want to ONLY pass on the topic we are working with
+    # If we pass the whole list we will trigger infinte requests
     ####################################################
-    def forward_reg_req_to_node(self, reg_req, node_to_forward_to):
+    def forward_reg_req_to_node(self, reg_req, topic, node_to_forward_to):
 
         try:
             self.logger.debug("DiscoveryMW::forward_reg_req_to_node - Forwarding a register request to {}".format(node_to_forward_to["id"]))
+
+            # Only forward the topic we want to register at the node we are forwarding to 
+            reg_req.topiclist = [topic]
 
             # Declare a variable for the index of the node to forward to
             node_index = -1
@@ -541,7 +546,7 @@ class DiscoveryMW():
             disc_req.msg_type = discovery_pb2.TYPE_REGISTER  # set message type
             # It was observed that we cannot directly assign the nested field here.
             # A way around is to use the CopyFrom method as shown
-            disc_req.register_req.CopyFrom (reg_req)
+            disc_req.register_req.CopyFrom(reg_req)
             self.logger.debug("DiscoveryMW::forward_reg_req_to_node - done building the outer message")
             
             # now let us stringify the buffer and print it. This is actually a sequence of bytes and not

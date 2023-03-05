@@ -321,7 +321,7 @@ class DiscoveryAppln():
                         self.logger.info("DiscoveryAppln::register_request The successor is in the finger table of this node")
 
                         # Pass on the register request to that found successor of the key
-                        self.mw_obj.forward_reg_req_to_node(reg_req, found_successor)
+                        self.mw_obj.forward_reg_req_to_node(reg_req, topic, found_successor)
 
                     else:
                         # The successor for the provided key is not in this node's hash table
@@ -332,7 +332,7 @@ class DiscoveryAppln():
                         furthest_successor = self.finger_table[-1]
                         
                         # Select the last node in the finger table, send it there
-                        self.mw_obj.forward_reg_req_to_node(reg_req, furthest_successor)
+                        self.mw_obj.forward_reg_req_to_node(reg_req, topic, furthest_successor)
 
             # Done registering the entity at the nodes of the successors of each of its hashed topics
 
