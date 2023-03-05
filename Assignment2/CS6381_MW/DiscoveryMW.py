@@ -24,6 +24,7 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import pickle
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
@@ -244,7 +245,7 @@ class DiscoveryMW():
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
             self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
-            self.logger.debug(self.dump_object_properties(self.rep))
+            self.logger.debug(pickle.dumps(self.rep))
 
             # Send a response back to the registrant that attempted to register
             self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
@@ -258,10 +259,6 @@ class DiscoveryMW():
         except Exception as e:
             raise e
 
-    def dump_object_properties(self, obj):
-        props = [prop for prop in dir(obj) if not prop.startswith('__')]
-        prop_str = "\n".join([f"{prop}: {getattr(obj, prop)}" for prop in props])
-        return prop_str
     
     ############################################
     # Send a response to an is ready response
