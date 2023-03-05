@@ -523,7 +523,7 @@ class DiscoveryMW():
             self.logger.debug("DiscoveryMW::forward_reg_req_to_node - Forwarding a register request to {}".format(node_to_forward_to["id"]))
 
             # Get the reg info from the existing reg_req
-            reg_info = reg_req.reg_info
+            reg_info = reg_req.info
 
             # Only forward the topic we want to register at the node we are forwarding to 
             # Build a new register request
