@@ -153,7 +153,7 @@ class DiscoveryMW():
                 # if not events:
                 #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
-                    timeout = self.handle_request(self.rep)
+                    timeout = self.handle_message(self.rep)
                
                 # Iterate through each of the req_list and check for events
                 for req in self.req_list:
@@ -162,28 +162,72 @@ class DiscoveryMW():
                         self.logger.info("DiscoveryMW::event_loop - Received a message on a req socket")
 
                         # Handle the incoming request from another DHT node
-                        timeout = self.handle_request(req)
+                        timeout = self.handle_message(req)
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
+        except Exception as e:
+            raise e
+
+    ################################################
+    # Take in and process an incoming message
+    #
+    # Determine if it's a request or response and pass it on appropriately
+    ##################################################
+    def handle_message(self, socket):
+        ''' Handle a received message, pass it on to be processed '''
+        try:
+            self.logger.info("DiscoveryMW::handle_message")
+
+            # Receive the data from the specified socket
+            bytesRcvd = socket.recv()
+
+            # Attempt to parse the message as a discovery request
+            try:
+                disc_req = discovery_pb2.DiscoveryReq()
+                disc_req.ParseFromString(bytesRcvd)
+            except Exception as e:
+                self.logger.debug("DiscoveryMW::handle_message - Message not parsing as request")
+                disc_req = None
+            
+            # Was the message parsed as a discovery req
+            if disc_req != None:
+                 # Message is a discovery request, pass it on to handle request
+                self.handle_request(disc_req)
+            else: 
+                # Message is not a discovery request
+                # Attempt to parse as a discovery response
+                try:
+                    disc_resp = discovery_pb2.DiscoveryResp()
+                    disc_resp.ParseFromString(bytesRcvd)
+                except Exception as e:
+                    self.logger.debug("DiscoveryMW::handle_message - Message not parsing as request")
+                    disc_resp = None
+
+                # Were we able to parse the disc resp
+                if disc_resp != None:
+                    self.forward_response(disc_resp)
+                else:
+                    raise ValueError ("Unrecognized response message -- Not a discovery request or response")
+
         except Exception as e:
             raise e
 
     #################################################
     # Top level logic for processing requests to the discovery server
     #################################################
-    def handle_request(self, socket):
+    def handle_request(self, disc_req):
         ''' Handle a received request '''
 
         try:
-            self.logger.info("DiscoveryMW::Handle received request")
+            self.logger.info("DiscoveryMW::handle_received_request")
 
             # Receive the data from the specified socket
-            bytesRcvd = socket.recv()
+            # bytesRcvd = socket.recv()
 
             # Deserialize the incoming bytes as a DiscoveryReq
             # That is what the pubs and subs are building 
-            disc_req = discovery_pb2.DiscoveryReq()
-            disc_req.ParseFromString(bytesRcvd)
+            # disc_req = discovery_pb2.DiscoveryReq()
+            # disc_req.ParseFromString(bytesRcvd)
 
             # Check the msg type in order to determine how to handle it
             if (disc_req.msg_type == discovery_pb2.TYPE_REGISTER):
@@ -198,12 +242,42 @@ class DiscoveryMW():
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
                 timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_req)
             else: # anything else is unrecognizable by this object
+                self.logger.debug("DiscoveryMW::handle_received_request UNRECOGNIZED MESSAGE TYPE")
                 # raise an exception here
                 raise ValueError ("Unrecognized response message")
 
             return timeout
         except Exception as e:
             raise e 
+
+    ##############################################
+    # Forward a discovery response back to/towards original sender
+    #
+    # This discovery service has received a discovery response
+    # This means we must forwarded it to the entity/node who send the request to this entity
+    # The entity that made/forwarded the request will still be in the rep socket
+    # So just need to send it to whoever is in the rep socket
+    ##############################################
+    def forward_response(self, disc_resp):
+        try:
+            self.logger.info("DiscoveryMW::forward_response")
+
+            # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
+            # a real string
+            buf2send = disc_resp.SerializeToString ()
+            self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+            # Send a response back to the registrant that sent the discovery request to this node
+            # That will still be the connection in the rep socket
+            self.logger.debug ("DiscoveryMW::forward_response - send stringified buffer response to/towards the entity registering")
+            self.rep.send(buf2send)
+
+            self.logger.info("DiscoveryMW::forward_response Forward response finished")
+        
+            # Return a timeout of 0
+            return 0
+        except Exception as e:
+            raise e
 
     #####################################################
     # Send a response to an entity attempting to register with the discovery server
@@ -243,8 +317,8 @@ class DiscoveryMW():
             buf2send = discovery_response.SerializeToString ()
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
-            self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
-            self.logger.debug(self.rep.get())
+            # self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
+            # self.logger.debug(self.rep.get())
 
             # Send a response back to the registrant that attempted to register
             self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
