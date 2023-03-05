@@ -224,7 +224,7 @@ class DiscoveryMW():
     #################################################
     # Top level logic for processing requests to the discovery server
     #################################################
-    def handle_request(self, disc_req):
+    def handle_request(self, disc_req, node_to_forward_to):
         ''' Handle a received request '''
 
         try:
