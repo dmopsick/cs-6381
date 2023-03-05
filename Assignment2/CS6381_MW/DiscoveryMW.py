@@ -522,9 +522,17 @@ class DiscoveryMW():
         try:
             self.logger.debug("DiscoveryMW::forward_reg_req_to_node - Forwarding a register request to {}".format(node_to_forward_to["id"]))
 
-            # Only forward the topic we want to register at the node we are forwarding to 
-            reg_req.topiclist = [topic]
+            # Get the reg info from the existing reg_req
+            reg_info = reg_req.reg_info
 
+            # Only forward the topic we want to register at the node we are forwarding to 
+            # Build a new register request
+            self.logger.debug ("SubscriberMW::forward_reg_req_to_node - populate the nested register req")
+            register_req = discovery_pb2.RegisterReq ()  # allocate 
+            register_req.role = discovery_pb2.ROLE_SUBSCRIBER  # we are a publishe
+            register_req.info.CopyFrom(reg_info)  # copy contents of inner structure
+            register_req.topiclist[:] = [topic]   # this is how repeated entries are added (or use append() or extend ()
+      
             # Declare a variable for the index of the node to forward to
             node_index = -1
 
@@ -546,7 +554,7 @@ class DiscoveryMW():
             disc_req.msg_type = discovery_pb2.TYPE_REGISTER  # set message type
             # It was observed that we cannot directly assign the nested field here.
             # A way around is to use the CopyFrom method as shown
-            disc_req.register_req.CopyFrom(reg_req)
+            disc_req.register_req.CopyFrom(register_req)
             self.logger.debug("DiscoveryMW::forward_reg_req_to_node - done building the outer message")
             
             # now let us stringify the buffer and print it. This is actually a sequence of bytes and not
