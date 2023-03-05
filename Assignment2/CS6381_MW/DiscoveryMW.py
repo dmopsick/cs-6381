@@ -148,8 +148,6 @@ class DiscoveryMW():
                 # The return value is a socket to event mask mapping
                 events = dict(self.poller.poll(timeout=timeout))
 
-                # Where do I put the check for messages from other nodes?
-
                 # if not events:
                 #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
@@ -192,7 +190,7 @@ class DiscoveryMW():
             # Was the message parsed as a discovery req
             if disc_req != None:
                  # Message is a discovery request, pass it on to handle request
-                self.handle_request(disc_req)
+                timeout = self.handle_request(disc_req)
             else: 
                 # Message is not a discovery request
                 # Attempt to parse as a discovery response
@@ -205,9 +203,11 @@ class DiscoveryMW():
 
                 # Were we able to parse the disc resp
                 if disc_resp != None:
-                    self.forward_response(disc_resp)
+                    timeout = self.forward_response(disc_resp)
                 else:
                     raise ValueError ("Unrecognized response message -- Not a discovery request or response")
+
+            return timeout
 
         except Exception as e:
             raise e
