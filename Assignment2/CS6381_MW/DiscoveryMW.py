@@ -183,6 +183,8 @@ class DiscoveryMW():
             try:
                 disc_req = discovery_pb2.DiscoveryReq()
                 disc_req.ParseFromString(bytesRcvd)
+                self.logger.debug("DiscoveryMW::handle_message - Received a discovery request")
+                self.logger.debug(disc_req)
             except Exception as e:
                 self.logger.debug("DiscoveryMW::handle_message - Message not parsing as request")
                 disc_req = None
@@ -300,7 +302,7 @@ class DiscoveryMW():
                 register_response.reason = reason
             self.logger.debug("DiscoveryMW::register - done populating nested RegisterResp")
 
-            self.logger.info("Sending response of status: {}, reason: {}")
+            self.logger.info("Sending response of status: {}, reason: {}".format(status, reason))
 
             self.logger.debug("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
