@@ -196,7 +196,7 @@ class DiscoveryAppln():
     #
     # Here is where the meat and potatoes of the registering subs and pubs go
     #######################################
-    def register_request(self, reg_req):
+    def register_request(self, reg_req, node_to_forward_to):
         ''' Handle register request '''
 
         try:
@@ -255,7 +255,7 @@ class DiscoveryAppln():
                         # How do we know if the rep socket we are sending to is NOT a dht
 
                         # Send a register reply with the MW
-                        self.mw_obj.send_register_response(status, reason)
+                        self.mw_obj.send_register_response(status, reason, node_to_forward_to)
 
                     elif entity.role == discovery_pb2.ROLE_SUBSCRIBER:
                         # Save the entity as a subscriber
@@ -275,7 +275,7 @@ class DiscoveryAppln():
                         self.logger.debug("DiscoveryAppln::register_request Done creating a new subscriber record")
                    
                         # Send a register reply with the MW
-                        self.mw_obj.send_register_response(status, reason)
+                        self.mw_obj.send_register_response(status, reason, node_to_forward_to)
 
                     elif entity.role == discovery_pb2.ROLE_BOTH:
                         # Save the entity as a broker
@@ -295,7 +295,7 @@ class DiscoveryAppln():
                         self.logger.debug("DiscoveryAppln::register_request Done creating a new publisher record")
                    
                         # Send a register reply with the MW
-                        self.mw_obj.send_register_response(status, reason)
+                        self.mw_obj.send_register_response(status, reason, node_to_forward_to)
 
                     else:
                         self.logger.debug ("DiscoveryAppln::register_request - registration is a failure because invalid role provided")
@@ -349,7 +349,7 @@ class DiscoveryAppln():
     #
     # Let whoever is asking know if the system is ready or not
     ############################################
-    def isready_request(self, isready_req):
+    def isready_request(self, isready_req, node_to_forward_to):
         ''' Handle isready request '''
 
         try:
@@ -366,7 +366,7 @@ class DiscoveryAppln():
                 isready = False
 
             # Send the isready response in the MW
-            self.mw_obj.send_isready_response(isready)
+            self.mw_obj.send_isready_response(isready, node_to_forward_to)
 
             self.logger.info("DiscoveryAppln::is_ready_request Done handling isready request")
 
@@ -381,7 +381,7 @@ class DiscoveryAppln():
     # Handle a look up publisher list by topic list request
     #
     ###################################################
-    def lookup_pub_by_topiclist_request(self, lookup_req):
+    def lookup_pub_by_topiclist_request(self, lookup_req, node_to_forward_to):
         ''' Handle a lookup pub by topic request '''
 
         try:
@@ -437,7 +437,7 @@ class DiscoveryAppln():
                 raise ValueError("ERROR: Invalid dissemination provided in the config: {}".format(self.dissemination))
 
             # Send the lookup_pub_by_topiclist response in the MW
-            self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list)
+            self.mw_obj.send_lookup_pub_by_topiclist_response(status, publisher_by_topic_list, node_to_forward_to)
 
             self.logger.info("DiscoveryAppln::lookup_pub_by_topiclist_request Done handling a lookup pub list by topic list request")
 
@@ -451,7 +451,7 @@ class DiscoveryAppln():
     #
     # Only should be usable by broker
     ################################################
-    def lookup_all_publishers(self, lookup_all_resp):
+    def lookup_all_publishers(self, lookup_all_resp, node_to_forward_to):
         ''' Look up all publishers '''
 
         try:
@@ -472,7 +472,7 @@ class DiscoveryAppln():
             self.logger.debug("DiscoveryAppln::lookup_all_publishers Done looking up all publishers")
 
             # Send a response to the look up all publisher request
-            self.mw_obj.send_lookup_all_publisher_response(status, all_publisher_list)
+            self.mw_obj.send_lookup_all_publisher_response(status, all_publisher_list, node_to_forward_to)
             
         except Exception as e:
             raise e

@@ -151,16 +151,21 @@ class DiscoveryMW():
                 # if not events:
                 #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
-                    timeout = self.handle_message(self.rep)
+                    # Handle the message directly talking to client
+                    # Do not need to worry about forwarding to a node
+                    timeout = self.handle_message(self.rep, None)
                
                 # Iterate through each of the req_list and check for events
-                for req in self.req_list:
+                for index, req in enumerate(self.req_list):
                     # Check if there is an incoming request on the specified port
                     if req in events:
                         self.logger.info("DiscoveryMW::event_loop - Received a message on a req socket")
 
+                        # Select the node to forward to
+                        node_to_forward_to = self.finger_table[index]
+
                         # Handle the incoming request from another DHT node
-                        timeout = self.handle_message(req)
+                        timeout = self.handle_message(req, node_to_forward_to)
 
             self.logger.info ("DiscoveryMW::event_loop - out of the event loop")
         except Exception as e:
@@ -171,7 +176,7 @@ class DiscoveryMW():
     #
     # Determine if it's a request or response and pass it on appropriately
     ##################################################
-    def handle_message(self, socket):
+    def handle_message(self, socket, node_to_forward_to):
         ''' Handle a received message, pass it on to be processed '''
         try:
             self.logger.info("DiscoveryMW::handle_message")
@@ -192,7 +197,7 @@ class DiscoveryMW():
             # Was the message parsed as a discovery req
             if disc_req != None:
                  # Message is a discovery request, pass it on to handle request
-                timeout = self.handle_request(disc_req)
+                timeout = self.handle_request(disc_req, node_to_forward_to)
             else: 
                 # Message is not a discovery request
                 # Attempt to parse as a discovery response
@@ -207,7 +212,7 @@ class DiscoveryMW():
 
                 # Were we able to parse the disc resp
                 if disc_resp != None:
-                    timeout = self.forward_response(disc_resp)
+                    timeout = self.forward_response(disc_resp, node_to_forward_to)
                 else:
                     raise ValueError ("Unrecognized response message -- Not a discovery request or response")
 
@@ -236,15 +241,15 @@ class DiscoveryMW():
             # Check the msg type in order to determine how to handle it
             if (disc_req.msg_type == discovery_pb2.TYPE_REGISTER):
                 # Handle a register request
-                timeout = self.upcall_obj.register_request(disc_req.register_req)
+                timeout = self.upcall_obj.register_request(disc_req.register_req, node_to_forward_to)
             elif (disc_req.msg_type == discovery_pb2.TYPE_ISREADY):
                 # Handle a request made by a publisher asking if the system is ready
-                timeout = self.upcall_obj.isready_request(disc_req.isready_req)
+                timeout = self.upcall_obj.isready_request(disc_req.isready_req, node_to_forward_to)
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_PUB_BY_TOPIC):
                 # Handle a request made by a subscriber to look up all publishers by topic
-                timeout = self.upcall_obj.lookup_pub_by_topiclist_request(disc_req.lookup_req)
+                timeout = self.upcall_obj.lookup_pub_by_topiclist_request(disc_req.lookup_req, node_to_forward_to)
             elif (disc_req.msg_type == discovery_pb2.TYPE_LOOKUP_ALL_PUBS):
-                timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_req)
+                timeout = self.upcall_obj.lookup_all_publishers(disc_req.lookup_all_req, node_to_forward_to)
             else: # anything else is unrecognizable by this object
                 self.logger.debug("DiscoveryMW::handle_received_request UNRECOGNIZED MESSAGE TYPE")
                 # raise an exception here
@@ -286,7 +291,7 @@ class DiscoveryMW():
     #####################################################
     # Send a response to an entity attempting to register with the discovery server
     #####################################################
-    def send_register_response(self, status, reason):
+    def send_register_response(self, status, reason, node_to_forward_to):
         ''' Send a response back to a registrant that has attempted to register '''
 
         try:
@@ -321,12 +326,33 @@ class DiscoveryMW():
             buf2send = discovery_response.SerializeToString ()
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
-            # self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
-            # self.logger.debug(self.rep.get())
+            # Check if there is a node to forward this message to
+            if node_to_forward_to != None:
+                self.logger.debug ("DiscoveryMW::send_register_response - Select the req to forward to")
+                
+                # Hold the index we are looking for
+                req_index = -1
 
-            # Send a response back to the registrant that attempted to register
-            self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
-            self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
+                # Select the req to send to
+                for index, node in enumerate(self.finger_table):
+                    # Check for the node we want to forward to
+                    if node_to_forward_to["id"] == node["id"]:
+                        req_index = index
+                        break
+
+                # Select the req to forward the response back to
+                req_to_forward_to = self.req_list[req_index] 
+
+                self.logger.debug ("DiscoveryMW::send_register_response - Found the req to forward to")
+
+                self.logger.debug ("DiscoveryMW::send_register_response - forward stringified buffer response back to the node that sent the request")
+                req_to_forward_to.send(buf2send)
+                
+            else:
+                # We are not forwarding to another node, communicating right to entity
+                # Send a response back to the registrant that attempted to register
+                self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
+                self.rep.send(buf2send)  # we use the "send" method of ZMQ that sends the bytes
 
             self.logger.info("DiscoveryMW::send_register_response Register finished")
         
@@ -335,12 +361,11 @@ class DiscoveryMW():
 
         except Exception as e:
             raise e
-
     
     ############################################
     # Send a response to an is ready response
     ############################################
-    def send_isready_response(self, isready):
+    def send_isready_response(self, isready, node_to_forward_to):
         ''' Send a response back to a registrant that has made an isready_request '''
 
         try:
@@ -381,7 +406,7 @@ class DiscoveryMW():
     ############################################
     # Send a response to a lookup pub by topiclist request
     ############################################
-    def send_lookup_pub_by_topiclist_response(self, status, publisher_list):
+    def send_lookup_pub_by_topiclist_response(self, status, publisher_list, node_to_forward_to):
         ''' Send a response back fore a request made to load list of pubishers by topic list '''
         
         try:
@@ -433,7 +458,7 @@ class DiscoveryMW():
         except Exception as e:
             raise e
     
-    def send_lookup_all_publisher_response(self, status, all_publisher_list):
+    def send_lookup_all_publisher_response(self, status, all_publisher_list, node_to_forward_to):
         ''' Send a response to a request for all publishers '''
 
         try:
