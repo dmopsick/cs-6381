@@ -199,6 +199,8 @@ class DiscoveryMW():
                 try:
                     disc_resp = discovery_pb2.DiscoveryResp()
                     disc_resp.ParseFromString(bytesRcvd)
+                    self.logger.debug("DiscoveryMW::handle_message - Received a discovery response")
+                    self.logger.debug(disc_resp)
                 except Exception as e:
                     self.logger.debug("DiscoveryMW::handle_message - Message not parsing as request")
                     disc_resp = None
