@@ -529,7 +529,7 @@ class DiscoveryMW():
             # Build a new register request
             self.logger.debug ("SubscriberMW::forward_reg_req_to_node - populate the nested register req")
             register_req = discovery_pb2.RegisterReq ()  # allocate 
-            register_req.role = discovery_pb2.ROLE_SUBSCRIBER  # we are a publishe
+            register_req.role = reg_req.role
             register_req.info.CopyFrom(reg_info)  # copy contents of inner structure
             register_req.topiclist[:] = [topic]   # this is how repeated entries are added (or use append() or extend ()
       
