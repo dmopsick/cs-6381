@@ -122,7 +122,7 @@ class DiscoveryMW():
                 self.req_list.append(node_req)
 
             self.logger.debug("DiscoveryMW::configure - Done configuring a REQ socket for each distinct node")
-            self.logger.debug(self.req_list)
+            # self.logger.debug(self.req_list)
 
             # note that we publish on any interface hence the * followed by port number.
             # We always use TCP as the transport mechanism (at least for these assignments)
@@ -148,8 +148,6 @@ class DiscoveryMW():
                 # The return value is a socket to event mask mapping
                 events = dict(self.poller.poll(timeout=timeout))
 
-                # if not events:
-                #     timeout = self.upcall_obj.invoke_operation()
                 if self.rep in events:
                     # Handle the message directly talking to client
                     # Do not need to worry about forwarding to a node
@@ -163,6 +161,8 @@ class DiscoveryMW():
 
                         # Select the node to forward to
                         node_to_forward_to = self.finger_table[index]
+
+                        self.logger.info("DiscoveryMW::event_loop - Request received from {}. We will forward the response back to them".format(node_to_forward_to["id"]))
 
                         # Handle the incoming request from another DHT node
                         timeout = self.handle_message(req, node_to_forward_to)
