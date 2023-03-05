@@ -244,7 +244,7 @@ class DiscoveryMW():
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
 
             self.logger.debug("DiscoveryMW::send_register_response -- Here is the rep socket at this time")
-            self.logger.debug(self.rep)
+            self.logger.debug(self.rep.get())
 
             # Send a response back to the registrant that attempted to register
             self.logger.debug ("DiscoveryMW::send_register_response - send stringified buffer response to the entity registering")
