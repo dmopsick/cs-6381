@@ -357,13 +357,16 @@ class DiscoveryAppln():
             
             # No input to account for when handling an isready_request
 
+            # I have not implemented isReadyLogic at this time
+            isready = False
+
             # Check if there required number of pubs and subs is met
-            if ((len(self.subscriber_list) == self.specified_num_subscribers) and (len(self.publisher_list) ==  self.specified_num_publishers)):
-                # The system is only ready when we have the specified amount of subscribers and publishers
-                isready = True
-            else:
-                # The specified number of subscribers and publishers has not been reached
-                isready = False
+            # if ((len(self.subscriber_list) == self.specified_num_subscribers) and (len(self.publisher_list) ==  self.specified_num_publishers)):
+            #     # The system is only ready when we have the specified amount of subscribers and publishers
+            #     isready = True
+            # else:
+            #     # The specified number of subscribers and publishers has not been reached
+            #     isready = False
 
             # Send the isready response in the MW
             self.mw_obj.send_isready_response(isready, node_to_forward_to)

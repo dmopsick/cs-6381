@@ -309,8 +309,6 @@ class DiscoveryMW():
                 register_response.reason = reason
             self.logger.debug("DiscoveryMW::register - done populating nested RegisterResp")
 
-            self.logger.info("Sending response of status: {}, reason: {}".format(status, reason))
-
             self.logger.debug("DiscoveryMW::send_register_response - build the outer DiscoveryResp message")
             # Build the outer discovery response object
             discovery_response = discovery_pb2.DiscoveryResp()
