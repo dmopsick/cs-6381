@@ -89,6 +89,7 @@ class DiscoveryAppln():
         self.finger_table = None
         self.dht_util = None
         self.experiment_generator = None
+        self.isready = False
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -396,8 +397,8 @@ class DiscoveryAppln():
             # Check the dissemination method
             if (self.dissemination == Constants.DISSEMINATION_STRATEGY_DIRECT):
                 self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using Direct strategy")
-                # Check if all the publishers have been added to the system
-                if (len(self.publisher_list) == self.specified_num_publishers):
+                # Make sure the system is ready
+                if (self.isready):
                     # Parse out the topic list from the lookup req
                     topic_list = lookup_req.topiclist  
 
@@ -419,8 +420,8 @@ class DiscoveryAppln():
                     status = discovery_pb2.STATUS_CHECK_AGAIN
             elif (self.dissemination == Constants.DISSEMINATION_STRATEGY_BROKER):
                 self.logger.debug("DiscoveryAppln::lookup_pub_by_topiclist_request -- Using broker strategy")
-                # Make sure the broker has been added 
-                if (len(self.broker_list) == self.specified_num_brokers):
+                # Make sure the system is ready
+                if (self.isready):
                     # The broker(s) is the only thing subscribers need to describe to for 
                     # Broker dissemination
                     for broker in self.broker_list:
@@ -463,7 +464,8 @@ class DiscoveryAppln():
             all_publisher_list = []
 
             # Check if all the publishers have been added to the system
-            if (len(self.publisher_list) == self.specified_num_publishers):
+            if (self.isready):
+                # TODO CHANGE THIS IF WE NEED TO ADD BROKER TO DHT LOGIC
                 # Return all of the publishers
                 all_publisher_list = self.publisher_list
 

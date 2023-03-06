@@ -290,6 +290,9 @@ class PublisherAppln ():
       if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
         self.logger.debug ("PublisherAppln::register_response - registration is a success")
 
+        # Should I check that we get a response for each topic here?
+        # Because in DHT logic we are registering once per topic
+
         # set our next state to isready so that we can then send the isready message right away
         self.state = self.State.ISREADY
         
