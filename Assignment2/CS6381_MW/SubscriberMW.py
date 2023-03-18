@@ -98,7 +98,10 @@ class SubscriberMW ():
              # Init the DHT Utility file I wrote
             dhtUtil = DhtUtil()
             # Select a DHT node to connect to
-            self.selected_dht_node = dhtUtil.get_random_node_from_dht_file_name(self.dht_file_name)
+            # self.selected_dht_node = dhtUtil.get_random_node_from_dht_file_name(self.dht_file_name)
+            # Abandoning connecting to a random node
+            # Instead connect to predetermined node
+            self.selected_dht_node = dhtUtil.get_dht_node(self.dht_file_name)
 
             self.logger.debug("Subscriber::configure - Selected a DHT node to connect to")
             self.logger.debug(self.selected_dht_node)

@@ -48,6 +48,17 @@ class DhtUtil():
         # Return the randomly selected node
         return random_node
 
+    ##########################
+    # Attempt to use a hard coded DHT node to lessen amount of deadlocks
+    #
+    ##########################
+    def get_dht_node(self, dht_file_name):
+        # Load the DHT
+        dht = self.build_dht(dht_file_name)
+
+        # Select first node in the DHT
+        return dht[0]
+
     ##########################################
     # Create the finger table for a node 
     #
