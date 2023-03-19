@@ -355,7 +355,6 @@ class DiscoveryAppln():
 
         try:
             self.logger.info("DiscoveryAppln::is_ready_request")
-            
             # No input to account for when handling an isready_request
 
             # Check if there required number of pubs and subs is met
