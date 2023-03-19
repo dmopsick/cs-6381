@@ -49,6 +49,8 @@ import time   # for sleep
 import argparse # for argument parsing
 import configparser # for configuration parsing
 import logging # for logging. Use it in place of print statements.
+import datetime
+import csv
 
 # Import our topic selector. Feel free to use alternate way to
 # get your topics of interest
@@ -92,6 +94,9 @@ class PublisherAppln ():
     self.dissemination = None # direct or via broker
     self.mw_obj = None # handle to the underlying Middleware object
     self.logger = logger  # internal logger for print statements
+    # For logging for graphing purposes
+    self.register_send_time = None
+    self.register_response_time = None
 
   ########################################
   # configure/initialize
@@ -289,6 +294,26 @@ class PublisherAppln ():
       self.logger.info ("PublisherAppln::register_response")
       if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
         self.logger.debug ("PublisherAppln::register_response - registration is a success")
+
+        # Mark the time the register response was collected
+        self.register_response_time = datetime.datetime.now().timestamp()
+
+        # Calculate latency
+        latency = self.register_response_time - self.register_send_time
+
+        # Write out the list of the publications received into a a csv for graphing
+        with open("./csv/" + self.name + "_dht_disc_output.csv", "w", newline="") as f:
+            # Create write variable 
+            writer = csv.writer(f)
+
+            # Write the header for the csv
+            rowHeaders = ['latency']
+
+            # Write the header for the csv 
+            writer.writerow(rowHeaders)
+
+            # Turn each element in our list to a row in the csv
+            writer.writerow([latency])
 
         # Should I check that we get a response for each topic here?
         # Because in DHT logic we are registering once per topic

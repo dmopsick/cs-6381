@@ -38,6 +38,7 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import random # For waiting a variable time to send register request to fight deadlock
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
@@ -153,6 +154,17 @@ class SubscriberMW ():
             # Stringify the buffer and print it 
             buf2send = disc_req.SerializeToString ()
             self.logger.debug("Stringified serialized buf = {}".format (buf2send))
+
+             # To help fight deadlock
+            # Wait a random amount of time to avoid every request hitting discovery at once
+            time_to_wait = random.randint(2, 15)
+
+            self.logger.debug("SubscriberMW::register - Waiting {} seconds to send the register response to fight deadlock. I am doing my part!".format(time_to_wait))
+            # Wait before sending to Discovery
+            time.sleep(time_to_wait)
+
+            # Mark the time we are sending to discovery
+            self.upcall_obj.register_send_time = datetime.datetime.now().timestamp()
 
             # Send this to our discovery service
             self.logger.debug("SubscriberMW::register - send stringified buffer to Discovery service")

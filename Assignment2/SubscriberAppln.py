@@ -78,6 +78,9 @@ class SubscriberAppln():
         self.dissemination = None # Hold the dissemination strategy
         self.iters = None # Number of iterations to receive data
         self.dht_file_name = None
+        # For logging for graphing purposes
+        self.register_send_time = None
+        self.register_response_time = None
 
     ########################################
     # Set up initial configuration for our subscriber
@@ -320,6 +323,26 @@ class SubscriberAppln():
 
             if (reg_resp.status == discovery_pb2.STATUS_SUCCESS):
                 self.logger.debug("SubscriberAppln::register_response - registration is a success")
+
+                # Mark the time the register response was collected
+                self.register_response_time = datetime.datetime.now().timestamp()
+
+                # Calculate latency
+                latency = self.register_response_time - self.register_send_time
+
+               # Write out the list of the publications received into a a csv for graphing
+                with open("./csv/" + self.name + "_dht_disc_output.csv", "w", newline="") as f:
+                    # Create write variable 
+                    writer = csv.writer(f)
+
+                    # Write the header for the csv
+                    rowHeaders = ['latency']
+
+                    # Write the header for the csv 
+                    writer.writerow(rowHeaders)
+
+                    # Turn each element in our list to a row in the csv
+                    writer.writerow([latency])
 
                 # Invoke the MW logic to subscribe to our list of topics now that we are registered
                 # I do not think I actually need to do this? 
