@@ -39,6 +39,7 @@ import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
 import random # For waiting a variable time to send register request to fight deadlock
+import datetime
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
