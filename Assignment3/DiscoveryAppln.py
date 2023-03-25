@@ -67,6 +67,7 @@ class DiscoveryAppln():
         COMPLETED = 3
 
     def __init__ (self, logger):
+        self.name = None
         self.specified_num_publishers = None
         self.specified_num_subscribers = None
         self.specified_num_brokers = None
@@ -77,6 +78,8 @@ class DiscoveryAppln():
         self.broker_list = []
         self.lookup = None
         self.dissemination = None
+        self.zookeeper_addr = None
+        self.zookeeper_port = None
 
     def configure(self, args):
         ''' Initialize the object '''
@@ -92,6 +95,9 @@ class DiscoveryAppln():
             self.specified_num_publishers = args.num_publishers
             self.specified_num_subscribers = args.num_subscribers
             self.specified_num_brokers = self.DEFAULT_NUM_BROKERS
+            self.name = args.name
+            self.zookeeper_addr = args.zookeeper
+            self.zookeeper_port = 2181 # This is the zookeeper default
             
             # Now, get the configuration object
             self.logger.debug ("DiscoveryAppln::configure - parsing config.ini")
@@ -449,7 +455,9 @@ class DiscoveryAppln():
 def parseCmdLineArgs ():
     # instantiate a ArgumentParser object
     parser = argparse.ArgumentParser (description="Publisher Application")
-  
+    
+    parser.add_argument("-n", "--name", default="disc", help="Some name assigned to us. Keep it unique per discovery")
+
     parser.add_argument ("-a", "--addr", default="localhost", help="IP addr of this publisher to advertise (default: localhost)")
 
     parser.add_argument ("-p", "--port", type=int, default=5556, help="Port number on which our underlying publisher ZMQ service runs, default=5556")
@@ -461,6 +469,8 @@ def parseCmdLineArgs ():
     parser.add_argument ("-l", "--loglevel", type=int, default=logging.INFO, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
     
     parser.add_argument ("-c", "--config", default="config.ini", help="configuration file (default: config.ini)")
+
+    parser.add_argument("-z", "--zookeeper_addr", default="10.0.0.1", help="Specify location of zookeeper") 
 
     return parser.parse_args()
 
