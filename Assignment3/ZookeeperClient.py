@@ -15,6 +15,7 @@
 import os
 import sys
 import time
+import logging # for logging. Use it in place of print statements.
 
 # argument parser
 import argparse
@@ -58,12 +59,13 @@ class ZK_Driver ():
     #################################################################
     # constructor
     #################################################################
-    def __init__ (self, args):
+    def __init__ (self, args, logger):
         self.zk = None  # session handle to the zookeeper server
         self.zkIPAddr = args.zkIPAddr  # ZK server IP address
         self.zkPort = args.zkPort # ZK server port num
         self.zkName = args.zkName # refers to the znode path being manipulated
         self.zkVal = args.zkVal # refers to the znode value
+        self.logger = logger  # internal logger for print statements
 
     #-----------------------------------------------------------------------
     # Debugging: Dump the contents
@@ -158,28 +160,19 @@ class ZK_Driver ():
     # -----------------------------------------------------------------------
     # create a znode
     #
-    def create_znode (self):
+    def create_znode (self, zk_name, zk_value):
         """ ******************* znode creation ************************ """
         try:
-            # here we create a node just like we did via the CLI. But here we are
-            # also showcasing the ephemeral attribute which means that the znode
-            # will be deleted automatically by the server when the session is
-            # terminated by this client. The "makepath=True" parameter ensures that
-            # the znode will first be created and then a value attached to it.
-            #
-            # Note that we do not check here if the node already exists. If it does,
-            # then we will get an exception
             print ("Creating an ephemeral znode {} with value {}".format(self.zkName,self.zkVal))
             self.zk.create (self.zkName, value=self.zkVal, ephemeral=True, makepath=True)
 
         except:
             print("Exception thrown in create (): ", sys.exc_info()[0])
             return
-
         
-    # -----------------------------------------------------------------------
+     # -----------------------------------------------------------------------
     # Retrieve the value stored at a znode
-    def get_znode_value (self):
+    def get_znode_value (self, zk_name):
         
         """ ******************* retrieve a znode value  ************************ """
         try:
@@ -188,13 +181,13 @@ class ZK_Driver ():
             # exists or not. Note that a watch can be set on create, exists
             # and get/set methods
             print ("Checking if {} exists (it better be)".format(self.zkName))
-            if self.zk.exists (self.zkName):
+            if self.zk.exists(zk_name):
                 print ("{} znode indeed exists; get value".format(self.zkName))
 
                 # Now acquire the value and stats of that znode
                 #value,stat = self.zk.get (self.zkName, watch=self.watch)
-                value,stat = self.zk.get (self.zkName)
-                print(("Details of znode {}: value = {}, stat = {}".format (self.zkName, value, stat)))
+                value,stat = self.zk.get(zk_name)
+                print(("Details of znode {}: value = {}, stat = {}".format (zk_name, value, stat)))
 
             else:
                 print ("{} znode does not exist, why?".format(self.zkName))
@@ -205,7 +198,7 @@ class ZK_Driver ():
 
     # -----------------------------------------------------------------------
     # Modify the value stored at a znode
-    def modify_znode_value (self, new_val):
+    def modify_znode_value (self, zk_name, new_val):
         
         """ ******************* modify a znode value  ************************ """
         try:
@@ -214,18 +207,18 @@ class ZK_Driver ():
             print ("Setting a new value = {} on znode {}".format (new_val, self.zkName))
 
             # make sure that the znode exists before we actually try setting a new value
-            if self.zk.exists (self.zkName):
+            if self.zk.exists (zk_name):
                 print ("{} znode still exists :-)".format(self.zkName))
 
                 print ("Setting a new value on znode")
-                self.zk.set (self.zkName, new_val)
+                self.zk.set (zk_name, new_val)
 
                 # Now see if the value was changed
                 value,stat = self.zk.get (self.zkName)
-                print(("New value at znode {}: value = {}, stat = {}".format (self.zkName, value, stat)))
+                print(("New value at znode {}: value = {}, stat = {}".format (zk_name, value, stat)))
 
             else:
-                print ("{} znode does not exist, why?".format(self.zkName))
+                print ("{} znode does not exist, why?".format(zk_name))
 
         except:
             print("Exception thrown checking for exists/set: ", sys.exc_info()[0])
@@ -305,22 +298,37 @@ class ZK_Driver ():
     #
     ##############################
     def add_entity(self, entity_to_write):
-        pass
+
+        try:
+            pass
+            # What will the key be for our entities?
+            # What will the value be>
+             #self.create_znode(entity_to_write.name)    
+        except Exception as e:
+            raise e
 
     ##############################
     # Read info on an entity in the systen
     #
     ##############################
     def read_entity(self, entity_to_read):
-        pass
+        try:
+            pass
+            # self.read_entity()
+        except Exception as e:
+            raise e
 
     ##############################
     # Delete entity in the systen
     #
     ##############################
     def delete_entity(self, entity_to_delete):
-        pass
-
+        
+        try:
+            pass
+            # self.delete_entity
+        except Exception as e:
+            raise e
 
 ##################################
 # Command line parsing
@@ -334,23 +342,30 @@ def parseCmdLineArgs ():
     parser.add_argument ("-p", "--zkPort", type=int, default=2181, help="ZooKeeper server port, default 2181")
     parser.add_argument ("-n", "--zkName", default="/foo", help="ZooKeeper znode name, default /foo")
     parser.add_argument ("-v", "--zkVal", default=b"bar", help="ZooKeeper znode value at that node, default 'bar'")
-    
-    # parse the args
-    args = parser.parse_args ()
+    parser.add_argument ("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
 
-    return args
+    # parse the args
+    return parser.parse_args ()
     
 #*****************************************************************
 # main function
 def main ():
     """ Main program """
 
+     # obtain a system wide logger and initialize it to debug level to begin with
+    logging.info ("Main - acquire a child logger and then log messages in the child")
+    logger = logging.getLogger("ZooKeeperClient")
+
     print ("Zookeeper Client for PA 3")
     parsed_args = parseCmdLineArgs ()
+
+    # reset the log level to as specified
+    logger.debug("Main: resetting log level to {}".format(args.loglevel))
+    logger.setLevel(parsed_args.loglevel)
+    logger.debug("Main: effective log level is {}".format(logger.getEffectiveLevel ()))
     
-    # 
     # invoke the driver program
-    driver = ZK_Driver (parsed_args)
+    driver = ZK_Driver (parsed_args, logger)
 
     # initialize the driver
     driver.init_driver ()
@@ -361,4 +376,11 @@ def main ():
 
 #----------------------------------------------
 if __name__ == '__main__':
+
+
+    # set underlying default logging capabilities
+    logging.basicConfig (level=logging.DEBUG,
+                       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+
     main ()
