@@ -63,6 +63,10 @@ class ZK_Driver ():
         self.zkName = args.zkName # refers to the znode path being manipulated
         self.zkVal = args.zkVal # refers to the znode value
         self.logger = logger  # internal logger for print statements
+        self.server_active = True
+        # Watch mechanism variables
+        self.total_entities = args.totalEntities # Keep track of how many total entities should be in the system
+        self.current_num_entities = 0
 
     #-----------------------------------------------------------------------
     # Debugging: Dump the contents
@@ -82,6 +86,9 @@ class ZK_Driver ():
         try:
             # debug output
             self.dump ()
+
+            # Init the num entities 
+            self.current_num_entities = 0
 
             # instantiate a zookeeper client object
             # right now only one host; it could be the ensemble
@@ -238,53 +245,13 @@ class ZK_Driver ():
             # first step is to start a session
             self.start_session ()
  
-            # Next we demo the creation of a znode. Here we create an ephemeral node
-            print ("\n")
-            input ("Creating a znode -- Press any key to continue:")
-            self.create_znode ()
-
-            # next we demo retrieving a stored value at a znode. 
-            print ("\n")
-            input ("Obtain stored value -- Press any key to continue")
-            self.get_znode_value ()
-
-            # next we demo modifying the value stored at a znode
-            print ("\n")
-            input ("Modify stored value -- Press any key to continue")
-            self.modify_znode_value (b"bar2")
-
-            # next we demo retrieving a stored value at a znode. 
-            print ("\n")
-            input ("Obtain the modified stored value -- Press any key to continue")
-            self.get_znode_value ()
-
-            # now let us disconnect. Doing so should delete our znode because
-            # it is ephemeral
-            print ("\n")
-            input ("Disconnect from the server -- Press any key to continue")
-            self.stop_session ()
-
-            # start another session to see if the node magically comes back up
-            print ("\n")
-            input ("Starting new Session to the ZooKeeper Server -- Press any key to continue")
-            self.start_session ()
- 
-            # now check if the znode still exists
-            print ("\n")
-            input ("check if the node still exists -- Press any key to continue")
-            if self.zk.exists (self.zkName):
-                print ("{} znode still exists -- not possible".format (self.zkName))
-            else:
-                print ("{} znode no longer exists as expected".format (self.zkName))
-
+            while (self.server_active):
+                pass
+           
             # disconnect once again
-            print ("\n")
-            input ("Disconnecting for the final time -- Press any key to continue")
             self.stop_session ()
 
             # cleanup
-            print ("\n")
-            input ("Cleaning up the handle -- Press any key to continue")
             self.zk.close ()
 
         except:
@@ -306,6 +273,9 @@ class ZK_Driver ():
             # Create the new node
             self.create_znode(node_directory + entity_to_write.name, entity_to_write)
             
+            # Increment number of nodes
+            self.current_num_entities = self.current_num_entities + 1
+
             # Return true if the create works as expected
             result = True
             self.logger.info("ZookeeperClient::add_entity - Created node {}".format(node_directory + entity_to_write.name))
@@ -322,11 +292,14 @@ class ZK_Driver ():
     ##############################
     def read_entity(self, entity_to_read):
         try:
+            self.logger.info("ZookeeperClient::read_entity")
+
              # Check the role of the entity we are reading
             node_directory = self.get_node_directory(entity_to_read)
 
             entity = self.read_entity(node_directory + entity_to_read.name)
 
+            self.logger.info("ZookeeperClient::read_entity - Read success")
         except Exception as e:
             entity = None
             raise e
@@ -341,12 +314,19 @@ class ZK_Driver ():
         result = False
 
         try:
+            self.logger.info("ZookeeperClient::delete_entity")
+
             # Check the role of the entity we are reading
             node_directory = self.get_node_directory(entity_to_delete)
 
-            self.delete_entity(entity_to_delete)
+            self.delete_entity(node_directory + entity_to_delete)
 
+            # Decrement number of nodes
+            self.current_num_entities = self.current_num_entities -1
+
+            # The result is true if the action happens with no error
             result = True
+            self.logger.info("ZookeeperClient::read_entity - Deleted {} successfully".format(entity_to_delete))
 
         except Exception as e:
             raise e
@@ -377,6 +357,7 @@ def parseCmdLineArgs ():
     parser.add_argument ("-n", "--zkName", default="/foo", help="ZooKeeper znode name, default /foo")
     parser.add_argument ("-v", "--zkVal", default=b"bar", help="ZooKeeper znode value at that node, default 'bar'")
     parser.add_argument ("-l", "--loglevel", type=int, default=logging.DEBUG, choices=[logging.DEBUG,logging.INFO,logging.WARNING,logging.ERROR,logging.CRITICAL], help="logging level, choices 10,20,30,40,50: default 20=logging.INFO")
+    parser.add_argument ("-e", "--totalEntities", type=int, default=14, help="Provide the number of entities expected in the system")
 
     # parse the args
     return parser.parse_args ()
@@ -394,7 +375,7 @@ def main ():
     parsed_args = parseCmdLineArgs ()
 
     # reset the log level to as specified
-    logger.debug("Main: resetting log level to {}".format(args.loglevel))
+    logger.debug("Main: resetting log level to {}".format(parsed_args.loglevel))
     logger.setLevel(parsed_args.loglevel)
     logger.debug("Main: effective log level is {}".format(logger.getEffectiveLevel ()))
     
