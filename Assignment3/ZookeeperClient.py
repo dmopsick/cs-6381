@@ -246,8 +246,6 @@ class ZK_Driver ():
             # now start playing with the different CLI commands programmatically
 
             # first step is to start a session
-            print ("\n")
-            input ("Starting Session with the ZooKeeper Server -- Press any key to continue")
             self.start_session ()
  
             # Next we demo the creation of a znode. Here we create an ephemeral node
@@ -302,6 +300,27 @@ class ZK_Driver ():
         except:
             print("Exception thrown: ", sys.exc_info()[0])
 
+    ##############################
+    # Store info on an entity in the systen
+    #
+    ##############################
+    def add_entity(self, entity_to_write):
+        pass
+
+    ##############################
+    # Read info on an entity in the systen
+    #
+    ##############################
+    def read_entity(self, entity_to_read):
+        pass
+
+    ##############################
+    # Delete entity in the systen
+    #
+    ##############################
+    def delete_entity(self, entity_to_delete):
+        pass
+
 
 ##################################
 # Command line parsing
@@ -311,7 +330,7 @@ def parseCmdLineArgs ():
     parser = argparse.ArgumentParser ()
 
     # add optional arguments
-    parser.add_argument ("-a", "--zkIPAddr", default="127.0.0.1", help="ZooKeeper server ip address, default 127.0.0.1")
+    parser.add_argument ("-a", "--zkIPAddr", default="10.0.0.1", help="ZooKeeper server ip address, default 127.0.0.1")
     parser.add_argument ("-p", "--zkPort", type=int, default=2181, help="ZooKeeper server port, default 2181")
     parser.add_argument ("-n", "--zkName", default="/foo", help="ZooKeeper znode name, default /foo")
     parser.add_argument ("-v", "--zkVal", default=b"bar", help="ZooKeeper znode value at that node, default 'bar'")
@@ -326,7 +345,7 @@ def parseCmdLineArgs ():
 def main ():
     """ Main program """
 
-    print ("Demo program for ZooKeeper")
+    print ("Zookeeper Client for PA 3")
     parsed_args = parseCmdLineArgs ()
     
     # 
@@ -336,8 +355,9 @@ def main ():
     # initialize the driver
     driver.init_driver ()
     
+    # This is the test code
     # start the driver
-    driver.run_driver ()
+    # driver.run_driver ()
 
 #----------------------------------------------
 if __name__ == '__main__':
