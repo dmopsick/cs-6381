@@ -25,10 +25,7 @@ import argparse
 from kazoo.client import KazooClient   # client API
 from kazoo.client import KazooState    # for the state machine
 
-# to avoid any warning about no handlers for logging purposes, we
-# do the following
-import logging
-logging.basicConfig ()
+from CS6381_MW import discovery_pb2
 
 #--------------------------------------------------------------------------
 # define a callback function to let us know what state we are in currently
@@ -298,14 +295,26 @@ class ZK_Driver ():
     #
     ##############################
     def add_entity(self, entity_to_write):
+        result = False
 
         try:
-            pass
-            # What will the key be for our entities?
-            # What will the value be>
-             #self.create_znode(entity_to_write.name)    
+            self.logger.info("ZookeeperClient::add_entity")
+
+            # Check the role of the entity we are registering
+            node_directory = self.get_node_directory(entity_to_write)
+
+            # Create the new node
+            self.create_znode(node_directory + entity_to_write.name, entity_to_write)
+            
+            # Return true if the create works as expected
+            result = True
+            self.logger.info("ZookeeperClient::add_entity - Created node {}".format(node_directory + entity_to_write.name))
+
         except Exception as e:
+            result = False
             raise e
+
+        return result
 
     ##############################
     # Read info on an entity in the systen
@@ -313,22 +322,47 @@ class ZK_Driver ():
     ##############################
     def read_entity(self, entity_to_read):
         try:
-            pass
-            # self.read_entity()
+             # Check the role of the entity we are reading
+            node_directory = self.get_node_directory(entity_to_read)
+
+            entity = self.read_entity(node_directory + entity_to_read.name)
+
         except Exception as e:
+            entity = None
             raise e
+
+        return entity
 
     ##############################
     # Delete entity in the systen
     #
     ##############################
     def delete_entity(self, entity_to_delete):
-        
+        result = False
+
         try:
-            pass
-            # self.delete_entity
+            # Check the role of the entity we are reading
+            node_directory = self.get_node_directory(entity_to_delete)
+
+            self.delete_entity(entity_to_delete)
+
+            result = True
+
         except Exception as e:
             raise e
+
+        return result
+
+    def get_node_directory(entity): 
+        # We will be grouping the nodes based on role
+        if entity.role == discovery_pb2.ROLE_SUBSCRIBER:
+            node_directory = "/sub/"
+        elif entity.role == discovery_pb2.ROLE_PUBLISHER:
+            node_directory = "/pub/"
+        elif entity.role == discovery_pb2.ROLE_BOTH:
+            node_directory = "/broker/"
+
+        return node_directory
 
 ##################################
 # Command line parsing
