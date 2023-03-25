@@ -1,101 +1,54 @@
-#!/usr/bin/python
-#  
 #
-# Vanderbilt University Computer Science
 # Author: Aniruddha Gokhale
-# Course: CS 6381 Distributed Systems Principles
+# Vanderbilt University
+# CS 6381 Distributed Systems Principles
 # Created: Spring 2018
-# Modified: Spring 2019 (to make compliant with Python 3)
 #
-# Purpose: Demonstrate Zookeeper Barrier Synchronization
+# This is a sample code showing a variety of commands 
+# using a Python client for ZooKeeper. We assume that the
+# ZooKeeper server is running.
 #
-# This is the Driver program
-#
-# Approach:
-#
-# We maintain a driver program which creates a "/barrier" znode
-# and maintains a count of how many children nodes it has noticed appear
-# under the tree.
-#
-# A client is implemented as a thread. Its job in life is to create a child
-# node under "/barrier" with its thread name and wait to see what is the
-# value maintained by the parent znode. The moment the number reaches the
-# barrier value, the client declares success and proceeds to do its work
-# which here is pretty much nothing and then exits. Because it creates a
-# ephemeral node, when the client exits, its znode is automatically
-# deleted by ZooKeeper.
-#
-# In the meantime, after all client threads have exited, the driver will
-# cleanup its znode and then disconnect from ZooKeeper and then exit.
-#
+# Modified: Spring 2019 (converted to Python3 compatible code using 2to3-2.7.py)
+# Additional restructuring and commenting added. More comments Spring 2021.
 
-# system and time
+# import some basic packages just in case we need these
 import os
 import sys
+import time
 
 # argument parser
 import argparse
 
 # Now import the kazoo package that supports Python binding
 # to ZooKeeper
-from kazoo.client import KazooClient
+from kazoo.client import KazooClient   # client API
+from kazoo.client import KazooState    # for the state machine
 
 # to avoid any warning about no handlers for logging purposes, we
-# do the following but there is some exception getting thrown so for
-# now I am commenting this out.
+# do the following
 import logging
 logging.basicConfig ()
 
-# our application thread class
-from zkbarrier_app import AppThread
-
-#******************* thread function ******************************
-def thread_func (app):
-    """A thread function to be executed by the client app threads"""
-
-    # first we set a watcher for our parent's znode data.
-    
-    #---------------------------------------------------------
-    # define a data watch function on the parent znode
-    # note that this is a nested function defn
-    @app.zk.DataWatch (app.ppath)
-    def data_change_watcher (data, stat):
-        """Data Change Watcher"""
-        print(("AppThread::DataChangeWatcher - data = {}, stat = {}".format (data, stat)))
-        # check if barrier has reached
-        value = int (data)
-        if (value == app.cond):
-            print(("AppThread: {}, barrier is reached".format (app.name)))
-            app.barrier = True
-
-    #---------------------------------------------------------
-
-    # now keep checking until barrier has reached
-    while (app.barrier == False):
-        # now let us retrieve the parent znode and set a watch
-        # Note that we always check existence as a defensive programming
-        print(("AppThread {} barrier not reached yet".format (app.name)))
-        if app.zk.exists (app.ppath):
-            # note that we do not need to set a watch because we have
-            # used Kazoo's decorator above to watch data change on the
-            # parent znode
-            value,stat = app.zk.get (app.ppath)
-            print(("AppThread {} found parent znode value = {}, stat = {}".format (app.name, value, stat)))
-    
-        else:
-            print(("{} znode does not exist yet (strange)".format (app.ppath)))
-    
-
-    # out of the loop
-    print(("AppThread {} has reached the barrier and so we disconnect from zookeeper".format (app.name)))
-    # since the data has reached the value of the barrier, 
-    # we just disconnect from the zookeeper and our ephemeral
-    # node will go away
-    app.zk.stop ()
-    app.zk.close ()
-
-    print(("AppThread {}: Bye Bye ".format (app.name)))
-    
+#--------------------------------------------------------------------------
+# define a callback function to let us know what state we are in currently
+# Kazoo is implemented in such a way that the system goes thru 3 states.
+# ZooKeeper clients go thru 3 states:
+#    LOST => when it is instantiated  or when not in a session with a server;
+#    CONNECTED => when connected with server, and
+#    SUSPENDED => when the connection  is lost or the server node is no
+#                                longer part of the quorum
+#
+#--------------------------------------------------------------------------
+def listener4state (state):
+    if state == KazooState.LOST:
+        print ("Current state is now = LOST")
+    elif state == KazooState.SUSPENDED:
+        print ("Current state is now = SUSPENDED")
+    elif state == KazooState.CONNECTED:
+        print ("Current state is now = CONNECTED")
+    else:
+        print ("Current state now = UNKNOWN !! Cannot happen")
+        
 # ------------------------------------------------------------------
 # The driver class. Does not derive from anything
 #
@@ -106,12 +59,11 @@ class ZK_Driver ():
     # constructor
     #################################################################
     def __init__ (self, args):
+        self.zk = None  # session handle to the zookeeper server
         self.zkIPAddr = args.zkIPAddr  # ZK server IP address
         self.zkPort = args.zkPort # ZK server port num
-        self.numClients = args.numClients # used as barrier condition
-        self.zk = None  # session handle to the server
-        self.path = "/barrier" # refers to the znode path being manipulated
-        self.threads = []  # handle to the threads
+        self.zkName = args.zkName # refers to the znode path being manipulated
+        self.zkVal = args.zkVal # refers to the znode value
 
     #-----------------------------------------------------------------------
     # Debugging: Dump the contents
@@ -119,11 +71,12 @@ class ZK_Driver ():
     def dump (self):
         """dump contents"""
         print ("=================================")
-        print(("Server IP: {}, Port: {}; Path = {}, NumClients = {}".format (self.zkIPAddr, self.zkPort, self.path, self.numClients)))
+        print ("Server IP: {}, Port: {}; Path = {} and Val = {}".format (self.zkIPAddr, self.zkPort, self.zkName, self.zkVal))
         print ("=================================")
 
     # -----------------------------------------------------------------------
     # Initialize the driver
+    # -----------------------------------------------------------------------
     def init_driver (self):
         """Initialize the client driver program"""
 
@@ -134,96 +87,222 @@ class ZK_Driver ():
             # instantiate a zookeeper client object
             # right now only one host; it could be the ensemble
             hosts = self.zkIPAddr + str (":") + str (self.zkPort)
-            print(("Driver::init_driver -- instantiate zk obj: hosts = {}".format(hosts)))
+            print ("Driver::init_driver -- instantiate zk obj: hosts = {}".format(hosts))
+
+            # instantiate the kazoo client object
             self.zk = KazooClient (hosts)
-            print(("Driver::init_driver -- state = {}".format (self.zk.state)))
+
+            # register it with the state listener.
+            # recall that the "listener4state" is a callback method
+            # we defined above and so we are just passing the pointer
+            # to this callback to the listener method on kazoo client.
+            self.zk.add_listener (listener4state)
+            print ("Driver::init_driver -- state after connect = {}".format (self.zk.state))
             
         except:
-            print("Unexpected error in init_driver:", sys.exc_info()[0])
+            print ("Unexpected error in init_driver:", sys.exc_info()[0])
             raise
 
+
+    # -----------------------------------------------------------------------
+    # A watcher function to see if value for a node in the znode tree
+    # has changed
+    # -----------------------------------------------------------------------
+    def watch_znode_data_change (self):
+
+        # we don't do anything inside this function but rather set an
+        # actual watch function
+        
+        #*****************************************************************
+        # This is the watch callback function that is supposed to be invoked
+        # when changes get made to the znode of interest. Note that a watch is
+        # effective only once. So the client has to set the watch every time.
+        # To overcome the need for this, Kazoo has come up with a decorator.
+        # Decorators can be of two kinds: watching for data on a znode changing,
+        # and children on a znode changing
+        @self.zk.DataWatch(self.zkName)
+        def dump_data_change (data, stat):
+            print ("\n*********** Inside watch_znode_data_change *********")
+            print(("Data changed for znode: data = {}, stat = {}".format (data,stat)))
+            print ("*********** Leaving watch_znode_data_change *********")
+
     
+
+    # -----------------------------------------------------------------------
+    # start a session with the zookeeper server
+    #
+    def start_session (self):
+        """ Starting a Session """
+        try:
+            # now connect to the server
+            self.zk.start ()
+
+        except:
+            print("Exception thrown in start (): ", sys.exc_info()[0])
+            return
+
+    # -----------------------------------------------------------------------
+    # stop a session with the zookeeper server
+    #
+    def stop_session (self):
+        """ Stopping a Session """
+        try:
+            #
+            # now disconnect from the server
+            self.zk.stop ()
+
+        except:
+            print("Exception thrown in stop (): ", sys.exc_info()[0])
+            return
+
+    # -----------------------------------------------------------------------
+    # create a znode
+    #
+    def create_znode (self):
+        """ ******************* znode creation ************************ """
+        try:
+            # here we create a node just like we did via the CLI. But here we are
+            # also showcasing the ephemeral attribute which means that the znode
+            # will be deleted automatically by the server when the session is
+            # terminated by this client. The "makepath=True" parameter ensures that
+            # the znode will first be created and then a value attached to it.
+            #
+            # Note that we do not check here if the node already exists. If it does,
+            # then we will get an exception
+            print ("Creating an ephemeral znode {} with value {}".format(self.zkName,self.zkVal))
+            self.zk.create (self.zkName, value=self.zkVal, ephemeral=True, makepath=True)
+
+        except:
+            print("Exception thrown in create (): ", sys.exc_info()[0])
+            return
+
+        
+    # -----------------------------------------------------------------------
+    # Retrieve the value stored at a znode
+    def get_znode_value (self):
+        
+        """ ******************* retrieve a znode value  ************************ """
+        try:
+
+            # Now we are going to check if the znode that we just created
+            # exists or not. Note that a watch can be set on create, exists
+            # and get/set methods
+            print ("Checking if {} exists (it better be)".format(self.zkName))
+            if self.zk.exists (self.zkName):
+                print ("{} znode indeed exists; get value".format(self.zkName))
+
+                # Now acquire the value and stats of that znode
+                #value,stat = self.zk.get (self.zkName, watch=self.watch)
+                value,stat = self.zk.get (self.zkName)
+                print(("Details of znode {}: value = {}, stat = {}".format (self.zkName, value, stat)))
+
+            else:
+                print ("{} znode does not exist, why?".format(self.zkName))
+
+        except:
+            print("Exception thrown checking for exists/get: ", sys.exc_info()[0])
+            return
+
+    # -----------------------------------------------------------------------
+    # Modify the value stored at a znode
+    def modify_znode_value (self, new_val):
+        
+        """ ******************* modify a znode value  ************************ """
+        try:
+            # Now let us change the data value on the znode and see if
+            # our watch gets invoked
+            print ("Setting a new value = {} on znode {}".format (new_val, self.zkName))
+
+            # make sure that the znode exists before we actually try setting a new value
+            if self.zk.exists (self.zkName):
+                print ("{} znode still exists :-)".format(self.zkName))
+
+                print ("Setting a new value on znode")
+                self.zk.set (self.zkName, new_val)
+
+                # Now see if the value was changed
+                value,stat = self.zk.get (self.zkName)
+                print(("New value at znode {}: value = {}, stat = {}".format (self.zkName, value, stat)))
+
+            else:
+                print ("{} znode does not exist, why?".format(self.zkName))
+
+        except:
+            print("Exception thrown checking for exists/set: ", sys.exc_info()[0])
+            return
+
+    # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # -----------------------------------------------------------------------
     # Run the driver
     #
-    # Our logic is such that we first create the znode with value 0
-    # Then we create the application threads. Each thread creates a child
-    # node under the main znode, which should notify the driver. Everytime
-    # the driver is notified, it will update the value in the znode
-    # At the same time, the threads are waiting on the znode's value. The
-    # moment they see the barrier reached, they declare victory :-)
+    # We do a whole bunch of things to demonstrate the use of ZooKeeper
+    # Note that as you are trying this out, use the ZooKeeper CLI to verify
+    # that indeed these things are happening on the server (just as a validation)
     # -----------------------------------------------------------------------
     def run_driver (self):
         """The actual logic of the driver program """
+        try:
+            # now start playing with the different CLI commands programmatically
 
+            # first step is to start a session
+            print ("\n")
+            input ("Starting Session with the ZooKeeper Server -- Press any key to continue")
+            self.start_session ()
+ 
+            # Next we demo the creation of a znode. Here we create an ephemeral node
+            print ("\n")
+            input ("Creating a znode -- Press any key to continue:")
+            self.create_znode ()
 
-        # first connect to the zookeeper server
-        print ("Driver::run_driver -- connect with server")
-        self.zk.start ()
-        print(("Driver::run_driver -- state = {}".format (self.zk.state)))
+            # next we demo retrieving a stored value at a znode. 
+            print ("\n")
+            input ("Obtain stored value -- Press any key to continue")
+            self.get_znode_value ()
 
-        # next, create a znode for the barrier sync with initial value 0
-        print ("Driver::run_driver -- create a znode for barrier")
-        self.zk.create (self.path, value=b"0")
+            # next we demo modifying the value stored at a znode
+            print ("\n")
+            input ("Modify stored value -- Press any key to continue")
+            self.modify_znode_value (b"bar2")
 
-        #-----------------------------------------------------------
-        # this is the watcher callback that gets invoked when
-        # children get added to the
-        #
-        # Notice how this is a nested call
-        @self.zk.ChildrenWatch (self.path)
-        def child_change_watcher (children):
-            """Children Watcher"""
-            print(("Driver::run -- children watcher: num childs = {}".format (len (children))))
+            # next we demo retrieving a stored value at a znode. 
+            print ("\n")
+            input ("Obtain the modified stored value -- Press any key to continue")
+            self.get_znode_value ()
 
-            # every time we get the num of children, we set the value
-            # of the metadata to be the number of children received
-            if self.zk.exists (self.path):
-                # this better be the case
-                # so now update the znode value to reflect the
-                # number of children. This should trigger the watch for
-                # our clients running in the threads.
-                print(("Driver::child_change_watcher - setting new value for children = {}".format (len(children))))
-                self.zk.set (self.path, bytes (str (len (children)), 'utf-8'))
+            # now let us disconnect. Doing so should delete our znode because
+            # it is ephemeral
+            print ("\n")
+            input ("Disconnect from the server -- Press any key to continue")
+            self.stop_session ()
+
+            # start another session to see if the node magically comes back up
+            print ("\n")
+            input ("Starting new Session to the ZooKeeper Server -- Press any key to continue")
+            self.start_session ()
+ 
+            # now check if the znode still exists
+            print ("\n")
+            input ("check if the node still exists -- Press any key to continue")
+            if self.zk.exists (self.zkName):
+                print ("{} znode still exists -- not possible".format (self.zkName))
             else:
-                print ("Driver:run_driver -- child watcher -- znode does not exist")
-        #-----------------------------------------------------------
+                print ("{} znode no longer exists as expected".format (self.zkName))
 
-#        raw_input ("Press any key to continue")
+            # disconnect once again
+            print ("\n")
+            input ("Disconnecting for the final time -- Press any key to continue")
+            self.stop_session ()
 
-        # now create the application threads who all will be waiting
-        # on the barrier.
-        print ("Driver::run_driver -- start the client app threads")
-        thread_args = {'server': self.zkIPAddr, 'port': self.zkPort, 'ppath': self.path, 'cond': self.numClients}
+            # cleanup
+            print ("\n")
+            input ("Cleaning up the handle -- Press any key to continue")
+            self.zk.close ()
 
-        for i in range (self.numClients):
-            thr_name = "Thread" + str (i)
-            # instantiate the thread obj representing the app waiting
-            # on a barrier
-            t =  AppThread (thr_name, thread_func, thread_args)
+        except:
+            print("Exception thrown: ", sys.exc_info()[0])
 
-            # save the thread handle
-            self.threads.append (t)
 
-            # start the thread
-            t.start ()
-                
-        print ("Driver::run_driver -- wait for the client app threads to terminate")
-        for i in range (self.numClients):
-           self.threads[i].join ()
-
-        # remove our znode. Remember that it was not ephemeral
-        # as we cannot have children under ephemeral nodes. So
-        # it is our responsibility to 
-        print(("Driver::run_driver -- now remove the znode {}".format (self.path)))
-        self.zk.delete (self.path, recursive=True)
-        
-        print ("Driver::run_driver -- disconnect and close")
-        self.zk.stop ()
-        self.zk.close ()
-
-        print ("Driver::run_driver -- Bye Bye")
-        
 ##################################
 # Command line parsing
 ##################################
@@ -233,23 +312,21 @@ def parseCmdLineArgs ():
 
     # add optional arguments
     parser.add_argument ("-a", "--zkIPAddr", default="127.0.0.1", help="ZooKeeper server ip address, default 127.0.0.1")
-    parser.add_argument ("-c", "--numClients", type=int, default=5, help="Number of client apps in the barrier, default 5")
     parser.add_argument ("-p", "--zkPort", type=int, default=2181, help="ZooKeeper server port, default 2181")
+    parser.add_argument ("-n", "--zkName", default="/foo", help="ZooKeeper znode name, default /foo")
+    parser.add_argument ("-v", "--zkVal", default=b"bar", help="ZooKeeper znode value at that node, default 'bar'")
     
-    # add positional arguments in that order
-    # parser.add_argument ("addrfile", help="File of host ip addresses")
-
     # parse the args
     args = parser.parse_args ()
 
     return args
     
-#------------------------------------------
+#*****************************************************************
 # main function
 def main ():
     """ Main program """
 
-    print("Programming Assignmen 3")
+    print ("Demo program for ZooKeeper")
     parsed_args = parseCmdLineArgs ()
     
     # 
@@ -265,4 +342,3 @@ def main ():
 #----------------------------------------------
 if __name__ == '__main__':
     main ()
-    
