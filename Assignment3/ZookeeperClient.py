@@ -66,7 +66,7 @@ class ZK_Driver ():
         self.server_active = True
         # Watch mechanism variables
         self.total_entities = args.totalEntities # Keep track of how many total entities should be in the system
-        self.current_num_entities = 0
+        self.barrier_path = "/barrier"
 
     #-----------------------------------------------------------------------
     # Debugging: Dump the contents
@@ -87,8 +87,6 @@ class ZK_Driver ():
             # debug output
             self.dump ()
 
-            # Init the num entities 
-            self.current_num_entities = 0
 
             # instantiate a zookeeper client object
             # right now only one host; it could be the ensemble
@@ -97,6 +95,9 @@ class ZK_Driver ():
 
             # instantiate the kazoo client object
             self.zk = KazooClient (hosts)
+
+            # Add barrier watcher
+            self.zk.create(self.barrier_path, value=b"0")
 
             # register it with the state listener.
             # recall that the "listener4state" is a callback method
@@ -244,6 +245,14 @@ class ZK_Driver ():
 
             # first step is to start a session
             self.start_session ()
+
+            @self.zk.ChildrenWatch(self.barrier_path)
+            def child_change_watcher(children):
+                if self.zk.exists (self.barrier_path):
+                    print(("Driver::child_change_watcher - setting new value for children = {}".format (len(children))))
+                    self.zk.set (self.barrier_path, bytes (str (len (children)), 'utf-8'))
+                else:
+                    print ("Driver:run_driver -- child watcher -- znode does not exist")
  
             while (self.server_active):
                 pass
@@ -333,7 +342,7 @@ class ZK_Driver ():
 
         return result
 
-    def get_node_directory(entity): 
+    def get_node_directory(self, entity): 
         # We will be grouping the nodes based on role
         if entity.role == discovery_pb2.ROLE_SUBSCRIBER:
             node_directory = "/sub/"
@@ -343,6 +352,8 @@ class ZK_Driver ():
             node_directory = "/broker/"
 
         return node_directory
+
+
 
 ##################################
 # Command line parsing
