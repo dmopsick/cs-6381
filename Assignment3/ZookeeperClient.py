@@ -261,7 +261,7 @@ class ZK_Driver ():
             self.stop_session ()
 
             # cleanup
-            self.zk.close ()
+            # self.zk.close ()
 
         except:
             print("Exception thrown: ", sys.exc_info()[0])
