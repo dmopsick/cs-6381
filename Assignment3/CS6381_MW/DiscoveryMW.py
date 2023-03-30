@@ -25,6 +25,8 @@ import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
 
+from ZookeeperClient import ZK_Driver
+
 # import serialization logic
 from CS6381_MW import discovery_pb2
 
@@ -41,6 +43,7 @@ class DiscoveryMW():
         self.port = None # The port num where we are going to publish our topic
         self.upcall_obj = None # handle to appln obj to handle appln-specific data
         self.handle_events = True # in general we keep going thru the event loop
+        self.zk_client = None
 
     ########################################
     # configure/initialize
@@ -50,6 +53,9 @@ class DiscoveryMW():
         try:
             # Here we initialize any internal variables
             self.logger.info ("DiscoveryMW::configure")
+
+            # Init the zookeeper client
+            self.zk_client = ZK_Driver()
 
             # First retrieve our advertised IP addr and the publication port num
             self.port = args.port
@@ -144,6 +150,30 @@ class DiscoveryMW():
             return timeout
         except Exception as e:
             raise e 
+
+    ##########################################
+    # Adapter code to add node to zk
+    #
+    ###########################################
+    def register_entity_zk(self, entity):
+
+        try:
+            self.zk_client.add_entity(entity)
+        except Exception as e:
+            raise e
+    
+    ##########################################
+    # Adapter code to remove node to zk
+    #
+    ###########################################
+    def deregister_entity_zk(self, entity):
+
+        try:
+            self.zk_client.delete_entity(entity)
+        except Exception as e:
+            raise e
+
+
 
     #####################################################
     # Send a response to an entity attempting to register with the discovery server

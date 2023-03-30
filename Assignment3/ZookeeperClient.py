@@ -67,6 +67,7 @@ class ZK_Driver ():
         # Watch mechanism variables
         self.total_entities = args.totalEntities # Keep track of how many total entities should be in the system
         self.barrier_path = "/barrier"
+        self.election_path = "/leader"
 
     #-----------------------------------------------------------------------
     # Debugging: Dump the contents
@@ -134,7 +135,6 @@ class ZK_Driver ():
             print ("*********** Leaving watch_znode_data_change *********")
 
     
-
     # -----------------------------------------------------------------------
     # start a session with the zookeeper server
     #
@@ -265,6 +265,42 @@ class ZK_Driver ():
 
         except:
             print("Exception thrown: ", sys.exc_info()[0])
+    
+
+    ####################################################
+    # Zookeeper election support function
+    #
+    ####################################################
+    def join_election(self):
+        try:
+            self.zk.create(self.node_path, ephemeral=True)
+            self.elect_leader()
+        except Exception as e:
+            self.watch_previous_node()
+
+    ####################################################
+    # Zookeeper election - Watch previous node
+    #
+    ####################################################
+    def watch_previous_node(self, previous_children=None):
+        if previous_children is None:
+            previous_children = self.zk.get_children(self.election_path, self.elect_leader)
+        index = previous_children.index(self.node_path.split("/")[-1])
+        self.zk.exists(f"{self.election_path}/{previous_children[index-1]}", self.elect_leader)
+
+    ####################################################
+    # Zookeeper leader election
+    #
+    ####################################################      
+    def leader_election(self):
+        children = self.zk.get_children(self.election_path)
+        children.sort()
+        if self.node_path == f"{self.election_path}/{children[0]}":
+            self.leader_path = self.node_path
+            self.is_leader = True
+        else:
+            self.watch_previous_node(children)
+
 
     ##############################
     # Store info on an entity in the systen
