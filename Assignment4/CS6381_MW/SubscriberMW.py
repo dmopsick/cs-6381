@@ -38,6 +38,7 @@ import sys    # for syspath and system exception
 import time   # for sleep
 import logging # for logging. Use it in place of print statements.
 import zmq  # ZMQ sockets
+import datetime
 
 # import serialization logic
 from CS6381_MW import discovery_pb2
@@ -340,3 +341,60 @@ class SubscriberMW ():
         except Exception as e:
             raise e
         
+      #################################################################
+    # collect the data on our pub socket
+    #
+    # do the actual dissemination of info using the ZMQ pub socket
+    #
+    # Note, here I am sending three diff params. I am eventually going to replace this
+    # sending of a simple string with protobuf serialization. Recall that we need to be
+    # sending publisher id, topic, data, timestamp at a minimum for our experimental
+    # data collection. So anyway we will need to do the necessary serialization.
+    #
+    # This part is left as an exercise.
+    #################################################################
+    def collect (self):
+        try:
+            self.logger.debug ("SubscriberMW::collect")
+
+            # receive the info as bytes. See how we are providing an encoding of utf-8
+            message = self.sub.recv_string(encoding="utf-8")
+
+            self.logger.debug ("SubscriberMW::collect complete")
+            resultParcel = Common.TopicParcel.fromMessage(message)
+            latency = (datetime.datetime.now() - datetime.datetime.fromisoformat(resultParcel.sent_at)).microseconds / 1000
+
+        try:
+            ownership = self.max_ownerships_dict[resultParcel.topic]
+        except KeyError:
+            # topic ownership max not yet set
+            self.max_ownerships_dict[resultParcel.topic] = resultParcel.ownership
+            ownership = self.max_ownerships_dict[resultParcel.topic]
+
+        if (resultParcel.ownership < ownership):
+            self.logger.debug ("SubscriberMW::collect latency of message: " + str(latency) + "ms" + " THIS MESSAGE IS IGNORED DUE TO LOW STRENGTH!")
+            ignores = self.ownership_ignores_dict.get(resultParcel.topic, 0)
+            if ignores == 0:
+                # topic ownership max not yet set
+                self.ownership_ignores_dict[resultParcel.topic] = 1
+                ignores = 1
+            else:
+                self.ownership_ignores_dict[resultParcel.topic] = self.ownership_ignores_dict[resultParcel.topic] + 1
+
+            # reset the max ownership for the topic if the threshold has been met
+            if ignores >= self.ownership_threshold:
+            self.ownership_ignores_dict[resultParcel.topic] = 0
+            self.max_ownerships_dict[resultParcel.topic] = 0
+
+            return resultParcel
+        else:
+            self.ownership_ignores_dict[resultParcel.topic] = 0
+            self.max_ownerships_dict[resultParcel.topic] = resultParcel.ownership
+
+        self.logger.debug ("SubscriberMW::collect latency of message: " + str(latency) + "ms")
+
+        return resultParcel
+        
+        except Exception as e:
+        raise e
+            
