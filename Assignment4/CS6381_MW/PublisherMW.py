@@ -54,6 +54,10 @@ class PublisherMW ():
     self.port = None # port num where we are going to publish our topics
     self.upcall_obj = None # handle to appln obj to handle appln-specific data
     self.handle_events = True # in general we keep going thru the event loop
+    self.history_deque = None
+    self.ownership_dict = None
+    self.history_intervals = 0 
+    self.sent_count = 0
 
   ########################################
   # configure/initialize
@@ -384,3 +388,29 @@ class PublisherMW ():
   def disable_event_loop (self):
     ''' disable event loop '''
     self.handle_events = False
+
+#################################################################
+  # disseminate the data on our pub socket
+  #
+  # do the actual dissemination of info using the ZMQ pub socket
+  #
+  # Note, here I am sending three diff params. I am eventually going to replace this
+  # sending of a simple string with protobuf serialization. Recall that we need to be
+  # sending publisher id, topic, data, timestamp at a minimum for our experimental
+  # data collection. So anyway we will need to do the necessary serialization.
+  #
+  # This part is left as an exercise.
+  #################################################################
+  def disseminate_history (self, depth):
+    try:
+      self.logger.debug ("PublisherMW::disseminate_history")
+
+      for i in range(min(depth, len(self.history_deque))):
+        send_str = self.history_deque[i]
+        self.logger.debug ("PublisherMW::disseminate_history - {}".format (send_str))
+        # send the info as bytes. See how we are providing an encoding of utf-8
+        self.pub.send (bytes(send_str, "utf-8"))
+
+      self.logger.debug ("PublisherMW::disseminate_history complete")
+    except Exception as e:
+      raise e
